@@ -274,9 +274,9 @@ async function handleRoute(request, { params }) {
         ...(platform && { platform }),
         ...(search && {
           OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { shortDescription: { contains: search, mode: 'insensitive' } },
-            { tags: { has: search } }
+            { name: { contains: search } },
+            { shortDescription: { contains: search } },
+            { tags: { contains: search } }
           ]
         })
       };
@@ -314,8 +314,14 @@ async function handleRoute(request, { params }) {
         prisma.server.count({ where })
       ]);
 
+      // Parse tags from JSON string
+      const serversWithParsedTags = servers.map(s => ({
+        ...s,
+        tags: s.tags ? JSON.parse(s.tags) : []
+      }));
+
       return handleCORS(NextResponse.json({ 
-        servers, 
+        servers: serversWithParsedTags, 
         pagination: {
           page,
           limit,
