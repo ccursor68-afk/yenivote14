@@ -395,7 +395,7 @@ async function handleRoute(request, { params }) {
           logoUrl,
           shortDescription,
           longDescription,
-          tags: JSON.stringify(tags || []),
+          tags: tags || [],
           votifierHost,
           votifierPort,
           votifierPublicKey,
