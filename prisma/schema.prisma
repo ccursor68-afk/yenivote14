@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Platform {
+  JAVA
+  BEDROCK
+  CROSSPLAY
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String?
+  username          String?   @unique
+  minecraftNick     String?
+  role              Role      @default(USER)
+  discordId         String?   @unique
+  discordUsername   String?
+  avatarUrl         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  servers           Server[]
+  tickets           Ticket[]  @relation("UserTickets")
+  ticketMessages    TicketMessage[]
+  blogPosts         BlogPost[]
+
+  @@index([email])
+  @@index([discordId])
+}
+
+model Server {
+  id                String          @id @default(uuid())
+  name              String
+  ip                String
+  port              Int             @default(25565)
+  platform          Platform        @default(JAVA)
+  version           String
+  website           String?
+  discord           String?
+  bannerUrl         String?
+  logoUrl           String?
+  shortDescription  String
+  longDescription   String?
+  tags              String[]        @default([])
+  
+  // Votifier settings
+  votifierHost      String?
+  votifierPort      Int?
+  votifierPublicKey String?         @db.Text
+  votifierToken     String?
+
+  // Status
+  approvalStatus    ApprovalStatus  @default(PENDING)
+  isOnline          Boolean         @default(false)
+  playerCount       Int             @default(0)
+  maxPlayers        Int             @default(0)
+  voteCount         Int             @default(0)
+  monthlyVotes      Int             @default(0)
+
+  // Sponsor
+  isSponsored       Boolean         @default(false)
+  featuredUntil     DateTime?
+
+  // Relations
+  ownerId           String
+  owner             User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  votes             Vote[]
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([approvalStatus])
+  @@index([isSponsored])
+  @@index([voteCount])
+  @@index([platform])
+}
+
+model Vote {
+  id                String    @id @default(uuid())
+  serverId          String
+  server            Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  minecraftUsername String
+  ipAddress         String
+  createdAt         DateTime  @default(now())
+
+  @@unique([serverId, minecraftUsername, ipAddress])
+  @@index([serverId])
+  @@index([ipAddress])
+  @@index([createdAt])
+}
+
+model BlogPost {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  content     String    @db.Text
+  excerpt     String?
+  coverImage  String?
+  published   Boolean   @default(false)
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([published])
+}
+
+model Ticket {
+  id          String          @id @default(uuid())
+  subject     String
+  status      TicketStatus    @default(OPEN)
+  userId      String
+  user        User            @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
+  messages    TicketMessage[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status])
+  @@index([userId])
+}
+
+model TicketMessage {
+  id          String    @id @default(uuid())
+  content     String    @db.Text
+  ticketId    String
+  ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isAdmin     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([ticketId])
+}
