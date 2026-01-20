@@ -3,8 +3,31 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Platform {
+  JAVA
+  BEDROCK
+  CROSSPLAY
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
 }
 
 model User {
@@ -13,7 +36,7 @@ model User {
   password          String?
   username          String?   @unique
   minecraftNick     String?
-  role              String    @default("USER")
+  role              Role      @default(USER)
   discordId         String?   @unique
   discordUsername   String?
   avatarUrl         String?
@@ -24,48 +47,56 @@ model User {
   tickets           Ticket[]  @relation("UserTickets")
   ticketMessages    TicketMessage[]
   blogPosts         BlogPost[]
+
+  @@index([email])
+  @@index([discordId])
 }
 
 model Server {
-  id                String    @id @default(uuid())
+  id                String          @id @default(uuid())
   name              String
   ip                String
-  port              Int       @default(25565)
-  platform          String    @default("JAVA")
+  port              Int             @default(25565)
+  platform          Platform        @default(JAVA)
   version           String
   website           String?
   discord           String?
   bannerUrl         String?
   logoUrl           String?
   shortDescription  String
-  longDescription   String?
-  tags              String    @default("[]")
+  longDescription   String?         @db.Text
+  tags              String[]        @default([])
   
   // Votifier settings
   votifierHost      String?
   votifierPort      Int?
-  votifierPublicKey String?
+  votifierPublicKey String?         @db.Text
   votifierToken     String?
 
   // Status
-  approvalStatus    String    @default("PENDING")
-  isOnline          Boolean   @default(false)
-  playerCount       Int       @default(0)
-  maxPlayers        Int       @default(0)
-  voteCount         Int       @default(0)
-  monthlyVotes      Int       @default(0)
+  approvalStatus    ApprovalStatus  @default(PENDING)
+  isOnline          Boolean         @default(false)
+  playerCount       Int             @default(0)
+  maxPlayers        Int             @default(0)
+  voteCount         Int             @default(0)
+  monthlyVotes      Int             @default(0)
 
   // Sponsor
-  isSponsored       Boolean   @default(false)
+  isSponsored       Boolean         @default(false)
   featuredUntil     DateTime?
 
   // Relations
   ownerId           String
-  owner             User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner             User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   votes             Vote[]
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([approvalStatus])
+  @@index([isSponsored])
+  @@index([voteCount])
+  @@index([platform])
 }
 
 model Vote {
@@ -77,13 +108,16 @@ model Vote {
   createdAt         DateTime  @default(now())
 
   @@unique([serverId, minecraftUsername, ipAddress])
+  @@index([serverId])
+  @@index([ipAddress])
+  @@index([createdAt])
 }
 
 model BlogPost {
   id          String    @id @default(uuid())
   title       String
   slug        String    @unique
-  content     String
+  content     String    @db.Text
   excerpt     String?
   coverImage  String?
   published   Boolean   @default(false)
@@ -91,26 +125,34 @@ model BlogPost {
   author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([published])
 }
 
 model Ticket {
   id          String          @id @default(uuid())
   subject     String
-  status      String          @default("OPEN")
+  status      TicketStatus    @default(OPEN)
   userId      String
   user        User            @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
   messages    TicketMessage[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  @@index([status])
+  @@index([userId])
 }
 
 model TicketMessage {
   id          String    @id @default(uuid())
-  content     String
+  content     String    @db.Text
   ticketId    String
   ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   isAdmin     Boolean   @default(false)
   createdAt   DateTime  @default(now())
+
+  @@index([ticketId])
 }
