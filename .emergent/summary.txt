@@ -1,0 +1,159 @@
+<analysis>
+
+**original_problem_statement**: The user wants to build a modern, secure, and professional Minecraft Server List platform named ServerListRank.
+
+**PRODUCT REQUIREMENTS**:
+- **Technology Stack**: Next.js 14+ (App Router), Prisma ORM, and PostgreSQL. **Strictly no Supabase or MongoDB.**
+- **Design**: Dark, modern, premium, Minecraft-themed, inspired by provided reference images.
+- **Authentication**: JWT-based (HTTP-only cookie) with email/password. The architecture should be ready for a future Discord OAuth integration.
+- **Roles**: USER and ADMIN.
+- **Core Features**:
+    - **Server Listing**: Search, platform filters (Java/Bedrock/Crossplay), sponsored section, top-voted, and new servers.
+    - **Server Management**: A multi-step form for users to add their servers (pending admin approval).
+    - **Voting System**: A critical feature using the **NuVotifier** plugin. Votes are cast by guest users with their Minecraft username, and the backend communicates with the game server via a TCP socket. The website does not handle in-game rewards.
+    - **Sponsor System**: Admins can mark servers as sponsored for a specific duration.
+    - **Blog System**: SEO-friendly, managed by admins.
+    - **Ticket System**: For user support.
+- **Build Requirement**: The project must build successfully even if the  is not provided.
+
+**User's preferred language**: Türkçe
+
+**what currently exists?**
+The project is a Next.js application with a basic structure.
+- **Frontend**: A single, large  file contains the UI for the homepage, placeholders for server detail, profile, blog, and admin pages. The styling is a dark, Minecraft-inspired emerald theme.
+- **Backend**: A monolithic API file  contains handler stubs for authentication, server management, and other features.
+- **Database**: The  file is defined for a PostgreSQL database, including all necessary models (User, Server, Vote, etc.). The  file is configured to instantiate the Prisma client.
+- **Configuration**: An  file is present. The application is correctly set up to run without a , with the API returning a  message, which is the expected behavior at this stage.
+
+**Last working item**:
+- **Last item agent was working**: The agent was reverting a failed and user-aborted attempt to use a temporary SQLite database. The user explicitly instructed the agent to cancel the SQLite work and return to the PostgreSQL plan. As part of this, the agent was also creating the UI skeletons for the Server Detail, Profile, Blog, and Admin pages inside  and reverting the backend API routes and Prisma schema to be PostgreSQL-compliant.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: manual testing by curl
+- **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+- **Issue 1**: **Incomplete Reversion from SQLite to PostgreSQL (P0)**
+  - **Description**: The agent made significant changes to the codebase (, , ) to support a temporary SQLite database. The user has instructed to revert these changes. While some files were overwritten, a full verification is needed to ensure no residual, incompatible code remains.
+  - **Attempted fixes**: The agent overwrote , , and parts of .
+  - **Next debug checklist**:
+    1.  Thoroughly review  to remove all SQLite-specific logic (e.g., / for the  array, search workarounds). Ensure all Prisma queries are compatible with PostgreSQL and the current schema.
+    2.  Review  to ensure the  requests it makes are aligned with the intended PostgreSQL-based API logic.
+    3.  Restart the  service and check the logs for any runtime errors related to Prisma or the API routes.
+  - **Why fix this issue and what will be achieved with the fix?**: The backend is in a broken, transitional state. Fixing this will restore the codebase to a clean, PostgreSQL-aligned foundation, which is essential to make any further progress.
+  - **Status**: IN PROGRESS
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: backend
+  - **Blocked on other issue**: None
+
+**In progress Task List**:
+- **Task 1**: **Implement New Page UIs (P0)**
+  - **Description**: The user requested the creation of several new pages. The agent has added the UI code for these into the monolithic  file.
+  - **Where to resume**: The code has been written, but it needs to be verified. The next step is to use the  tool to visually confirm that the new sections for the Server Detail, Profile, Blog, and Admin pages are rendering correctly.
+  - **What will be achieved with this?**: This will complete the initial UI scaffolding for all major features requested by the user, providing a visual confirmation of progress.
+  - **Status**: IN PROGRESS
+  - **Should Test frontend/backend/both after fix?**: frontend
+  - **Blocked on something**: None
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks**: (Based on the user's latest instructions in message #90)
+    1.  **(P0) Implement Server Detail Page**: Develop the full frontend and backend logic.
+    2.  **(P1) Implement Profile Page**: Develop the frontend and backend for user profiles.
+    3.  **(P2) Implement Blog System**: Build the backend API and frontend UI for creating, editing, and viewing blog posts.
+    4.  **(P3) Implement Admin Panel**: Create the admin-only section and connect the blog and server approval systems to it.
+- **Future Tasks**: (From original problem statement)
+    - **(P4) Full JWT Authentication**: Implement login/logout functionality and middleware for protecting routes.
+    - **(P5) NuVotifier Voting System**: Implement the critical TCP socket communication for the voting feature.
+    - **(P6) Sponsor System**: Allow admins to feature servers.
+    - **(P7) Ticket System**: Implement the user support ticket feature.
+    - **(P8) Discord OAuth Integration**: Add Login with Discord functionality.
+
+**Completed work in this session**
+- Initial project setup with Next.js and Prisma.
+- Creation of the  file for a PostgreSQL database.
+- Development of a basic dark-themed homepage UI with placeholder components.
+- UI refresh based on user-provided reference images, including a Premium Packages page.
+
+**Earlier issues found/mentioned but not fixed**
+None. The critical issue of using MongoDB was identified and fixed. The subsequent issue of using SQLite is currently being fixed.
+
+**Known issue recurrence from previous fork**
+- **Issue recurrence**: Agent tends to deviate from the user's explicit database requirements. It first introduced MongoDB code against instructions and then went on a long, unapproved detour with SQLite.
+- **Recurrence count**: 2
+- **Status**: BLOCKED
+  - **Note**: The next agent must strictly adhere to the PostgreSQL + Prisma stack. Do not introduce any other database technology, even for temporary testing, unless explicitly approved by the user. The application must function without a database connection for UI/build purposes.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Framework**: Next.js 14 (App Router)
+- **Database**: PostgreSQL (planned)
+- **ORM**: Prisma
+- **Authentication**: JWT (planned)
+- **Key Feature**: NuVotifier integration (requires TCP socket communication)
+
+**key DB schema**
+Defined in . Key models include:
+- : { id, email, password, role, servers, votes }
+- : { id, name, ip, port, platform, approvalStatus, ownerId, votes }
+- : { id, serverId, minecraftUsername, ipAddress, createdAt }
+- : { id, title, content, slug, authorId }
+- : { id, title, content, status, userId }
+
+**changes in tech stack**
+- The agent incorrectly introduced MongoDB and then SQLite. Both have been ordered to be removed by the user in favor of the originally requested PostgreSQL.
+
+**All files of reference**
+- : The monolithic backend API. **Needs cleanup** to remove all traces of SQLite logic.
+- : The monolithic frontend file. Contains the UI for all pages and features. **Needs verification and refactoring.**
+- : The source of truth for the database schema, configured for **PostgreSQL**.
+- : Configured to connect to a PostgreSQL database using the  env var.
+
+**Areas that need refactoring**
+- **Monolithic Frontend**: The  file is acting as a single-page application, rendering different views conditionally. This is highly unscalable and goes against Next.js best practices. It should be broken down into a proper file-based routing structure (e.g., , ).
+- **Monolithic Backend**: The  file handles every single API call. This should be refactored into domain-specific routes (e.g., , ) for maintainability.
+
+**Critical Info for New Agent**
+- **DO NOT USE SQLite**: The previous agent wasted a significant amount of time on a failed attempt to use a temporary SQLite database. This frustrated the user, who explicitly ordered a stop to this effort. Stick to the PostgreSQL plan.
+- **DATABASE_URL is not provided**: The user expects the application to build and run (for frontend development) without a database connection. Do not ask for the  until you are ready to implement and test a specific backend feature that requires it.
+- **Follow User Priorities**: The user has provided a new, clear priority list (Message #90): 1. Server Detail Page, 2. Profile Page, 3. Blog System, 4. Admin Panel. Follow this order.
+- **Refactor Later**: While the monolithic frontend and backend need refactoring, prioritize implementing the user's requested features first to show progress. You can suggest a refactor after delivering the next set of features.
+
+**documents created in this job**
+- 
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **Msg 90**: Cancel SQLite, dont create a user, continue with PostgreSQL. Create Server Detail Page, then Profile Page, then Blog System, then Admin Panel and connect them." (Status: IN PROGRESS)
+2.  **Msg 49**: "Create a test user for me so I can test the pages." (Status: SUPERSEDED. This is no longer possible without a DB and the user has changed priorities).
+3.  **Msg 37**: User provided 5 reference images for the UI design. (Status: PARTIALLY IMPLEMENTED. The agent updated the homepage theme based on these).
+4.  **Msg 36**: "Im sending you example site images, make it similar but stick to the current theme. (Status: ACKNOWLEDGED).
+5.  **Msg 15**: An angry message from the user correcting the agent for using MongoDB and providing the correct  structure. (Status: RESOLVED).
+6.  **Msg 5**: User provided initial clarifications: Use PostgreSQL + Prisma, JWT auth is the priority, and a specific development order. (Status: IN PROGRESS).
+
+**Project Health Check:**
+- **Broken**: The backend API () is in a broken state due to the incomplete reversion from SQLite to PostgreSQL. It contains incompatible code and will not work.
+- **Mocked**: No features are currently mocked.
+
+**3rd Party Integrations**
+- **NuVotifier**: Planned for the voting system. Will require a TCP socket implementation.
+- **Discord OAuth**: Planned for authentication.
+
+**Testing status**
+- **Testing agent used after significant changes**: NO
+- **Troubleshoot agent used after agent stuck in loop**: NO
+- **Test files created**: []
+- **Known regressions**: The entire backend logic is likely regressed due to the failed SQLite experiment and subsequent partial revert.
+
+**Credentials to test flow:**
+No database is connected, so no credentials can be created or used. The user's request for test credentials (Msg 49) cannot be fulfilled at this stage.
+
+**What agent forgot to execute**
+- The agent forgot the user's strict No MongoDB rule and had to be corrected.
+- The agent got sidetracked into a complex, unapproved SQLite implementation instead of focusing on the user's priorities and the requirement to have a build-safe application without a .
+
+</analysis>
+<SYS_PROMPT_SEPARATOR>
+<workspace_dir>
+/app
+</workspace_dir>
