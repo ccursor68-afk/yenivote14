@@ -157,6 +157,11 @@ function ServerCard({ server, onVote, onView, rank }) {
               <Badge variant="outline" className={`${platformColors[server.platform]} text-xs`}>
                 {server.platform}
               </Badge>
+              {server.gameMode && (
+                <Badge variant="outline" className={`${getGameModeStyle(server.gameMode)} text-xs`}>
+                  {getGameModeLabel(server.gameMode)}
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">v{server.version}</p>
             <p className="text-sm text-zinc-400 line-clamp-2 mt-1">{server.shortDescription}</p>
