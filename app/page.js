@@ -1605,6 +1605,7 @@ function AddServerPage({ onBack, onSuccess }) {
     ip: '',
     port: '25565',
     platform: 'JAVA',
+    gameMode: 'SURVIVAL',
     version: '1.21',
     website: '',
     discord: '',
