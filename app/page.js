@@ -467,6 +467,7 @@ function VoteDialog({ server, open, onOpenChange }) {
       const res = await fetch(`/api/servers/${server.id}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ minecraftUsername: username })
       })
 
