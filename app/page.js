@@ -205,7 +205,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/servers/${serverId}`)
+    fetch(`/api/servers/${serverId}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setServer(data.server)
@@ -214,12 +214,26 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
       .catch(() => setLoading(false))
   }, [serverId])
 
-  const copyIP = () => {
+  const copyIP = async () => {
     if (!server) return
-    navigator.clipboard.writeText(`${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`)
-    setCopied(true)
-    toast.success('IP kopyalandı!')
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      const ipText = `${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`
+      await navigator.clipboard.writeText(ipText)
+      setCopied(true)
+      toast.success('IP kopyalandı!')
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = `${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      toast.success('IP kopyalandı!')
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   if (loading) {
