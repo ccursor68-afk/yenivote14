@@ -44,6 +44,29 @@ const platformColors = {
   CROSSPLAY: 'bg-purple-500/20 text-purple-400 border-purple-500/30'
 }
 
+// Game mode labels and colors
+const gameModes = [
+  { value: 'SURVIVAL', label: 'Survival', color: 'bg-green-500/20 text-green-400' },
+  { value: 'SKYBLOCK', label: 'Skyblock', color: 'bg-sky-500/20 text-sky-400' },
+  { value: 'FACTION', label: 'Faction', color: 'bg-red-500/20 text-red-400' },
+  { value: 'TOWNY', label: 'Towny', color: 'bg-amber-500/20 text-amber-400' },
+  { value: 'CREATIVE', label: 'Creative', color: 'bg-pink-500/20 text-pink-400' },
+  { value: 'MINIGAMES', label: 'Minigames', color: 'bg-purple-500/20 text-purple-400' },
+  { value: 'PRISON', label: 'Prison', color: 'bg-gray-500/20 text-gray-400' },
+  { value: 'KITPVP', label: 'KitPvP', color: 'bg-orange-500/20 text-orange-400' },
+  { value: 'OTHER', label: 'Diğer', color: 'bg-zinc-500/20 text-zinc-400' }
+]
+
+const getGameModeStyle = (mode) => {
+  const found = gameModes.find(g => g.value === mode)
+  return found ? found.color : 'bg-zinc-500/20 text-zinc-400'
+}
+
+const getGameModeLabel = (mode) => {
+  const found = gameModes.find(g => g.value === mode)
+  return found ? found.label : mode
+}
+
 // Minecraft versions
 const minecraftVersions = [
   '1.21', '1.20.6', '1.20.4', '1.20.2', '1.20.1', '1.20',
