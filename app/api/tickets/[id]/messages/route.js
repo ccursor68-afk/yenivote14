@@ -1,28 +1,7 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-
-async function getAuthUser(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
-  
-  const prisma = getPrisma();
-  if (!prisma) return null;
-  
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true }
-    });
-    return user;
-  } catch (error) {
-    return null;
-  }
-}
+import { getAuthUser } from '@/lib/auth';
 
 // POST /api/tickets/[id]/messages - Add message to ticket
 export async function POST(request, { params }) {
@@ -31,7 +10,9 @@ export async function POST(request, { params }) {
       return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
     }
 
-    const user = await getAuthUser(request);
+    const prisma = getPrisma();
+    const user = await getAuthUser(request, prisma);
+    
     if (!user) {
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
@@ -43,8 +24,6 @@ export async function POST(request, { params }) {
     if (!content) {
       return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 });
     }
-
-    const prisma = getPrisma();
 
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
     if (!ticket) {

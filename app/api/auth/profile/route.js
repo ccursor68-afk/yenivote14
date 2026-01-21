@@ -1,36 +1,6 @@
 import { NextResponse } from 'next/server';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-
-async function getAuthUser(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
-  
-  const prisma = getPrisma();
-  if (!prisma) return null;
-  
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        minecraftNick: true,
-        role: true,
-        avatarUrl: true,
-        createdAt: true
-      }
-    });
-    return user;
-  } catch (error) {
-    console.error('Auth error:', error);
-    return null;
-  }
-}
+import { getAuthUser } from '@/lib/auth';
 
 export async function PUT(request) {
   try {
@@ -38,7 +8,9 @@ export async function PUT(request) {
       return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
     }
 
-    const user = await getAuthUser(request);
+    const prisma = getPrisma();
+    const user = await getAuthUser(request, prisma);
+    
     if (!user) {
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
@@ -46,8 +18,6 @@ export async function PUT(request) {
     const body = await request.json();
     const { username, minecraftNick } = body;
 
-    const prisma = getPrisma();
-    
     // Check username uniqueness
     if (username && username !== user.username) {
       const existing = await prisma.user.findUnique({ where: { username } });

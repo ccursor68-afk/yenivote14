@@ -15,7 +15,7 @@ async function main() {
     // 1. Create ADMIN user
     const adminUser = await prisma.user.upsert({
       where: { email: 'admin@test.com' },
-      update: {},
+      update: { role: 'ADMIN' },
       create: {
         id: uuidv4(),
         email: 'admin@test.com',
@@ -26,7 +26,7 @@ async function main() {
         avatarUrl: 'https://mc-heads.net/avatar/AdminPlayer'
       }
     });
-    console.log(`✓ Admin user created: ${adminUser.email}`);
+    console.log(`✓ Admin user created/updated: ${adminUser.email} (role: ${adminUser.role})`);
 
     // 2. Create normal USER
     const normalUser = await prisma.user.upsert({
@@ -54,9 +54,10 @@ async function main() {
         ip: 'play.testserver.com',
         port: 25565,
         platform: 'JAVA',
+        gameMode: 'SURVIVAL',
         version: '1.21',
         shortDescription: 'Otomatik eklenmiş test sunucu',
-        longDescription: 'Bu sunucu seed işlemi sırasında otomatik olarak oluşturulmuştur. Survival, Creative ve Minigames modları mevcuttur.',
+        longDescription: 'Bu sunucu seed işlemi sırasında otomatik olarak oluşturulmuştur.',
         tags: ['survival', 'creative', 'minigames', 'pvp'],
         approvalStatus: 'APPROVED',
         isOnline: true,
@@ -67,27 +68,26 @@ async function main() {
         isSponsored: false,
         ownerId: adminUser.id,
         website: 'https://testserver.com',
-        discord: 'https://discord.gg/testserver',
-        bannerUrl: 'https://cdn.pixabay.com/photo/2015/03/01/19/32/minecraft-655158_1280.jpg',
-        logoUrl: null
+        discord: 'https://discord.gg/testserver'
       }
     });
     console.log(`✓ Test server created: ${testServer.name}`);
 
-    // 4. Create a second server (sponsored)
+    // 4. Create a second server (sponsored, Skyblock)
     const sponsoredServer = await prisma.server.upsert({
       where: { id: 'sponsored-server-001' },
       update: {},
       create: {
         id: 'sponsored-server-001',
-        name: 'Premium Survival Server',
+        name: 'Premium Skyblock Server',
         ip: 'play.premiummc.net',
         port: 25565,
         platform: 'JAVA',
+        gameMode: 'SKYBLOCK',
         version: '1.20.4',
-        shortDescription: 'Premium survival deneyimi - Ekonomi, Clans, Events',
-        longDescription: 'Premium Minecraft sunucusu. Özel ekonomi sistemi, klan savaşları, haftalık etkinlikler ve daha fazlası!',
-        tags: ['survival', 'economy', 'clans', 'events', 'premium'],
+        shortDescription: 'Premium skyblock deneyimi - Ekonomi, Islands, Events',
+        longDescription: 'Premium Minecraft sunucusu.',
+        tags: ['skyblock', 'economy', 'islands', 'events', 'premium'],
         approvalStatus: 'APPROVED',
         isOnline: true,
         playerCount: 89,
@@ -95,7 +95,7 @@ async function main() {
         voteCount: 520,
         monthlyVotes: 78,
         isSponsored: true,
-        sponsoredUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        sponsoredUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         ownerId: adminUser.id,
         website: 'https://premiummc.net',
         discord: 'https://discord.gg/premiummc'
@@ -103,7 +103,36 @@ async function main() {
     });
     console.log(`✓ Sponsored server created: ${sponsoredServer.name}`);
 
-    // 5. Create a blog category
+    // 5. Create more servers with different game modes
+    const gameModes = ['FACTION', 'TOWNY', 'PRISON', 'KITPVP', 'MINIGAMES'];
+    for (let i = 0; i < gameModes.length; i++) {
+      const mode = gameModes[i];
+      await prisma.server.upsert({
+        where: { id: `gamemode-server-${i}` },
+        update: {},
+        create: {
+          id: `gamemode-server-${i}`,
+          name: `${mode} Server`,
+          ip: `play.${mode.toLowerCase()}.net`,
+          port: 25565,
+          platform: 'JAVA',
+          gameMode: mode,
+          version: '1.20.4',
+          shortDescription: `${mode} modu sunucusu`,
+          tags: [mode.toLowerCase()],
+          approvalStatus: 'APPROVED',
+          isOnline: true,
+          playerCount: Math.floor(Math.random() * 100),
+          maxPlayers: 100,
+          voteCount: Math.floor(Math.random() * 500),
+          monthlyVotes: Math.floor(Math.random() * 50),
+          ownerId: adminUser.id
+        }
+      });
+    }
+    console.log('✓ Game mode servers created');
+
+    // 6. Create a blog category
     const newsCategory = await prisma.blogCategory.upsert({
       where: { slug: 'haberler' },
       update: {},
@@ -117,7 +146,7 @@ async function main() {
     });
     console.log(`✓ Blog category created: ${newsCategory.name}`);
 
-    // 6. Create a sample blog post
+    // 7. Create a sample blog post
     const blogPost = await prisma.blogPost.upsert({
       where: { slug: 'hosgeldiniz' },
       update: {},
@@ -125,37 +154,52 @@ async function main() {
         id: uuidv4(),
         title: 'ServerListRank\'a Hoşgeldiniz!',
         slug: 'hosgeldiniz',
-        content: 'ServerListRank, Türkiye\'nin en iyi Minecraft sunucu listesi platformudur. Sunucunuzu ekleyin, oy toplayın ve topluluğunuzu büyütün!\n\n## Özellikler\n\n- NuVotifier desteği\n- Sponsorlu sunucu seçenekleri\n- Modern ve kullanıcı dostu arayüz\n- Discord entegrasyonu\n\nSunucunuzu hemen ekleyin ve binlerce oyuncuya ulaşın!',
-        excerpt: 'ServerListRank platformuna hoşgeldiniz! Sunucunuzu ekleyin ve topluluğunuzu büyütün.',
+        content: 'ServerListRank, Türkiye\'nin en iyi Minecraft sunucu listesi platformudur.',
+        excerpt: 'ServerListRank platformuna hoşgeldiniz!',
         published: true,
         authorId: adminUser.id,
-        categoryId: newsCategory.id,
-        coverImage: 'https://cdn.pixabay.com/photo/2015/03/01/19/32/minecraft-655158_1280.jpg'
+        categoryId: newsCategory.id
       }
     });
     console.log(`✓ Blog post created: ${blogPost.title}`);
 
-    // 7. Create a sample banner
-    const banner = await prisma.banner.upsert({
-      where: { id: 'welcome-banner-001' },
-      update: {},
-      create: {
-        id: 'welcome-banner-001',
+    // 8. Create banners
+    const banners = [
+      {
+        id: 'banner-home-top-001',
         title: 'Sunucunuzu Öne Çıkarın!',
         subtitle: 'Sponsor olun, daha fazla oyuncuya ulaşın',
-        imageUrl: 'https://cdn.pixabay.com/photo/2015/03/01/19/32/minecraft-655158_1280.jpg',
+        imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=300&fit=crop',
         linkUrl: '/sponsor',
         position: 'home_top',
         isActive: true,
         priority: 10
+      },
+      {
+        id: 'banner-list-001',
+        title: 'Yeni Sunucular Keşfedin',
+        subtitle: 'Her gün yeni sunucular ekleniyor',
+        imageUrl: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1200&h=200&fit=crop',
+        linkUrl: '/servers',
+        position: 'list_between',
+        isActive: true,
+        priority: 5
       }
-    });
-    console.log(`✓ Banner created: ${banner.title}`);
+    ];
+
+    for (const banner of banners) {
+      await prisma.banner.upsert({
+        where: { id: banner.id },
+        update: {},
+        create: banner
+      });
+    }
+    console.log('✓ Banners created');
 
     console.log('');
     console.log('✅ Database seed completed successfully!');
     console.log('');
-    console.log('📋 Created accounts:');
+    console.log('📋 Test accounts:');
     console.log('   Admin: admin@test.com / 123456');
     console.log('   User:  user@test.com / 123456');
     console.log('');

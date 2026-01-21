@@ -1,27 +1,15 @@
 import { NextResponse } from 'next/server';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
+import { getAuthUser } from '@/lib/auth';
 
 async function requireAdmin(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
+  if (!isDatabaseAvailable()) return null;
   
   const prisma = getPrisma();
-  if (!prisma) return null;
+  const user = await getAuthUser(request, prisma);
   
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true }
-    });
-    if (!user || user.role !== 'ADMIN') return null;
-    return user;
-  } catch (error) {
-    return null;
-  }
+  if (!user || user.role !== 'ADMIN') return null;
+  return user;
 }
 
 // GET /api/admin/stats - Get admin dashboard stats

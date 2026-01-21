@@ -24,6 +24,18 @@ enum Platform {
   CROSSPLAY
 }
 
+enum GameMode {
+  SURVIVAL
+  SKYBLOCK
+  FACTION
+  TOWNY
+  CREATIVE
+  MINIGAMES
+  PRISON
+  KITPVP
+  OTHER
+}
+
 enum TicketStatus {
   OPEN
   IN_PROGRESS
@@ -58,6 +70,7 @@ model Server {
   ip                String
   port              Int             @default(25565)
   platform          Platform        @default(JAVA)
+  gameMode          GameMode        @default(SURVIVAL)
   version           String
   website           String?
   discord           String?
@@ -97,6 +110,7 @@ model Server {
   @@index([isSponsored])
   @@index([voteCount])
   @@index([platform])
+  @@index([gameMode])
 }
 
 model Vote {
@@ -178,7 +192,7 @@ model Banner {
   subtitle    String?
   imageUrl    String
   linkUrl     String?
-  position    String    @default("home_top") // home_top, home_bottom, sidebar
+  position    String    @default("home_top")
   isActive    Boolean   @default(true)
   startDate   DateTime?
   endDate     DateTime?

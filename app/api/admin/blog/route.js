@@ -1,28 +1,26 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
+import { getAuthUser } from '@/lib/auth';
 
 async function requireAdmin(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
+  if (!isDatabaseAvailable()) return null;
   
   const prisma = getPrisma();
-  if (!prisma) return null;
+  const user = await getAuthUser(request, prisma);
   
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true }
-    });
-    if (!user || user.role !== 'ADMIN') return null;
-    return user;
-  } catch (error) {
+  if (!user) {
+    console.log('Admin check: No user found');
     return null;
   }
+  
+  if (user.role !== 'ADMIN') {
+    console.log('Admin check: User is not admin, role:', user.role);
+    return null;
+  }
+  
+  console.log('Admin check: User is admin:', user.email);
+  return user;
 }
 
 // GET /api/admin/blog - Get all blog posts (admin)
@@ -103,7 +101,7 @@ export async function POST(request) {
       }
     });
 
-    return NextResponse.json({ post });
+    return NextResponse.json({ post, message: 'Blog yazısı oluşturuldu' });
   } catch (error) {
     console.error('Admin blog create error:', error);
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
@@ -144,7 +142,7 @@ export async function PUT(request) {
       data: updateData
     });
 
-    return NextResponse.json({ post });
+    return NextResponse.json({ post, message: 'Blog yazısı güncellendi' });
   } catch (error) {
     console.error('Admin blog update error:', error);
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });

@@ -1,28 +1,7 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-
-async function getAuthUser(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
-  
-  const prisma = getPrisma();
-  if (!prisma) return null;
-  
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true }
-    });
-    return user;
-  } catch (error) {
-    return null;
-  }
-}
+import { getAuthUser } from '@/lib/auth';
 
 // GET /api/servers - List all approved servers
 export async function GET(request) {
@@ -33,6 +12,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const platform = searchParams.get('platform');
+    const gameMode = searchParams.get('gameMode');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -41,7 +21,8 @@ export async function GET(request) {
 
     const where = {
       approvalStatus: 'APPROVED',
-      ...(platform && { platform }),
+      ...(platform && platform !== 'ALL' && { platform }),
+      ...(gameMode && gameMode !== 'ALL' && { gameMode }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -66,6 +47,7 @@ export async function GET(request) {
           ip: true,
           port: true,
           platform: true,
+          gameMode: true,
           version: true,
           shortDescription: true,
           tags: true,
@@ -106,14 +88,16 @@ export async function POST(request) {
       return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
     }
 
-    const user = await getAuthUser(request);
+    const prisma = getPrisma();
+    const user = await getAuthUser(request, prisma);
+    
     if (!user) {
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
 
     const body = await request.json();
     const { 
-      name, ip, port, platform, version, website, discord,
+      name, ip, port, platform, gameMode, version, website, discord,
       bannerUrl, logoUrl, shortDescription, longDescription, tags,
       votifierHost, votifierPort, votifierPublicKey, votifierToken
     } = body;
@@ -122,8 +106,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Zorunlu alanlar eksik' }, { status: 400 });
     }
 
-    const prisma = getPrisma();
-
     const server = await prisma.server.create({
       data: {
         id: uuidv4(),
@@ -131,6 +113,7 @@ export async function POST(request) {
         ip,
         port: port || 25565,
         platform: platform || 'JAVA',
+        gameMode: gameMode || 'SURVIVAL',
         version,
         website,
         discord,

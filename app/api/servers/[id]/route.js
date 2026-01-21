@@ -1,27 +1,6 @@
 import { NextResponse } from 'next/server';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-
-async function getAuthUser(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
-  
-  const prisma = getPrisma();
-  if (!prisma) return null;
-  
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true }
-    });
-    return user;
-  } catch (error) {
-    return null;
-  }
-}
+import { getAuthUser } from '@/lib/auth';
 
 // GET /api/servers/[id] - Get single server
 export async function GET(request, { params }) {
@@ -71,13 +50,14 @@ export async function PUT(request, { params }) {
       return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
     }
 
-    const user = await getAuthUser(request);
+    const prisma = getPrisma();
+    const user = await getAuthUser(request, prisma);
+    
     if (!user) {
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
 
     const { id } = params;
-    const prisma = getPrisma();
 
     const server = await prisma.server.findUnique({ where: { id } });
     if (!server) {
@@ -90,7 +70,7 @@ export async function PUT(request, { params }) {
 
     const body = await request.json();
     const allowedFields = [
-      'name', 'ip', 'port', 'platform', 'version', 'website', 'discord',
+      'name', 'ip', 'port', 'platform', 'gameMode', 'version', 'website', 'discord',
       'bannerUrl', 'logoUrl', 'shortDescription', 'longDescription', 'tags',
       'votifierHost', 'votifierPort', 'votifierPublicKey', 'votifierToken'
     ];
@@ -121,13 +101,14 @@ export async function DELETE(request, { params }) {
       return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
     }
 
-    const user = await getAuthUser(request);
+    const prisma = getPrisma();
+    const user = await getAuthUser(request, prisma);
+    
     if (!user) {
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
 
     const { id } = params;
-    const prisma = getPrisma();
 
     const server = await prisma.server.findUnique({ where: { id } });
     if (!server) {

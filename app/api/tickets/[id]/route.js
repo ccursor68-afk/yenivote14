@@ -1,27 +1,6 @@
 import { NextResponse } from 'next/server';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-
-async function getAuthUser(request) {
-  const token = await getTokenFromRequest(request);
-  if (!token) return null;
-  
-  const payload = await verifyToken(token);
-  if (!payload) return null;
-  
-  const prisma = getPrisma();
-  if (!prisma) return null;
-  
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true }
-    });
-    return user;
-  } catch (error) {
-    return null;
-  }
-}
+import { getAuthUser } from '@/lib/auth';
 
 // GET /api/tickets/[id] - Get single ticket with messages
 export async function GET(request, { params }) {
@@ -30,13 +9,14 @@ export async function GET(request, { params }) {
       return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
     }
 
-    const user = await getAuthUser(request);
+    const prisma = getPrisma();
+    const user = await getAuthUser(request, prisma);
+    
     if (!user) {
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
 
     const { id: ticketId } = params;
-    const prisma = getPrisma();
 
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
