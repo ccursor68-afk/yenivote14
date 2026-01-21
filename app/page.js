@@ -1095,11 +1095,11 @@ function AdminPanel({ user, onBack }) {
     setLoading(true)
     try {
       const [statsRes, pendingRes, usersRes, ticketsRes, blogRes] = await Promise.all([
-        fetch('/api/admin/stats').then(r => r.json()),
-        fetch('/api/admin/servers/pending').then(r => r.json()),
-        fetch('/api/admin/users').then(r => r.json()),
-        fetch('/api/admin/tickets').then(r => r.json()),
-        fetch('/api/blog').then(r => r.json())
+        fetch('/api/admin/stats', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/servers/pending', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/users', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/tickets', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/blog', { credentials: 'include' }).then(r => r.json())
       ])
 
       setStats(statsRes.stats)
