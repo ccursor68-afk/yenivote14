@@ -58,11 +58,25 @@ const minecraftVersions = [
 function ServerCard({ server, onVote, onView, rank }) {
   const [copied, setCopied] = useState(false)
 
-  const copyIP = () => {
-    navigator.clipboard.writeText(`${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`)
-    setCopied(true)
-    toast.success('IP kopyalandı!')
-    setTimeout(() => setCopied(false), 2000)
+  const copyIP = async () => {
+    try {
+      const ipText = `${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`
+      await navigator.clipboard.writeText(ipText)
+      setCopied(true)
+      toast.success('IP kopyalandı!')
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = `${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      toast.success('IP kopyalandı!')
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   return (
