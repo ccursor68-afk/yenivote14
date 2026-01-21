@@ -1792,13 +1792,13 @@ export default function App() {
   }, [search, platform])
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     setUser(null)
     toast.success('Çıkış yapıldı')
   }
 
   const refreshServers = () => {
-    fetch('/api/servers')
+    fetch('/api/servers', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setServers(data.servers || []))
   }
