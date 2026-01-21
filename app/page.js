@@ -1119,12 +1119,16 @@ function AdminPanel({ user, onBack }) {
       const res = await fetch(`/api/admin/servers/${serverId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ status: action })
       })
 
       if (res.ok) {
         toast.success(action === 'APPROVED' ? 'Sunucu onaylandı!' : 'Sunucu reddedildi!')
         loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
       }
     } catch (err) {
       toast.error('İşlem başarısız')
@@ -1136,12 +1140,16 @@ function AdminPanel({ user, onBack }) {
       const res = await fetch(`/api/admin/servers/${serverId}/sponsor`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ days: parseInt(days) })
       })
 
       if (res.ok) {
         toast.success(days > 0 ? 'Sponsor eklendi!' : 'Sponsor kaldırıldı!')
         loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
       }
     } catch (err) {
       toast.error('İşlem başarısız')
