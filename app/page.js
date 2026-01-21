@@ -708,7 +708,7 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
       .catch(() => {})
 
     // Fetch user's tickets
-    fetch('/api/tickets')
+    fetch('/api/tickets', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setTickets(data.tickets || []))
       .catch(() => {})
@@ -720,6 +720,7 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
       const res = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(form)
       })
 
