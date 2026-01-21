@@ -1785,9 +1785,11 @@ function AddServerPage({ onBack, onSuccess }) {
 export default function App() {
   const [user, setUser] = useState(null)
   const [servers, setServers] = useState([])
+  const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState('ALL')
+  const [gameMode, setGameMode] = useState('ALL')
   const [currentPage, setCurrentPage] = useState('home')
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState(null)
@@ -1802,6 +1804,12 @@ export default function App() {
       .then(res => res.json())
       .then(data => setUser(data.user))
       .catch(() => {})
+    
+    // Fetch banners
+    fetch('/api/banners', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setBanners(data.banners || []))
+      .catch(() => {})
   }, [])
 
   // Fetch servers
@@ -1809,6 +1817,7 @@ export default function App() {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (platform !== 'ALL') params.set('platform', platform)
+    if (gameMode !== 'ALL') params.set('gameMode', gameMode)
 
     fetch(`/api/servers?${params}`, { credentials: 'include' })
       .then(res => res.json())
@@ -1817,7 +1826,7 @@ export default function App() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [search, platform])
+  }, [search, platform, gameMode])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
