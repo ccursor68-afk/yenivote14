@@ -1151,15 +1151,18 @@ function AdminPanel({ user, onBack }) {
       const res = await fetch('/api/admin/blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(blogForm)
       })
 
+      const data = await res.json()
+      
       if (res.ok) {
         toast.success('Blog yazısı oluşturuldu!')
         setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false })
         loadData()
       } else {
-        toast.error('Yazı oluşturulamadı')
+        toast.error(data.error || 'Yazı oluşturulamadı')
       }
     } catch (err) {
       toast.error('Bir hata oluştu')
