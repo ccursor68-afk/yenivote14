@@ -1770,7 +1770,7 @@ export default function App() {
 
   // Fetch current user
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setUser(data.user))
       .catch(() => {})
@@ -1782,7 +1782,7 @@ export default function App() {
     if (search) params.set('search', search)
     if (platform !== 'ALL') params.set('platform', platform)
 
-    fetch(`/api/servers?${params}`)
+    fetch(`/api/servers?${params}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setServers(data.servers || [])
