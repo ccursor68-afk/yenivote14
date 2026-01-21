@@ -83,7 +83,7 @@ model Server {
 
   // Sponsor
   isSponsored       Boolean         @default(false)
-  featuredUntil     DateTime?
+  sponsoredUntil    DateTime?
 
   // Relations
   ownerId           String
@@ -107,27 +107,42 @@ model Vote {
   ipAddress         String
   createdAt         DateTime  @default(now())
 
-  @@unique([serverId, minecraftUsername, ipAddress])
   @@index([serverId])
   @@index([ipAddress])
   @@index([createdAt])
 }
 
-model BlogPost {
+model BlogCategory {
   id          String    @id @default(uuid())
-  title       String
+  name        String    @unique
   slug        String    @unique
-  content     String    @db.Text
-  excerpt     String?
-  coverImage  String?
-  published   Boolean   @default(false)
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  description String?
+  color       String?   @default("#10b981")
+  posts       BlogPost[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([slug])
+}
+
+model BlogPost {
+  id          String        @id @default(uuid())
+  title       String
+  slug        String        @unique
+  content     String        @db.Text
+  excerpt     String?
+  coverImage  String?
+  published   Boolean       @default(false)
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([slug])
   @@index([published])
+  @@index([categoryId])
 }
 
 model Ticket {
@@ -155,4 +170,22 @@ model TicketMessage {
   createdAt   DateTime  @default(now())
 
   @@index([ticketId])
+}
+
+model Banner {
+  id          String    @id @default(uuid())
+  title       String
+  subtitle    String?
+  imageUrl    String
+  linkUrl     String?
+  position    String    @default("home_top") // home_top, home_bottom, sidebar
+  isActive    Boolean   @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([position])
+  @@index([isActive])
 }
