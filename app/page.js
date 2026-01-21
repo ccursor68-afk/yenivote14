@@ -1921,18 +1921,27 @@ export default function App() {
             </h1>
             <p className="text-lg text-zinc-400 mb-8">Binlerce sunucu arasından favorini bul, oy ver ve kendi sunucunu ekle!</p>
 
-            <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                 <Input placeholder="Sunucu ara..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-12 bg-zinc-900 border-zinc-800 focus:border-emerald-600" />
               </div>
               <Select value={platform} onValueChange={setPlatform}>
-                <SelectTrigger className="w-full sm:w-40 h-12 bg-zinc-900 border-zinc-800"><SelectValue placeholder="Platform" /></SelectTrigger>
+                <SelectTrigger className="w-full sm:w-36 h-12 bg-zinc-900 border-zinc-800"><SelectValue placeholder="Platform" /></SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
                   <SelectItem value="ALL">Tümü</SelectItem>
                   <SelectItem value="JAVA">Java</SelectItem>
                   <SelectItem value="BEDROCK">Bedrock</SelectItem>
                   <SelectItem value="CROSSPLAY">Crossplay</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={gameMode} onValueChange={setGameMode}>
+                <SelectTrigger className="w-full sm:w-40 h-12 bg-zinc-900 border-zinc-800"><SelectValue placeholder="Oyun Modu" /></SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800">
+                  <SelectItem value="ALL">Tüm Modlar</SelectItem>
+                  {gameModes.map(gm => (
+                    <SelectItem key={gm.value} value={gm.value}>{gm.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1945,6 +1954,26 @@ export default function App() {
           </div>
         </div>
       </section>
+
+      {/* Top Banner */}
+      {banners.filter(b => b.position === 'home_top').length > 0 && (
+        <section className="py-6">
+          <div className="container mx-auto px-4">
+            {banners.filter(b => b.position === 'home_top').map(banner => (
+              <a key={banner.id} href={banner.linkUrl || '#'} className="block relative overflow-hidden rounded-xl group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-purple-600/20 group-hover:opacity-80 transition-opacity" />
+                <img src={banner.imageUrl} alt={banner.title} className="w-full h-40 md:h-48 object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">{banner.title}</h3>
+                    {banner.subtitle && <p className="text-lg text-white/90 drop-shadow-lg mt-1">{banner.subtitle}</p>}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Sponsored Servers */}
       {sponsoredServers.length > 0 && (
@@ -1987,6 +2016,25 @@ export default function App() {
           )}
         </div>
       </section>
+
+      {/* List Between Banner */}
+      {banners.filter(b => b.position === 'list_between').length > 0 && servers.length > 0 && (
+        <section className="py-6">
+          <div className="container mx-auto px-4">
+            {banners.filter(b => b.position === 'list_between').map(banner => (
+              <a key={banner.id} href={banner.linkUrl || '#'} className="block relative overflow-hidden rounded-xl group">
+                <img src={banner.imageUrl} alt={banner.title} className="w-full h-32 object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center px-8">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{banner.title}</h3>
+                    {banner.subtitle && <p className="text-white/80">{banner.subtitle}</p>}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-zinc-800 py-12 bg-zinc-900/50">
