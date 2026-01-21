@@ -702,7 +702,7 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
 
   useEffect(() => {
     // Fetch user's servers
-    fetch('/api/servers/my')
+    fetch('/api/servers/my', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setServers(data.servers || []))
       .catch(() => {})
