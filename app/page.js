@@ -1614,6 +1614,7 @@ function AddServerPage({ onBack, onSuccess }) {
       const res = await fetch('/api/servers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           ...form,
           port: parseInt(form.port) || 25565,
