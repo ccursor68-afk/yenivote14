@@ -50,16 +50,28 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { subject, message } = body;
+    const { subject, message, category, packageType } = body;
 
     if (!subject || !message) {
       return NextResponse.json({ error: 'Konu ve mesaj gerekli' }, { status: 400 });
+    }
+
+    // Determine category based on packageType
+    let ticketCategory = category || 'GENERAL';
+    if (packageType) {
+      if (packageType.includes('SPONSOR')) {
+        ticketCategory = 'SPONSORSHIP';
+      } else if (packageType.includes('AD')) {
+        ticketCategory = 'ADVERTISING';
+      }
     }
 
     const ticket = await prisma.ticket.create({
       data: {
         id: uuidv4(),
         subject,
+        category: ticketCategory,
+        packageType: packageType || null,
         userId: user.id,
         messages: {
           create: {
@@ -73,7 +85,7 @@ export async function POST(request) {
       include: { messages: true }
     });
 
-    return NextResponse.json({ ticket });
+    return NextResponse.json({ ticket, message: 'Destek talebi oluşturuldu' });
   } catch (error) {
     console.error('Ticket create error:', error);
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
