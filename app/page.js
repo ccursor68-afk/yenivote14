@@ -2295,10 +2295,20 @@ export default function App() {
     return <BlogPostPage slug={selectedBlogSlug} onBack={() => { setCurrentPage('blog'); setSelectedBlogSlug(null) }} />
   }
 
+  if (currentPage === 'hostings') {
+    return <HostingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} />
+  }
+
+  if (currentPage === 'pricing') {
+    return <PricingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} />
+  }
+
   if (currentPage === 'admin' && user?.role === 'ADMIN') {
     return <AdminPanel user={user} onBack={() => setCurrentPage('home')} />
   }
 
+  // Sort servers - recent ones for sidebar
+  const recentServers = [...servers].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5)
   const sponsoredServers = servers.filter(s => s.isSponsored)
   const topServers = servers.filter(s => !s.isSponsored).sort((a, b) => b.voteCount - a.voteCount)
 
