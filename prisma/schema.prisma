@@ -42,6 +42,15 @@ enum TicketStatus {
   CLOSED
 }
 
+enum TicketCategory {
+  GENERAL
+  SUPPORT
+  BUG_REPORT
+  ADVERTISING
+  SPONSORSHIP
+  OTHER
+}
+
 model User {
   id                String    @id @default(uuid())
   email             String    @unique
@@ -59,6 +68,8 @@ model User {
   tickets           Ticket[]  @relation("UserTickets")
   ticketMessages    TicketMessage[]
   blogPosts         BlogPost[]
+  hostings          Hosting[]
+  hostingReviews    HostingReview[]
 
   @@index([email])
   @@index([discordId])
@@ -111,6 +122,7 @@ model Server {
   @@index([voteCount])
   @@index([platform])
   @@index([gameMode])
+  @@index([createdAt])
 }
 
 model Vote {
@@ -126,6 +138,70 @@ model Vote {
   @@index([createdAt])
 }
 
+// ==================== HOSTING SYSTEM ====================
+model Hosting {
+  id              String          @id @default(uuid())
+  name            String
+  slug            String          @unique
+  website         String
+  logoUrl         String?
+  description     String
+  longDescription String?         @db.Text
+  features        String[]        @default([])
+  
+  // Pricing
+  startingPrice   Decimal         @db.Decimal(10, 2)
+  currency        String          @default("TRY")
+  
+  // Status
+  isActive        Boolean         @default(true)
+  isSponsored     Boolean         @default(false)
+  sponsoredUntil  DateTime?
+  approvalStatus  ApprovalStatus  @default(PENDING)
+  
+  // Calculated ratings (updated on review)
+  avgPerformance  Float           @default(0)
+  avgSupport      Float           @default(0)
+  avgPriceValue   Float           @default(0)
+  avgOverall      Float           @default(0)
+  reviewCount     Int             @default(0)
+  
+  // Relations
+  ownerId         String
+  owner           User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  reviews         HostingReview[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([approvalStatus])
+  @@index([isSponsored])
+  @@index([avgOverall])
+  @@index([slug])
+}
+
+model HostingReview {
+  id              String    @id @default(uuid())
+  hostingId       String
+  hosting         Hosting   @relation(fields: [hostingId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Ratings (1-5)
+  performance     Int       @default(5)
+  support         Int       @default(5)
+  priceValue      Int       @default(5)
+  comment         String?   @db.Text
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([hostingId, userId])
+  @@index([hostingId])
+  @@index([userId])
+}
+
+// ==================== BLOG SYSTEM ====================
 model BlogCategory {
   id          String    @id @default(uuid())
   name        String    @unique
@@ -146,6 +222,7 @@ model BlogPost {
   content     String        @db.Text
   excerpt     String?
   coverImage  String?
+  tags        String[]      @default([])
   published   Boolean       @default(false)
   authorId    String
   author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -157,20 +234,28 @@ model BlogPost {
   @@index([slug])
   @@index([published])
   @@index([categoryId])
+  @@index([createdAt])
 }
 
+// ==================== TICKET SYSTEM ====================
 model Ticket {
   id          String          @id @default(uuid())
   subject     String
+  category    TicketCategory  @default(GENERAL)
   status      TicketStatus    @default(OPEN)
   userId      String
   user        User            @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
   messages    TicketMessage[]
+  
+  // For auto-created tickets (advertising packages)
+  packageType String?
+  
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
   @@index([status])
   @@index([userId])
+  @@index([category])
 }
 
 model TicketMessage {
@@ -186,13 +271,14 @@ model TicketMessage {
   @@index([ticketId])
 }
 
+// ==================== BANNER/ADS SYSTEM ====================
 model Banner {
   id          String    @id @default(uuid())
   title       String
   subtitle    String?
   imageUrl    String
   linkUrl     String?
-  position    String    @default("home_top")
+  position    String    @default("home_top") // home_top, home_sidebar, header_below, list_between
   isActive    Boolean   @default(true)
   startDate   DateTime?
   endDate     DateTime?
@@ -202,4 +288,35 @@ model Banner {
 
   @@index([position])
   @@index([isActive])
+}
+
+// ==================== PRICING PACKAGES ====================
+model PricingPackage {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String
+  price       Decimal   @db.Decimal(10, 2)
+  currency    String    @default("TRY")
+  duration    Int       @default(30) // Days
+  features    String[]  @default([])
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  packageType String    // HEADER_AD, SIDEBAR_AD, SERVER_SPONSOR, HOSTING_SPONSOR
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([packageType])
+}
+
+// ==================== SITE SETTINGS ====================
+model SiteSettings {
+  id              String    @id @default("main")
+  discordUrl      String?
+  instagramUrl    String?
+  youtubeUrl      String?
+  twitterUrl      String?
+  contactEmail    String?
+  updatedAt       DateTime  @updatedAt
 }
