@@ -1099,6 +1099,436 @@ function BlogPostPage({ slug, onBack }) {
   )
 }
 
+// Hosting Page Component
+function HostingPage({ onBack, user, onOpenAuth }) {
+  const [hostings, setHostings] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [reviewModal, setReviewModal] = useState(null)
+  const [reviewForm, setReviewForm] = useState({ performance: 5, support: 5, priceValue: 5, comment: '' })
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/hostings', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        setHostings(data.hostings || [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const submitReview = async () => {
+    if (!user) {
+      onOpenAuth?.()
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/hostings/${reviewModal.id}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(reviewForm)
+      })
+      if (res.ok) {
+        toast.success('Değerlendirme kaydedildi!')
+        setReviewModal(null)
+        // Refresh hostings
+        const updated = await fetch('/api/hostings', { credentials: 'include' }).then(r => r.json())
+        setHostings(updated.hostings || [])
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Hata oluştu')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const StarRating = ({ value, onChange, readonly = false }) => (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(star => (
+        <button
+          key={star}
+          type="button"
+          disabled={readonly}
+          onClick={() => !readonly && onChange?.(star)}
+          className={`${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'} transition-transform`}
+        >
+          <Star className={`w-5 h-5 ${star <= value ? 'fill-yellow-500 text-yellow-500' : 'text-zinc-600'}`} />
+        </button>
+      ))}
+    </div>
+  )
+
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800"><ChevronLeft className="w-5 h-5" /></Button>
+          <Logo className="w-8 h-8" />
+          <span className="text-lg font-bold text-emerald-500">Minecraft Hosting Karşılaştırma</span>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">En İyi Minecraft Hosting Firmaları</h1>
+          <p className="text-zinc-400">Performans, destek ve fiyat/performans açısından karşılaştırın</p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+        ) : (
+          <div className="space-y-4 max-w-4xl mx-auto">
+            {hostings.map((hosting, index) => (
+              <Card key={hosting.id} className={`bg-zinc-900/80 border-zinc-800 overflow-hidden ${hosting.isSponsored ? 'ring-2 ring-yellow-500/50' : ''}`}>
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row">
+                    {/* Rank & Logo */}
+                    <div className="flex items-center gap-4 p-6 md:w-64 border-b md:border-b-0 md:border-r border-zinc-800">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${index === 0 ? 'bg-yellow-500 text-black' : index === 1 ? 'bg-gray-400 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-zinc-700 text-white'}`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-white text-lg">{hosting.name}</h3>
+                          {hosting.isSponsored && <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Sponsor</Badge>}
+                        </div>
+                        <div className="flex items-center gap-1 text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`w-4 h-4 ${i < Math.round(hosting.avgOverall) ? 'fill-yellow-500' : 'fill-zinc-700 text-zinc-700'}`} />
+                          ))}
+                          <span className="text-white ml-1 font-bold">{hosting.avgOverall?.toFixed(1) || '0.0'}</span>
+                          <span className="text-zinc-500 text-sm">({hosting.reviewCount} değerlendirme)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ratings */}
+                    <div className="flex-1 p-6 space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-zinc-400">Performans</span>
+                            <span className="text-white font-medium">{hosting.avgPerformance?.toFixed(1) || '0.0'}</span>
+                          </div>
+                          <Progress value={(hosting.avgPerformance || 0) * 20} className="h-2 bg-zinc-800" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-zinc-400">Destek</span>
+                            <span className="text-white font-medium">{hosting.avgSupport?.toFixed(1) || '0.0'}</span>
+                          </div>
+                          <Progress value={(hosting.avgSupport || 0) * 20} className="h-2 bg-zinc-800" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-zinc-400">Fiyat/Performans</span>
+                            <span className="text-white font-medium">{hosting.avgPriceValue?.toFixed(1) || '0.0'}</span>
+                          </div>
+                          <Progress value={(hosting.avgPriceValue || 0) * 20} className="h-2 bg-zinc-800" />
+                        </div>
+                      </div>
+                      <p className="text-sm text-zinc-400">{hosting.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {hosting.features?.slice(0, 4).map((f, i) => (
+                          <Badge key={i} variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">{f}</Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Price & Actions */}
+                    <div className="p-6 md:w-48 flex flex-col items-center justify-center gap-3 border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900">
+                      <div className="text-center">
+                        <span className="text-2xl font-bold text-emerald-500">{parseFloat(hosting.startingPrice).toFixed(2)}</span>
+                        <span className="text-zinc-400 text-sm"> ₺/ay</span>
+                      </div>
+                      <a href={hosting.website} target="_blank" rel="noopener noreferrer" className="w-full">
+                        <Button className="w-full bg-emerald-600 hover:bg-emerald-500">
+                          <ExternalLink className="w-4 h-4 mr-1" /> Siteye Git
+                        </Button>
+                      </a>
+                      <Button variant="outline" className="w-full border-zinc-700" onClick={() => {
+                        setReviewForm({ performance: 5, support: 5, priceValue: 5, comment: '' })
+                        setReviewModal(hosting)
+                      }}>
+                        <Star className="w-4 h-4 mr-1" /> Değerlendir
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Review Modal */}
+      <Dialog open={!!reviewModal} onOpenChange={() => setReviewModal(null)}>
+        <DialogContent className="bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">{reviewModal?.name} Değerlendir</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-white">Performans</Label>
+              <StarRating value={reviewForm.performance} onChange={(v) => setReviewForm(f => ({ ...f, performance: v }))} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Destek Kalitesi</Label>
+              <StarRating value={reviewForm.support} onChange={(v) => setReviewForm(f => ({ ...f, support: v }))} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Fiyat/Performans</Label>
+              <StarRating value={reviewForm.priceValue} onChange={(v) => setReviewForm(f => ({ ...f, priceValue: v }))} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Yorum (Opsiyonel)</Label>
+              <Textarea value={reviewForm.comment} onChange={(e) => setReviewForm(f => ({ ...f, comment: e.target.value }))} placeholder="Deneyiminizi paylaşın..." className="bg-zinc-800 border-zinc-700" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewModal(null)} className="border-zinc-700">İptal</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={submitReview} disabled={submitting}>
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Gönder'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+// Pricing Page Component
+function PricingPage({ onBack, user, onOpenAuth }) {
+  const [packages, setPackages] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/pricing', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        setPackages(data.packages || [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const handlePackageClick = async (pkg) => {
+    if (!user) {
+      onOpenAuth?.()
+      toast.error('Lütfen önce giriş yapın')
+      return
+    }
+
+    // Auto create ticket
+    try {
+      const res = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          subject: `${pkg.name} Talebi`,
+          message: `Merhaba,\n\n"${pkg.name}" paketini satın almak istiyorum.\n\nPaket: ${pkg.name}\nFiyat: ${parseFloat(pkg.price).toFixed(2)} ₺\nSüre: ${pkg.duration} gün\n\nLütfen ödeme bilgilerini iletir misiniz?`,
+          category: pkg.packageType.includes('SPONSOR') ? 'SPONSORSHIP' : 'ADVERTISING',
+          packageType: pkg.packageType
+        })
+      })
+
+      if (res.ok) {
+        toast.success('Destek talebi oluşturuldu! Profilinizdeki destek bölümünden takip edebilirsiniz.')
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Hata oluştu')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    }
+  }
+
+  const packageIcons = {
+    HEADER_AD: <BarChart3 className="w-8 h-8" />,
+    SIDEBAR_AD: <Menu className="w-8 h-8" />,
+    SERVER_SPONSOR: <Crown className="w-8 h-8" />,
+    HOSTING_SPONSOR: <Gem className="w-8 h-8" />
+  }
+
+  const packageColors = {
+    HEADER_AD: 'from-blue-600 to-blue-800',
+    SIDEBAR_AD: 'from-purple-600 to-purple-800',
+    SERVER_SPONSOR: 'from-yellow-600 to-yellow-800',
+    HOSTING_SPONSOR: 'from-emerald-600 to-emerald-800'
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800"><ChevronLeft className="w-5 h-5" /></Button>
+          <Logo className="w-8 h-8" />
+          <span className="text-lg font-bold text-emerald-500">Fiyatlandırma</span>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">Reklam & Sponsorluk Paketleri</h1>
+          <p className="text-zinc-400 text-lg">Sunucunuzu veya hosting firmanızı öne çıkarın</p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {packages.map((pkg) => (
+              <Card key={pkg.id} className="bg-zinc-900/80 border-zinc-800 overflow-hidden hover:border-emerald-600/50 transition-colors">
+                <div className={`bg-gradient-to-r ${packageColors[pkg.packageType] || 'from-zinc-600 to-zinc-800'} p-6 text-center`}>
+                  <div className="bg-white/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-white">
+                    {packageIcons[pkg.packageType] || <Gem className="w-8 h-8" />}
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
+                </div>
+                <CardContent className="p-6">
+                  <div className="text-center mb-6">
+                    <span className="text-4xl font-bold text-white">{parseFloat(pkg.price).toFixed(0)}</span>
+                    <span className="text-zinc-400"> ₺</span>
+                    <p className="text-sm text-zinc-500 mt-1">{pkg.duration} gün</p>
+                  </div>
+                  <p className="text-sm text-zinc-400 mb-6 text-center">{pkg.description}</p>
+                  <ul className="space-y-2 mb-6">
+                    {pkg.features?.map((f, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-500" onClick={() => handlePackageClick(pkg)}>
+                    <Ticket className="w-4 h-4 mr-1" /> Satın Al
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-12 text-center text-zinc-500 text-sm">
+          <p>Ödeme işlemleri destek talebi üzerinden gerçekleştirilmektedir.</p>
+          <p>EFT/Havale ve kredi kartı ile ödeme kabul edilmektedir.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Sidebar Component - Right Side
+function RightSidebar({ recentServers, siteSettings }) {
+  return (
+    <div className="space-y-6">
+      {/* Social Media */}
+      <Card className="bg-zinc-900/80 border-zinc-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-white flex items-center gap-2">
+            <Globe className="w-5 h-5 text-emerald-500" /> Bizi Takip Edin
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {siteSettings?.discordUrl && (
+            <a href={siteSettings.discordUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-[#5865F2]/10 hover:bg-[#5865F2]/20 transition-colors group">
+              <div className="w-10 h-10 rounded-lg bg-[#5865F2] flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+              </div>
+              <div className="flex-1">
+                <span className="text-white font-medium group-hover:text-[#5865F2] transition-colors">Discord</span>
+                <p className="text-xs text-zinc-500">Topluluğa katıl</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-zinc-500" />
+            </a>
+          )}
+          {siteSettings?.youtubeUrl && (
+            <a href={siteSettings.youtubeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors group">
+              <div className="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              </div>
+              <div className="flex-1">
+                <span className="text-white font-medium group-hover:text-red-500 transition-colors">YouTube</span>
+                <p className="text-xs text-zinc-500">Videolarımız</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-zinc-500" />
+            </a>
+          )}
+          {siteSettings?.instagramUrl && (
+            <a href={siteSettings.instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </div>
+              <div className="flex-1">
+                <span className="text-white font-medium group-hover:text-pink-500 transition-colors">Instagram</span>
+                <p className="text-xs text-zinc-500">Takip et</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-zinc-500" />
+            </a>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Servers */}
+      <Card className="bg-zinc-900/80 border-zinc-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-white flex items-center gap-2">
+            <Clock className="w-5 h-5 text-emerald-500" /> Son Eklenen Sunucular
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {recentServers?.slice(0, 5).map(server => (
+            <div key={server.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-800/50 transition-colors">
+              <div className="w-8 h-8 rounded bg-emerald-600/20 flex items-center justify-center">
+                <Server className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white font-medium truncate">{server.name}</p>
+                <p className="text-xs text-zinc-500">{getTimeAgo(server.createdAt)}</p>
+              </div>
+            </div>
+          ))}
+          {(!recentServers || recentServers.length === 0) && (
+            <p className="text-sm text-zinc-500 text-center py-4">Henüz sunucu yok</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Ad Placeholder */}
+      <Card className="bg-zinc-900/80 border-zinc-800 border-dashed">
+        <CardContent className="p-6 text-center">
+          <div className="w-full h-48 rounded-lg bg-zinc-800/50 flex items-center justify-center border border-dashed border-zinc-700">
+            <div className="text-center">
+              <BarChart3 className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+              <p className="text-sm text-zinc-500">Reklam Alanı</p>
+              <p className="text-xs text-zinc-600 mt-1">300x250</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Time ago helper
+function getTimeAgo(dateString) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const seconds = Math.floor((now - date) / 1000)
+
+  if (seconds < 60) return 'Az önce'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} dakika önce`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} saat önce`
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} gün önce`
+  return date.toLocaleDateString('tr-TR')
+}
+
 // Admin Panel Component
 function AdminPanel({ user, onBack }) {
   const [activeTab, setActiveTab] = useState('overview')
