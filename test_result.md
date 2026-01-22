@@ -331,3 +331,24 @@ agent_communication:
       Pending:
       - DATABASE_URL needed for full testing
       - DISCORD_CLIENT_ID & DISCORD_CLIENT_SECRET needed for Discord OAuth
+  
+  - agent: "main"
+    message: |
+      SESSION 2 - AUTH FIXES APPLIED:
+      
+      Changes made:
+      1. ✅ Fixed lib/auth.js - improved cookie settings:
+         - Added clearAuthCookie() function
+         - Made secure=false in development mode
+         - Consistent sameSite='lax' setting
+      2. ✅ Updated logout route to use clearAuthCookie()
+      
+      Current Status:
+      - No DATABASE_URL set in .env - need PostgreSQL connection
+      - App is running but returns 503 for database operations
+      - Frontend UI is working correctly
+      
+      Testing Needed:
+      - Test auth flow with database connection
+      - Verify session persistence after page refresh
+      - Test server creation as authenticated user
