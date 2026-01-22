@@ -68,7 +68,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { title, content, excerpt, coverImage, published, categoryId } = body;
+    const { title, content, excerpt, coverImage, tags, published, categoryId } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Başlık ve içerik gerekli' }, { status: 400 });
@@ -95,6 +95,7 @@ export async function POST(request) {
         content,
         excerpt,
         coverImage,
+        tags: tags || [],
         published: published || false,
         authorId: admin.id,
         categoryId: categoryId || null
@@ -121,7 +122,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, title, content, excerpt, coverImage, published, categoryId } = body;
+    const { id, title, content, excerpt, coverImage, tags, published, categoryId } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Post ID gerekli' }, { status: 400 });
@@ -134,6 +135,7 @@ export async function PUT(request) {
     if (content !== undefined) updateData.content = content;
     if (excerpt !== undefined) updateData.excerpt = excerpt;
     if (coverImage !== undefined) updateData.coverImage = coverImage;
+    if (tags !== undefined) updateData.tags = tags;
     if (published !== undefined) updateData.published = published;
     if (categoryId !== undefined) updateData.categoryId = categoryId;
 
