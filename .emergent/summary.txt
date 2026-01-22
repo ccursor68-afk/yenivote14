@@ -1,159 +1,219 @@
 <analysis>
 
-**original_problem_statement**: The user wants to build a modern, secure, and professional Minecraft Server List platform named ServerListRank.
+**original_problem_statement**: The user wants to build a full-featured Minecraft server list website from an existing but inadequate base project.
 
-**PRODUCT REQUIREMENTS**:
-- **Technology Stack**: Next.js 14+ (App Router), Prisma ORM, and PostgreSQL. **Strictly no Supabase or MongoDB.**
-- **Design**: Dark, modern, premium, Minecraft-themed, inspired by provided reference images.
-- **Authentication**: JWT-based (HTTP-only cookie) with email/password. The architecture should be ready for a future Discord OAuth integration.
-- **Roles**: USER and ADMIN.
+**PRODUCT REQUIREMENTS:**
+- **Technology Stack**: Next.js 14 (App Router), TailwindCSS, Prisma, PostgreSQL.
+- **Database**: A relational schema with models for , , , , , , and a new  system.
+- **Authentication**: JWT-based with HttpOnly cookies, Discord OAuth, and middleware-protected routes. MongoDB is strictly forbidden.
 - **Core Features**:
-    - **Server Listing**: Search, platform filters (Java/Bedrock/Crossplay), sponsored section, top-voted, and new servers.
-    - **Server Management**: A multi-step form for users to add their servers (pending admin approval).
-    - **Voting System**: A critical feature using the **NuVotifier** plugin. Votes are cast by guest users with their Minecraft username, and the backend communicates with the game server via a TCP socket. The website does not handle in-game rewards.
-    - **Sponsor System**: Admins can mark servers as sponsored for a specific duration.
-    - **Blog System**: SEO-friendly, managed by admins.
-    - **Ticket System**: For user support.
-- **Build Requirement**: The project must build successfully even if the  is not provided.
+    - NuVotifier integration for voting.
+    - Sponsored server system.
+    - SEO-friendly blog with categories and tags.
+    - User support ticket system.
+    - A new Hosting section for users to list and rate hosting providers.
+    - A new Pricing page that automatically creates a ticket when a package is selected.
+    - Right sidebar with social media links and recent server activity.
+- **Admin Panel**: Advanced controls to manage users, servers (including sponsoring), blogs, and banners.
+- **UI**: Modern, dark-mode, gaming-oriented UI, with specific designs for server cards and the new hosting page.
+- **Critical Fixes**: Resolve persistent authentication issues, including session loss on page refresh and unauthorized errors on form submissions.
 
-**User's preferred language**: Türkçe
+**User's preferred language**: Turkish (Türkçe)
 
 **what currently exists?**
-The project is a Next.js application with a basic structure.
-- **Frontend**: A single, large  file contains the UI for the homepage, placeholders for server detail, profile, blog, and admin pages. The styling is a dark, Minecraft-inspired emerald theme.
-- **Backend**: A monolithic API file  contains handler stubs for authentication, server management, and other features.
-- **Database**: The  file is defined for a PostgreSQL database, including all necessary models (User, Server, Vote, etc.). The  file is configured to instantiate the Prisma client.
-- **Configuration**: An  file is present. The application is correctly set up to run without a , with the API returning a  message, which is the expected behavior at this stage.
+The project has undergone a massive refactoring to move from a MongoDB/catch-all API to a structured PostgreSQL/Prisma backend with dedicated API routes for each resource. The database schema has been significantly expanded to include models for , , , , , , and the newly added  and .
+
+The frontend is contained within a single, very large  file, which uses a state variable () to simulate multi-page navigation. This is a significant architectural issue. The last session attempted to add several new features requested by the user, including a Hosting page, Pricing page, and a sidebar, by appending more code to this single file.
 
 **Last working item**:
-- **Last item agent was working**: The agent was reverting a failed and user-aborted attempt to use a temporary SQLite database. The user explicitly instructed the agent to cancel the SQLite work and return to the PostgreSQL plan. As part of this, the agent was also creating the UI skeletons for the Server Detail, Profile, Blog, and Admin pages inside  and reverting the backend API routes and Prisma schema to be PostgreSQL-compliant.
+- **Last item agent was working**: Implementing a large set of new features requested by the user in message #231. This included creating a Hosting review system, a Pricing page, a right-hand sidebar, adding tags to the blog, and enhancing the admin panel. The agent created the necessary backend API routes and Prisma schema changes and then attempted to add all the corresponding frontend pages and components into the single  file.
 - **Status**: IN PROGRESS
-- **Agent Testing Done**: N
-- **Which testing method agent to use?**: manual testing by curl
+- **Agent Testing Done**: N (The agent ran a , but did not perform any functional testing of the newly added, complex features.)
+- **Which testing method agent to use?**: both (A full-stack test is required. The frontend agent needs to verify the new pages and UI components. The backend agent needs to confirm the new API endpoints for hosting, pricing, and admin actions work correctly with authentication.)
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1**: **Incomplete Reversion from SQLite to PostgreSQL (P0)**
-  - **Description**: The agent made significant changes to the codebase (, , ) to support a temporary SQLite database. The user has instructed to revert these changes. While some files were overwritten, a full verification is needed to ensure no residual, incompatible code remains.
-  - **Attempted fixes**: The agent overwrote , , and parts of .
-  - **Next debug checklist**:
-    1.  Thoroughly review  to remove all SQLite-specific logic (e.g., / for the  array, search workarounds). Ensure all Prisma queries are compatible with PostgreSQL and the current schema.
-    2.  Review  to ensure the  requests it makes are aligned with the intended PostgreSQL-based API logic.
-    3.  Restart the  service and check the logs for any runtime errors related to Prisma or the API routes.
-  - **Why fix this issue and what will be achieved with the fix?**: The backend is in a broken, transitional state. Fixing this will restore the codebase to a clean, PostgreSQL-aligned foundation, which is essential to make any further progress.
-  - **Status**: IN PROGRESS
-  - **Is recurring issue?**: N
-  - **Should Test frontend/backend/both after fix?**: backend
-  - **Blocked on other issue**: None
+- **Issue 1**: **(P0)** Critical Authentication and Session Persistence Failure.
+- **Issue 2**: **(P1)** Admin authorization fails for specific actions.
+- **Issue 3**: **(P2)** Blog posts are not being displayed on the main page.
+
+**Issues Detail**:
+- **Issue 1**: Critical Authentication and Session Persistence Failure
+    - **Description**: Users lose their session (are logged out) when they refresh the page (F5). Additionally, authenticated users receive You must be logged in errors when submitting forms like Add Server. This is the most critical issue blocking all user actions.
+    - **Attempted fixes**:
+        1.   was added to all  requests. This did not solve the problem.
+        2.  The  cookie attribute was changed from  to . This did not solve the problem.
+        3.  The  cookie attribute logic was updated to be conditional on  starting with . This was a good step but did not fully resolve the issue, likely due to other complicating factors in the VPS environment or the single-page-app architecture.
+    - **Next debug checklist**:
+        - Review  and  one more time to ensure cookie parsing and setting logic is flawless, especially for a proxied VPS environment.
+        - Use browser developer tools to inspect the  header on login response and verify the cookie is present in subsequent requests to the API.
+        - Check  and advise the user to ensure proxy headers (, ) are correctly passed to the Next.js application.
+        - **The primary suspect is the unconventional single-file frontend architecture. Refactoring to proper file-based routing may resolve the issue by simplifying state and request handling.**
+    - **Why fix this issue and what will be achieved with the fix?**: The application is unusable without a stable login system. Fixing this will allow users to stay logged in and perform authenticated actions like adding servers, voting, and creating blog posts.
+    - **Status**: IN PROGRESS
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: both
+    - **Blocked on other issue**: None.
+
+- **Issue 2**: Admin authorization fails for specific actions.
+    - **Description**: An authenticated user with the  role receives an Admin permission required error when trying to create a blog post.
+    - **Attempted fixes**: The agent rewrote parts of  and the API routes to improve how the user object (including ) is retrieved from the JWT and attached to the request. However, the issue was reported again.
+    - **Next debug checklist**:
+        - In the relevant API route (e.g., ), log the  object that is decoded from the token to verify if the  property is present and correct.
+        - Trace the  and  functions in  to ensure the role is not being lost during JWT verification or user lookup.
+    - **Why fix this issue and what will be achieved with the fix?**: Fixes core functionality for administrators, allowing them to manage site content as intended.
+    - **Status**: IN PROGRESS
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: backend
+    - **Blocked on other issue**: Issue 1 (Authentication and Session Persistence).
+
+- **Issue 3**: Blog posts are not being displayed on the main page.
+    - **Description**: The user reported that blog posts, while visible in the admin panel, do not appear on the public-facing part of the site.
+    - **Attempted fixes**: The agent overwrote  and modified the frontend code in . It's unclear if this fix was successful as it was part of a very large batch of changes that have not been tested.
+    - **Next debug checklist**:
+        - Check the  call in the main  component within  that is supposed to retrieve blog posts for the homepage.
+        - Verify the API endpoint  returns the correct data by calling it directly.
+        - Ensure the frontend component responsible for rendering the blog list is receiving the data and mapping it correctly.
+    - **Why fix this issue and what will be achieved with the fix?**: Enables the blog system, a key content feature of the site.
+    - **Status**: IN PROGRESS
+    - **Is recurring issue?**: N
+    - **Should Test frontend/backend/both after fix?**: both
+    - **Blocked on other issue**: None.
 
 **In progress Task List**:
-- **Task 1**: **Implement New Page UIs (P0)**
-  - **Description**: The user requested the creation of several new pages. The agent has added the UI code for these into the monolithic  file.
-  - **Where to resume**: The code has been written, but it needs to be verified. The next step is to use the  tool to visually confirm that the new sections for the Server Detail, Profile, Blog, and Admin pages are rendering correctly.
-  - **What will be achieved with this?**: This will complete the initial UI scaffolding for all major features requested by the user, providing a visual confirmation of progress.
-  - **Status**: IN PROGRESS
-  - **Should Test frontend/backend/both after fix?**: frontend
-  - **Blocked on something**: None
+- **Task 1**: Complete implementation of all features from the last user request (P0)
+
+**Task Detail**:
+- **Task 1**: Complete implementation of all features from the last user request
+    - **Description**: The last user request (message #231) was a large feature bundle. The agent created backend stubs and started modifying the frontend, but the work is incomplete and untested.
+    - **Where to resume**:
+        1.  **Architectural Refactor (CRITICAL)**: Before proceeding, refactor the frontend from a single  into a proper Next.js App Router structure with file-based routing. Create separate folders and  files for , , , , , etc. This will make the rest of the tasks manageable.
+        2.  **Hosting Page**: Complete the  component (in its new file, e.g., ) to match the user's provided image. Ensure it fetches data from  and that the rating submission works.
+        3.  **Pricing & Ticket Page**: Complete the  component. Implement the logic where clicking a package redirects to the support/ticket page and pre-fills a ticket with the package name.
+        4.  **Sidebar**: Implement the right-hand sidebar component and integrate it into the main layout. It should display social media links and fetch recent server additions from the API.
+        5.  **Admin Panel**: Enhance the admin panel component to list all users and servers with Delete functionality, and add a button to set a server's sponsored status.
+        6.  **Blog Tags**: Ensure the blog system now supports tags, including creation, display on posts, and filtering.
+    - **What will be achieved with this?**: This will complete the user's requested feature set, making the application functionally whole.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: both
+    - **Blocked on something**: The current single-file frontend architecture is a major blocker for stable development.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks**: (Based on the user's latest instructions in message #90)
-    1.  **(P0) Implement Server Detail Page**: Develop the full frontend and backend logic.
-    2.  **(P1) Implement Profile Page**: Develop the frontend and backend for user profiles.
-    3.  **(P2) Implement Blog System**: Build the backend API and frontend UI for creating, editing, and viewing blog posts.
-    4.  **(P3) Implement Admin Panel**: Create the admin-only section and connect the blog and server approval systems to it.
-- **Future Tasks**: (From original problem statement)
-    - **(P4) Full JWT Authentication**: Implement login/logout functionality and middleware for protecting routes.
-    - **(P5) NuVotifier Voting System**: Implement the critical TCP socket communication for the voting feature.
-    - **(P6) Sponsor System**: Allow admins to feature servers.
-    - **(P7) Ticket System**: Implement the user support ticket feature.
-    - **(P8) Discord OAuth Integration**: Add Login with Discord functionality.
+- **Upcoming Tasks**:
+    - **(P0)** Refactor frontend from a single  to a proper file-based routing structure. This is not an explicit user request but is a necessary prerequisite for stable development and fixing the session bugs.
+    - **(P1)** Full implementation and testing of the Discord OAuth flow once the user provides the Client ID and Secret.
+    - **(P2)** Implementation of a sitemap for SEO purposes.
 
 **Completed work in this session**
-- Initial project setup with Next.js and Prisma.
-- Creation of the  file for a PostgreSQL database.
-- Development of a basic dark-themed homepage UI with placeholder components.
-- UI refresh based on user-provided reference images, including a Premium Packages page.
+- **Recently completed**:
+  - Replaced MongoDB and catch-all API with a PostgreSQL/Prisma backend with specific API routes.
+  - Expanded Prisma schema to include , , , , , and  models.
+  - Created a  file and an  to guide the user's deployment.
+  - Implemented a Prisma seed script () to populate the database with initial data.
+  - Added numerous UI components for new features (e.g., game mode filters, Discord login button) into the  file, although they are not fully functional or architecturally sound.
 
 **Earlier issues found/mentioned but not fixed**
-None. The critical issue of using MongoDB was identified and fixed. The subsequent issue of using SQLite is currently being fixed.
+None that are not already listed in the Pending/In progress Issue list. The agent has been diligent in capturing user-reported issues.
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence**: Agent tends to deviate from the user's explicit database requirements. It first introduced MongoDB code against instructions and then went on a long, unapproved detour with SQLite.
-- **Recurrence count**: 2
-- **Status**: BLOCKED
-  - **Note**: The next agent must strictly adhere to the PostgreSQL + Prisma stack. Do not introduce any other database technology, even for temporary testing, unless explicitly approved by the user. The application must function without a database connection for UI/build purposes.
+- **Issue recurrence in previous fork**: None. This is the first summary.
+- **Recurrence count**: 0
+- **Status**: NONE
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Framework**: Next.js 14 (App Router)
-- **Database**: PostgreSQL (planned)
-- **ORM**: Prisma
-- **Authentication**: JWT (planned)
-- **Key Feature**: NuVotifier integration (requires TCP socket communication)
+- **Backend**: Next.js App Router API Routes, PostgreSQL, Prisma ORM.
+- **Frontend**: Next.js 14 (using a non-standard single-page approach), React, TailwindCSS, shadcn/ui components.
+- **Authentication**: JWT stored in an HttpOnly cookie. Role-based access control ( vs. ). Middleware for route protection.
 
 **key DB schema**
-Defined in . Key models include:
-- : { id, email, password, role, servers, votes }
-- : { id, name, ip, port, platform, approvalStatus, ownerId, votes }
-- : { id, serverId, minecraftUsername, ipAddress, createdAt }
-- : { id, title, content, slug, authorId }
-- : { id, title, content, status, userId }
+- : { id, email, username, password, role, servers, tickets }
+- : { id, name, ip, port, gameMode, ownerId, votes, isSponsored }
+- : { id, serverId, voterIp, minecraftUsername }
+- : { id, title, slug, content, authorId, categoryId, tags }
+- : { id, name, website, ownerId, reviews }
+- : { id, hostingId, userId, performance, price, support }
+- : { id, imageUrl, link, position, isActive }
+- : { id, title, userId, status, replies }
 
 **changes in tech stack**
-- The agent incorrectly introduced MongoDB and then SQLite. Both have been ordered to be removed by the user in favor of the originally requested PostgreSQL.
+- The entire backend was migrated from a placeholder MongoDB implementation to the user-specified **PostgreSQL + Prisma** stack.
 
 **All files of reference**
-- : The monolithic backend API. **Needs cleanup** to remove all traces of SQLite logic.
-- : The monolithic frontend file. Contains the UI for all pages and features. **Needs verification and refactoring.**
-- : The source of truth for the database schema, configured for **PostgreSQL**.
-- : Configured to connect to a PostgreSQL database using the  env var.
+- : The monolithic file containing all frontend logic. It needs to be broken up.
+- : The core of the authentication logic. It has been modified multiple times to fix session issues and is a key file for debugging.
+- : Handles route protection and needs to correctly parse the auth cookie.
+- : The source of truth for the database structure. It has been updated to include all new feature models.
+- All files under : These define the backend logic and need to be checked for correctness, especially regarding authentication and authorization.
 
-**Areas that need refactoring**
-- **Monolithic Frontend**: The  file is acting as a single-page application, rendering different views conditionally. This is highly unscalable and goes against Next.js best practices. It should be broken down into a proper file-based routing structure (e.g., , ).
-- **Monolithic Backend**: The  file handles every single API call. This should be refactored into domain-specific routes (e.g., , ) for maintainability.
+**Areas that need refactoring**:
+- ****: This is the highest priority. The entire file needs to be broken down into a proper Next.js App Router file-based routing structure. For example:
+    -  (Homepage)
+    - 
+    - 
+    -  & 
+    -  & 
+    This will solve countless state management, routing, and potential session issues.
+
+**key api endpoints**
+- , , , 
+- , , 
+- , 
+- , 
+- 
+-  (various endpoints for managing content)
 
 **Critical Info for New Agent**
-- **DO NOT USE SQLite**: The previous agent wasted a significant amount of time on a failed attempt to use a temporary SQLite database. This frustrated the user, who explicitly ordered a stop to this effort. Stick to the PostgreSQL plan.
-- **DATABASE_URL is not provided**: The user expects the application to build and run (for frontend development) without a database connection. Do not ask for the  until you are ready to implement and test a specific backend feature that requires it.
-- **Follow User Priorities**: The user has provided a new, clear priority list (Message #90): 1. Server Detail Page, 2. Profile Page, 3. Blog System, 4. Admin Panel. Follow this order.
-- **Refactor Later**: While the monolithic frontend and backend need refactoring, prioritize implementing the user's requested features first to show progress. You can suggest a refactor after delivering the next set of features.
+- **The user is technically proficient.** They provide detailed bug reports and clear feature requirements. Respect their technical constraints (no MongoDB, etc.).
+- **The session/auth bug is the #1 priority.** The application is not usable until it's fixed.
+- **The single  architecture is the biggest technical debt and likely the root cause of many issues.** You MUST address this by refactoring to file-based routing before adding more features. Do not continue adding code to .
+- The user's environment is a VPS, possibly with an Nginx proxy. Cookie settings (, , ) and proxy headers are critical for the auth to work correctly.
 
 **documents created in this job**
 - 
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Msg 90**: Cancel SQLite, dont create a user, continue with PostgreSQL. Create Server Detail Page, then Profile Page, then Blog System, then Admin Panel and connect them." (Status: IN PROGRESS)
-2.  **Msg 49**: "Create a test user for me so I can test the pages." (Status: SUPERSEDED. This is no longer possible without a DB and the user has changed priorities).
-3.  **Msg 37**: User provided 5 reference images for the UI design. (Status: PARTIALLY IMPLEMENTED. The agent updated the homepage theme based on these).
-4.  **Msg 36**: "Im sending you example site images, make it similar but stick to the current theme. (Status: ACKNOWLEDGED).
-5.  **Msg 15**: An angry message from the user correcting the agent for using MongoDB and providing the correct  structure. (Status: RESOLVED).
-6.  **Msg 5**: User provided initial clarifications: Use PostgreSQL + Prisma, JWT auth is the priority, and a specific development order. (Status: IN PROGRESS).
+1.  **User (Msg 231)**: Requested a huge batch of new features: Fix blog listing, add a new 'Hosting' page with ratings, add a sidebar with social/activity links, add a 'Pricing' page that auto-creates tickets, enhance the admin panel, and re-iterated the session persistence bug. *Status: In Progress*.
+2.  **Agent (Msg 230)**: Summarized the fix for session issues.
+3.  **User (Msg 214)**: Reported two critical bugs: 1) Session is lost on page refresh. 2) Adding a server fails with an auth error. Provided technical details about their VPS setup. *Status: In Progress*.
+4.  **Agent (Msg 213)**: Summarized the fixes for admin auth, game modes, and banners.
+5.  **User (Msg 173)**: Reported critical auth/permission bugs (Admin can't post, user can't add server) and requested new features (Game Mode system, Banner system). *Status: In Progress*.
+6.  **Agent (Msg 172)**: Summarized the fix for the  cookie issue.
+7.  **User (Msg 152)**: Stated that the previous fix for the three bugs (IP copy, add server, create blog post) did not work. *Status: In Progress*.
+8.  **Agent (Msg 151)**: Summarized the first attempted fix for the three bugs.
+9.  **User (Msg 85)**: Reported three initial bugs after connecting the DB: IP copy doesn't work, adding a server fails with an auth error, creating a blog post fails. *Status: In Progress*.
+10. **Agent (Msg 84)**: Summarized the creation of the Prisma seed file.
 
 **Project Health Check:**
-- **Broken**: The backend API () is in a broken state due to the incomplete reversion from SQLite to PostgreSQL. It contains incompatible code and will not work.
-- **Mocked**: No features are currently mocked.
+- **Broken**:
+    - User Authentication & Session Persistence: The core login mechanism is fundamentally broken, preventing any authenticated user actions.
+    - Admin Authorizations: Role-based permissions are not working correctly.
+- **Mocked**:
+    - Discord OAuth: The code is in place but is non-functional as it's waiting for user-provided  and .
 
 **3rd Party Integrations**
-- **NuVotifier**: Planned for the voting system. Will require a TCP socket implementation.
-- **Discord OAuth**: Planned for authentication.
+- **Discord OAuth**: Planned for authentication. Requires User API Key (, ).
+- **Prisma**: ORM for PostgreSQL.
+- **NuVotifier**: For Minecraft server voting integration (via a custom  module).
 
 **Testing status**
-- **Testing agent used after significant changes**: NO
-- **Troubleshoot agent used after agent stuck in loop**: NO
-- **Test files created**: []
-- **Known regressions**: The entire backend logic is likely regressed due to the failed SQLite experiment and subsequent partial revert.
+- **Testing agent used after significant changes**: NO (Not since the last major feature addition).
+- **Troubleshoot agent used after agent stuck in loop**: YES (Agent correctly used the troubleshoot agent when it couldn't solve the auth bug on its own).
+- **Test files created**: None.
+- **Known regressions**: The primary functionality of logging in and staying logged in has regressed or was never fully working.
 
 **Credentials to test flow:**
-No database is connected, so no credentials can be created or used. The user's request for test credentials (Msg 49) cannot be fulfilled at this stage.
+To test locally, a  for a PostgreSQL instance must be set in a  file. Then, run Prisma schema loaded from prisma/schema.prisma and Running seed command `node prisma/seed.js` ...
+🌱 Starting database seed...
+✓ Password hashed. The seed script creates two users:
+- **Admin**:  / 
+- **User**:  / 
 
 **What agent forgot to execute**
-- The agent forgot the user's strict No MongoDB rule and had to be corrected.
-- The agent got sidetracked into a complex, unapproved SQLite implementation instead of focusing on the user's priorities and the requirement to have a build-safe application without a .
+The agent has not forgotten specific tasks as much as it has implemented them in an architecturally unsound way. The key oversight was not using Next.js's file-based routing, which is a fundamental concept of the framework. It also did not perform any testing after the last massive batch of code changes, leaving the project in a likely broken state.
 
 </analysis>
-<SYS_PROMPT_SEPARATOR>
-<workspace_dir>
-/app
-</workspace_dir>
