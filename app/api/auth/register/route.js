@@ -52,10 +52,17 @@ export async function POST(request) {
     });
 
     const token = await createToken({ userId: user.id, role: user.role });
-    const cookie = setAuthCookie(token);
+    const cookieOptions = setAuthCookie(token, request);
 
     const response = NextResponse.json({ user, message: 'Kayıt başarılı' });
-    response.cookies.set(cookie.name, cookie.value, cookie);
+    
+    response.cookies.set(cookieOptions.name, cookieOptions.value, {
+      httpOnly: cookieOptions.httpOnly,
+      secure: cookieOptions.secure,
+      sameSite: cookieOptions.sameSite,
+      maxAge: cookieOptions.maxAge,
+      path: cookieOptions.path
+    });
     
     return response;
   } catch (error) {

@@ -89,11 +89,19 @@ export async function POST(request) {
     }
 
     const prisma = getPrisma();
+    
+    // Debug logging
+    const cookieHeader = request.headers.get('cookie');
+    console.log('POST /api/servers - Cookie header:', cookieHeader ? 'present' : 'missing');
+    
     const user = await getAuthUser(request, prisma);
     
     if (!user) {
+      console.log('POST /api/servers - No authenticated user');
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
+    
+    console.log('POST /api/servers - User authenticated:', user.email);
 
     const body = await request.json();
     const { 

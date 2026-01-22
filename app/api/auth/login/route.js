@@ -31,7 +31,9 @@ export async function POST(request) {
     }
 
     const token = await createToken({ userId: user.id, role: user.role });
-    const cookie = setAuthCookie(token);
+    
+    // Pass request to detect HTTPS
+    const cookieOptions = setAuthCookie(token, request);
 
     const response = NextResponse.json({ 
       user: {
@@ -44,7 +46,21 @@ export async function POST(request) {
       },
       message: 'Giriş başarılı' 
     });
-    response.cookies.set(cookie.name, cookie.value, cookie);
+    
+    // Set cookie with proper options
+    response.cookies.set(cookieOptions.name, cookieOptions.value, {
+      httpOnly: cookieOptions.httpOnly,
+      secure: cookieOptions.secure,
+      sameSite: cookieOptions.sameSite,
+      maxAge: cookieOptions.maxAge,
+      path: cookieOptions.path
+    });
+    
+    console.log('Login successful, cookie set with options:', {
+      secure: cookieOptions.secure,
+      sameSite: cookieOptions.sameSite,
+      path: cookieOptions.path
+    });
     
     return response;
   } catch (error) {
