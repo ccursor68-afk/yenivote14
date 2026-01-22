@@ -1883,8 +1883,10 @@ export default function App() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
-            <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> Ana Sayfa</button>
+            <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> Sunucular</button>
+            <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Server className="w-4 h-4" /> Hostingler</button>
             <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><BookOpen className="w-4 h-4" /> Blog</button>
+            <button onClick={() => setCurrentPage('pricing')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Gem className="w-4 h-4" /> Fiyatlandırma</button>
             {user?.role === 'ADMIN' && (
               <button onClick={() => setCurrentPage('admin')} className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"><Shield className="w-4 h-4" /> Admin</button>
             )}
