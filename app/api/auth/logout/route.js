@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
+import { clearAuthCookie } from '@/lib/auth';
 
 export async function POST() {
   const response = NextResponse.json({ message: 'Çıkış yapıldı' });
-  response.cookies.set('auth_token', '', { maxAge: 0, path: '/' });
+  const cookieOptions = clearAuthCookie();
+  response.cookies.set(cookieOptions.name, cookieOptions.value, {
+    httpOnly: cookieOptions.httpOnly,
+    secure: cookieOptions.secure,
+    sameSite: cookieOptions.sameSite,
+    maxAge: cookieOptions.maxAge,
+    path: cookieOptions.path
+  });
   return response;
 }
