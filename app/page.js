@@ -1641,12 +1641,17 @@ function AdminPanel({ user, onBack }) {
   const [users, setUsers] = useState([])
   const [tickets, setTickets] = useState([])
   const [blogPosts, setBlogPosts] = useState([])
+  const [hostings, setHostings] = useState([])
+  const [boosts, setBoosts] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Blog form state
-  const [blogForm, setBlogForm] = useState({ title: '', content: '', excerpt: '', coverImage: '', published: false })
+  const [blogForm, setBlogForm] = useState({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS' })
   const [editingBlog, setEditingBlog] = useState(null)
   const [blogLoading, setBlogLoading] = useState(false)
+  
+  // Boost form state
+  const [boostForm, setBoostForm] = useState({ serverId: '', durationDays: 7 })
 
   useEffect(() => {
     loadData()
@@ -1655,12 +1660,15 @@ function AdminPanel({ user, onBack }) {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [statsRes, pendingRes, usersRes, ticketsRes, blogRes] = await Promise.all([
+      const [statsRes, pendingRes, usersRes, ticketsRes, blogRes, hostingsRes, boostsRes, allServersRes] = await Promise.all([
         fetch('/api/admin/stats', { credentials: 'include' }).then(r => r.json()),
         fetch('/api/admin/servers/pending', { credentials: 'include' }).then(r => r.json()),
         fetch('/api/admin/users', { credentials: 'include' }).then(r => r.json()),
         fetch('/api/admin/tickets', { credentials: 'include' }).then(r => r.json()),
-        fetch('/api/admin/blog', { credentials: 'include' }).then(r => r.json())
+        fetch('/api/admin/blog', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/hostings', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/boosts', { credentials: 'include' }).then(r => r.json()).catch(() => ({ boosts: [] })),
+        fetch('/api/admin/all-servers', { credentials: 'include' }).then(r => r.json()).catch(() => ({ servers: [] }))
       ])
 
       setStats(statsRes.stats)
@@ -1668,6 +1676,9 @@ function AdminPanel({ user, onBack }) {
       setUsers(usersRes.users || [])
       setTickets(ticketsRes.tickets || [])
       setBlogPosts(blogRes.posts || [])
+      setHostings(hostingsRes.hostings || [])
+      setBoosts(boostsRes.boosts || [])
+      setAllServers(allServersRes.servers || [])
     } catch (err) {
       console.error(err)
     } finally {
@@ -1717,6 +1728,74 @@ function AdminPanel({ user, onBack }) {
     }
   }
 
+  // Create boost for server
+  const handleCreateBoost = async () => {
+    if (!boostForm.serverId) {
+      toast.error('Sunucu seçin')
+      return
+    }
+    try {
+      const res = await fetch('/api/admin/boosts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(boostForm)
+      })
+
+      if (res.ok) {
+        toast.success('Boost eklendi!')
+        setBoostForm({ serverId: '', durationDays: 7 })
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Boost eklenemedi')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
+  // Deactivate boost
+  const handleDeactivateBoost = async (boostId) => {
+    try {
+      const res = await fetch(`/api/admin/boosts?id=${boostId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        toast.success('Boost deaktif edildi!')
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
+  // Toggle hosting verification
+  const handleToggleHostingVerify = async (hostingId) => {
+    try {
+      const res = await fetch(`/api/admin/hostings/${hostingId}/verify`, {
+        method: 'PUT',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        toast.success(data.message)
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
   const handleBlogSubmit = async () => {
     setBlogLoading(true)
     try {
@@ -1731,7 +1810,7 @@ function AdminPanel({ user, onBack }) {
       
       if (res.ok) {
         toast.success('Blog yazısı oluşturuldu!')
-        setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false })
+        setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS' })
         loadData()
       } else {
         toast.error(data.error || 'Yazı oluşturulamadı')
