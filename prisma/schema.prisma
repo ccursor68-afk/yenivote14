@@ -309,6 +309,7 @@ model BlogPost {
   coverImage  String?
   tags        String[]      @default([])
   published   Boolean       @default(false)
+  blogType    BlogType      @default(NEWS)
   authorId    String
   author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   categoryId  String?
@@ -319,6 +320,7 @@ model BlogPost {
   @@index([slug])
   @@index([published])
   @@index([categoryId])
+  @@index([blogType])
   @@index([createdAt])
 }
 
