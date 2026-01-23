@@ -3075,39 +3075,153 @@ function AdminPanel({ user, onBack }) {
 
           {/* Tickets Tab */}
           <TabsContent value="tickets">
-            <Card className="bg-zinc-900/50 border-zinc-800">
-              <CardHeader>
-                <CardTitle className="text-white">Destek Talepleri</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {tickets.length === 0 ? (
-                  <p className="text-zinc-500 text-center py-8">Ticket yok</p>
-                ) : (
-                  <div className="space-y-3">
-                    {tickets.map(ticket => (
-                      <div key={ticket.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-2 h-2 rounded-full ${
-                            ticket.status === 'OPEN' ? 'bg-emerald-500' : 
-                            ticket.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-zinc-500'
-                          }`} />
-                          <div>
-                            <p className="font-medium text-white">{ticket.subject}</p>
-                            <p className="text-xs text-zinc-500">{ticket.user?.email}</p>
+            {!selectedAdminTicket ? (
+              <Card className="bg-zinc-900/50 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Destek Talepleri ({tickets.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {tickets.length === 0 ? (
+                    <p className="text-zinc-500 text-center py-8">Ticket yok</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {tickets.map(ticket => (
+                        <div 
+                          key={ticket.id} 
+                          className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors"
+                          onClick={() => openAdminTicket(ticket)}
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                              ticket.status === 'OPEN' ? 'bg-emerald-500' : 
+                              ticket.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-zinc-500'
+                            }`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-white truncate">{ticket.subject}</p>
+                              <p className="text-xs text-zinc-500">{ticket.user?.email} • {ticket.category} • {new Date(ticket.createdAt).toLocaleDateString('tr-TR')}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className={
+                              ticket.status === 'OPEN' ? 'bg-emerald-600' : 
+                              ticket.status === 'IN_PROGRESS' ? 'bg-blue-600' : 'bg-zinc-600'
+                            }>
+                              {ticket.status === 'OPEN' ? 'Açık' : ticket.status === 'IN_PROGRESS' ? 'İşlemde' : 'Kapalı'}
+                            </Badge>
+                            <ChevronRight className="w-5 h-5 text-zinc-600" />
                           </div>
                         </div>
-                        <Badge className={
-                          ticket.status === 'OPEN' ? 'bg-emerald-600' : 
-                          ticket.status === 'IN_PROGRESS' ? 'bg-blue-600' : 'bg-zinc-600'
-                        }>
-                          {ticket.status === 'OPEN' ? 'Açık' : ticket.status === 'IN_PROGRESS' ? 'İşlemde' : 'Kapalı'}
-                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              // Ticket Detail View for Admin
+              <div className="space-y-4">
+                <Button variant="outline" onClick={() => setSelectedAdminTicket(null)} className="border-zinc-700">
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Geri
+                </Button>
+                
+                <Card className="bg-zinc-900/50 border-zinc-800">
+                  <CardHeader>
+                    <div className="flex items-start justify-between flex-wrap gap-4">
+                      <div>
+                        <CardTitle className="text-white">{selectedAdminTicket.subject}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-2 flex-wrap">
+                          <Badge className={
+                            selectedAdminTicket.status === 'OPEN' ? 'bg-emerald-600' : 
+                            selectedAdminTicket.status === 'IN_PROGRESS' ? 'bg-blue-600' : 'bg-zinc-600'
+                          }>
+                            {selectedAdminTicket.status === 'OPEN' ? 'Açık' : selectedAdminTicket.status === 'IN_PROGRESS' ? 'İşlemde' : 'Kapalı'}
+                          </Badge>
+                          <span className="text-zinc-500">•</span>
+                          <span className="text-zinc-400">{selectedAdminTicket.category}</span>
+                          <span className="text-zinc-500">•</span>
+                          <span className="text-zinc-400">{selectedAdminTicket.user?.email}</span>
+                        </CardDescription>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex gap-2">
+                        <Select value={selectedAdminTicket.status} onValueChange={(v) => updateTicketStatus(selectedAdminTicket.id, v)}>
+                          <SelectTrigger className="w-32 bg-zinc-800 border-zinc-700">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="OPEN">Açık</SelectItem>
+                            <SelectItem value="IN_PROGRESS">İşlemde</SelectItem>
+                            <SelectItem value="CLOSED">Kapalı</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+
+                {/* Messages */}
+                <Card className="bg-zinc-900/50 border-zinc-800">
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg">Mesajlar</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 max-h-[40vh] overflow-y-auto">
+                    {adminTicketMessages.length === 0 ? (
+                      <p className="text-zinc-500 text-center py-4">Henüz mesaj yok</p>
+                    ) : (
+                      adminTicketMessages.map(msg => (
+                        <div key={msg.id} className={`flex ${msg.isAdmin ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[80%] p-3 rounded-lg ${msg.isAdmin ? 'bg-emerald-600/20 border border-emerald-600/30' : 'bg-zinc-800'}`}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-xs font-medium ${msg.isAdmin ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                                {msg.isAdmin ? 'Admin' : msg.user?.email || 'Kullanıcı'}
+                              </span>
+                              <span className="text-xs text-zinc-500">
+                                {new Date(msg.createdAt).toLocaleString('tr-TR')}
+                              </span>
+                            </div>
+                            <p className="text-sm text-white whitespace-pre-wrap">{msg.content}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Admin Reply */}
+                {selectedAdminTicket.status !== 'CLOSED' && (
+                  <Card className="bg-zinc-900/50 border-zinc-800">
+                    <CardContent className="p-4">
+                      <Label className="text-white mb-2 block">Admin Yanıtı</Label>
+                      <div className="flex gap-2">
+                        <Textarea
+                          value={adminReplyMessage}
+                          onChange={(e) => setAdminReplyMessage(e.target.value)}
+                          placeholder="Yanıtınızı yazın..."
+                          className="bg-zinc-800 border-zinc-700 min-h-[100px]"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-3">
+                        <Button 
+                          variant="outline" 
+                          className="border-zinc-700"
+                          onClick={() => {
+                            updateTicketStatus(selectedAdminTicket.id, 'CLOSED')
+                            setSelectedAdminTicket(null)
+                          }}
+                        >
+                          Kapat
+                        </Button>
+                        <Button 
+                          onClick={sendAdminReply} 
+                          disabled={adminReplyLoading || !adminReplyMessage.trim()} 
+                          className="bg-emerald-600 hover:bg-emerald-500"
+                        >
+                          {adminReplyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Gönder</>}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
