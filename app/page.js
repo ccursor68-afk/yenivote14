@@ -2716,6 +2716,7 @@ function AdminPanel({ user, onBack }) {
             <Card className="bg-zinc-900/50 border-zinc-800">
               <CardHeader>
                 <CardTitle className="text-white">Hosting Firmaları</CardTitle>
+                <CardDescription className="text-zinc-400">Hosting başvurularını onaylayın veya reddedin</CardDescription>
               </CardHeader>
               <CardContent>
                 {hostings.length === 0 ? (
@@ -2723,34 +2724,81 @@ function AdminPanel({ user, onBack }) {
                 ) : (
                   <div className="space-y-3">
                     {hostings.map(hosting => (
-                      <div key={hosting.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
+                      <div key={hosting.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-zinc-800/50 rounded-lg gap-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
                             <Server className="w-5 h-5 text-emerald-500" />
                           </div>
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-medium text-white">{hosting.name}</p>
+                              {/* Başvuru Durumu */}
+                              <Badge className={
+                                hosting.approvalStatus === 'APPROVED' ? 'bg-emerald-600' : 
+                                hosting.approvalStatus === 'PENDING' ? 'bg-amber-600' : 'bg-red-600'
+                              }>
+                                {hosting.approvalStatus === 'APPROVED' ? 'Yayında' : 
+                                 hosting.approvalStatus === 'PENDING' ? 'Beklemede' : 'Reddedildi'}
+                              </Badge>
+                              {/* Verified Rozeti */}
                               {hosting.isVerified && (
-                                <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">Onaylı</Badge>
+                                <Badge className="bg-blue-500/20 text-blue-400 text-xs border border-blue-500/30">
+                                  <Shield className="w-3 h-3 mr-1" />Verified
+                                </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-500">{hosting.owner?.email}</p>
+                            <p className="text-xs text-zinc-500">{hosting.owner?.email} • {hosting.website}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            size="sm" 
-                            variant={hosting.isVerified ? "destructive" : "default"}
-                            onClick={() => handleToggleHostingVerify(hosting.id)}
-                            className={hosting.isVerified ? "" : "bg-emerald-600 hover:bg-emerald-500"}
-                          >
-                            {hosting.isVerified ? (
-                              <><X className="w-4 h-4 mr-1" /> Onayı Kaldır</>
-                            ) : (
-                              <><CheckCircle2 className="w-4 h-4 mr-1" /> Onayla</>
-                            )}
-                          </Button>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Başvuru Onaylama/Reddetme Butonları */}
+                          {hosting.approvalStatus === 'PENDING' && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                className="bg-emerald-600 hover:bg-emerald-500"
+                                onClick={() => handleHostingStatus(hosting.id, 'APPROVED')}
+                              >
+                                <CheckCircle2 className="w-4 h-4 mr-1" /> Başvuruyu Onayla
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleHostingStatus(hosting.id, 'REJECTED')}
+                              >
+                                <X className="w-4 h-4 mr-1" /> Reddet
+                              </Button>
+                            </>
+                          )}
+                          {hosting.approvalStatus === 'APPROVED' && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant={hosting.isVerified ? "outline" : "default"}
+                                onClick={() => handleToggleHostingVerify(hosting.id)}
+                                className={hosting.isVerified ? "border-blue-500 text-blue-400" : "bg-blue-600 hover:bg-blue-500"}
+                              >
+                                <Shield className="w-4 h-4 mr-1" />
+                                {hosting.isVerified ? 'Verified Kaldır' : 'Verified Yap'}
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleHostingStatus(hosting.id, 'REJECTED')}
+                              >
+                                <X className="w-4 h-4 mr-1" /> Yayından Kaldır
+                              </Button>
+                            </>
+                          )}
+                          {hosting.approvalStatus === 'REJECTED' && (
+                            <Button 
+                              size="sm" 
+                              className="bg-emerald-600 hover:bg-emerald-500"
+                              onClick={() => handleHostingStatus(hosting.id, 'APPROVED')}
+                            >
+                              <CheckCircle2 className="w-4 h-4 mr-1" /> Tekrar Onayla
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
