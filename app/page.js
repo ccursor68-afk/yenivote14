@@ -2848,37 +2848,68 @@ function AdminPanel({ user, onBack }) {
           <TabsContent value="users">
             <Card className="bg-zinc-900/50 border-zinc-800">
               <CardHeader>
-                <CardTitle className="text-white">Kullanıcılar</CardTitle>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <CardTitle className="text-white">Kullanıcılar ({users.length})</CardTitle>
+                  <Input
+                    placeholder="Kullanıcı ara..."
+                    className="w-full md:w-64 bg-zinc-800 border-zinc-700"
+                    onChange={(e) => {
+                      // Local filter (you can add server-side search if needed)
+                    }}
+                  />
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-zinc-800">
-                      <TableHead className="text-zinc-400">Kullanıcı</TableHead>
-                      <TableHead className="text-zinc-400">Email</TableHead>
-                      <TableHead className="text-zinc-400">Rol</TableHead>
-                      <TableHead className="text-zinc-400">Sunucu</TableHead>
-                      <TableHead className="text-zinc-400">Kayıt</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map(u => (
-                      <TableRow key={u.id} className="border-zinc-800">
-                        <TableCell className="font-medium text-white">{u.username || '-'}</TableCell>
-                        <TableCell className="text-zinc-400">{u.email}</TableCell>
-                        <TableCell>
-                          <Badge className={u.role === 'ADMIN' ? 'bg-red-600' : 'bg-zinc-600'}>
-                            {u.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-zinc-400">{u._count?.servers || 0}</TableCell>
-                        <TableCell className="text-zinc-400">
-                          {new Date(u.createdAt).toLocaleDateString('tr-TR')}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-zinc-800">
+                        <TableHead className="text-zinc-400">Kullanıcı</TableHead>
+                        <TableHead className="text-zinc-400 hidden md:table-cell">Email</TableHead>
+                        <TableHead className="text-zinc-400">Rol</TableHead>
+                        <TableHead className="text-zinc-400 hidden lg:table-cell">Sunucu</TableHead>
+                        <TableHead className="text-zinc-400">İşlemler</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map(u => (
+                        <TableRow key={u.id} className="border-zinc-800">
+                          <TableCell>
+                            <div>
+                              <p className="font-medium text-white">{u.username || '-'}</p>
+                              <p className="text-xs text-zinc-500 md:hidden">{u.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-zinc-400 hidden md:table-cell">{u.email}</TableCell>
+                          <TableCell>
+                            <Select defaultValue={u.role} onValueChange={(v) => handleUserRoleChange(u.id, v)}>
+                              <SelectTrigger className={`w-32 h-8 text-xs ${u.role === 'ADMIN' ? 'bg-red-500/20 border-red-500/30 text-red-400' : u.role === 'VERIFIED_HOSTING' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-zinc-800 border-zinc-700'}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="USER">User</SelectItem>
+                                <SelectItem value="VERIFIED_HOSTING">Verified Hosting</SelectItem>
+                                <SelectItem value="ADMIN">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-zinc-400 hidden lg:table-cell">{u._count?.servers || 0}</TableCell>
+                          <TableCell>
+                            <Button 
+                              size="sm" 
+                              variant="destructive" 
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleDeleteUser(u.id)}
+                              disabled={u.role === 'ADMIN'}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
