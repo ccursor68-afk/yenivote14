@@ -719,10 +719,20 @@ function AuthDialog({ open, onOpenChange, onSuccess }) {
 }
 
 // Profile Page Component
+// Badge display info
+const BADGE_INFO = {
+  CRITIC: { name: 'Eleştirmen', icon: '⭐', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  EXPLORER: { name: 'Kaşif', icon: '🌍', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  VERIFIED_OWNER: { name: 'Onaylı Sahip', icon: '✓', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  EARLY_ADOPTER: { name: 'Öncü', icon: '🚀', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  TOP_VOTER: { name: 'Oy Ustası', icon: '🗳️', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' }
+}
+
 function ProfilePage({ user, onBack, onUpdateUser }) {
   const [loading, setLoading] = useState(false)
   const [servers, setServers] = useState([])
   const [tickets, setTickets] = useState([])
+  const [badges, setBadges] = useState([])
   const [form, setForm] = useState({
     username: user?.username || '',
     minecraftNick: user?.minecraftNick || ''
@@ -740,7 +750,15 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
       .then(res => res.json())
       .then(data => setTickets(data.tickets || []))
       .catch(() => {})
-  }, [])
+
+    // Fetch user's badges
+    if (user?.id) {
+      fetch(`/api/users/${user.id}/badges`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => setBadges(data.badges || []))
+        .catch(() => {})
+    }
+  }, [user?.id])
 
   const handleSave = async () => {
     setLoading(true)
@@ -806,6 +824,21 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
               <h2 className="text-xl font-bold text-white mt-4">{user?.username || 'Kullanıcı'}</h2>
               <p className="text-zinc-500 text-sm">{user?.email}</p>
               
+              {/* User Badges */}
+              {badges.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2 mt-4">
+                  {badges.map(badge => {
+                    const info = BADGE_INFO[badge.badgeType] || {}
+                    return (
+                      <Badge key={badge.id} variant="outline" className={info.color} title={`Kazanıldı: ${new Date(badge.earnedAt).toLocaleDateString('tr-TR')}`}>
+                        <span className="mr-1">{info.icon}</span>
+                        {info.name}
+                      </Badge>
+                    )
+                  })}
+                </div>
+              )}
+              
               <Separator className="my-6 bg-zinc-800" />
               
               <div className="space-y-3 text-left">
@@ -816,6 +849,10 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Destek Talepleri</span>
                   <span className="text-white font-medium">{tickets.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-500">Rozetler</span>
+                  <span className="text-white font-medium">{badges.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Üyelik</span>
