@@ -2555,6 +2555,7 @@ export default function App() {
   const [servers, setServers] = useState([])
   const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(true) // Hydration check
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState('ALL')
   const [gameMode, setGameMode] = useState('ALL')
@@ -2566,14 +2567,55 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false)
   const [voteServer, setVoteServer] = useState(null)
 
-  // Fetch current user
+  // Fetch current user - HYDRATION CHECK with retry
   useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setUser(data.user))
-      .catch(() => {})
+    let mounted = true
     
-    // Fetch banners
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { 
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+        
+        if (!mounted) return
+        
+        const data = await res.json()
+        
+        if (data.user) {
+          setUser(data.user)
+        } else {
+          setUser(null)
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err)
+        if (mounted) setUser(null)
+      } finally {
+        if (mounted) setAuthLoading(false)
+      }
+    }
+    
+    checkAuth()
+    
+    // Also check on window focus (user may have logged in/out in another tab)
+    const handleFocus = () => {
+      checkAuth()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      mounted = false
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
+  
+  // Fetch banners separately
+  useEffect(() => {
     fetch('/api/banners', { credentials: 'include' })
       .then(res => res.json())
       .then(data => setBanners(data.banners || []))
