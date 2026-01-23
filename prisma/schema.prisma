@@ -150,14 +150,20 @@ model Server {
   voteCount         Int             @default(0)
   monthlyVotes      Int             @default(0)
 
-  // Sponsor
+  // Sponsor (legacy)
   isSponsored       Boolean         @default(false)
   sponsoredUntil    DateTime?
+
+  // Analytics
+  clickCount        Int             @default(0)
+  lastPingedAt      DateTime?
 
   // Relations
   ownerId           String
   owner             User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   votes             Vote[]
+  boosts            ServerBoost[]
+  stats             ServerStats[]
 
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
@@ -168,6 +174,35 @@ model Server {
   @@index([platform])
   @@index([gameMode])
   @@index([createdAt])
+}
+
+// ==================== SERVER BOOST SYSTEM ====================
+model ServerBoost {
+  id          String    @id @default(uuid())
+  serverId    String
+  server      Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  startTime   DateTime  @default(now())
+  endTime     DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  
+  @@index([serverId])
+  @@index([isActive])
+  @@index([endTime])
+}
+
+// ==================== SERVER STATS (TIME SERIES) ====================
+model ServerStats {
+  id          String    @id @default(uuid())
+  serverId    String
+  server      Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  playerCount Int       @default(0)
+  maxPlayers  Int       @default(0)
+  isOnline    Boolean   @default(false)
+  recordedAt  DateTime  @default(now())
+  
+  @@index([serverId])
+  @@index([recordedAt])
 }
 
 model Vote {
