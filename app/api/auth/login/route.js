@@ -42,23 +42,18 @@ export async function POST(request) {
         username: user.username,
         minecraftNick: user.minecraftNick,
         role: user.role,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt
       },
       message: 'Giriş başarılı' 
     });
     
-    // Set cookie with proper options
+    // Set cookie with proper options - CRITICAL FIX
     response.cookies.set(cookieOptions.name, cookieOptions.value, {
       httpOnly: cookieOptions.httpOnly,
       secure: cookieOptions.secure,
       sameSite: cookieOptions.sameSite,
       maxAge: cookieOptions.maxAge,
-      path: cookieOptions.path
-    });
-    
-    console.log('Login successful, cookie set with options:', {
-      secure: cookieOptions.secure,
-      sameSite: cookieOptions.sameSite,
       path: cookieOptions.path
     });
     
