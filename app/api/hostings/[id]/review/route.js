@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
+import { checkAndAwardBadges } from '@/lib/badges';
 
 // POST /api/hostings/[id]/review - Add review to hosting
 export async function POST(request, { params }) {
@@ -81,7 +82,14 @@ export async function POST(request, { params }) {
       }
     });
 
-    return NextResponse.json({ review, message: 'Değerlendirme kaydedildi' });
+    // Check and award badges (CRITIC badge for 3+ reviews)
+    const newBadges = await checkAndAwardBadges(prisma, user.id);
+
+    return NextResponse.json({ 
+      review, 
+      message: 'Değerlendirme kaydedildi',
+      newBadges: newBadges.length > 0 ? newBadges : undefined
+    });
   } catch (error) {
     console.error('Hosting review error:', error);
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
