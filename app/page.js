@@ -3365,11 +3365,21 @@ export default function App() {
   }
 
   if (currentPage === 'hostings') {
-    return <HostingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} />
+    return <HostingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} onGoToSupport={goToSupport} />
   }
 
   if (currentPage === 'pricing') {
-    return <PricingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} />
+    return <PricingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} onGoToSupport={goToSupport} />
+  }
+
+  if (currentPage === 'support') {
+    return <SupportPage 
+      onBack={() => { setCurrentPage('home'); setSupportCategory(null); setSupportSubject(''); }} 
+      user={user} 
+      onOpenAuth={() => setAuthOpen(true)} 
+      initialCategory={supportCategory}
+      initialSubject={supportSubject}
+    />
   }
 
   if (currentPage === 'admin' && user?.role === 'ADMIN') {
@@ -3388,30 +3398,34 @@ export default function App() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo className="w-10 h-10" />
-            <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">ServerListRank</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent hidden sm:block">ServerListRank</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
             <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> Sunucular</button>
             <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Server className="w-4 h-4" /> Hostingler</button>
             <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><BookOpen className="w-4 h-4" /> Blog</button>
             <button onClick={() => setCurrentPage('pricing')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Gem className="w-4 h-4" /> Fiyatlandırma</button>
+            {user && (
+              <button onClick={() => setCurrentPage('support')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Ticket className="w-4 h-4" /> Destek</button>
+            )}
             {user?.role === 'ADMIN' && (
               <button onClick={() => setCurrentPage('admin')} className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"><Shield className="w-4 h-4" /> Admin</button>
             )}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {user ? (
               <>
-                <Button variant="outline" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 mr-1" /> Sunucu Ekle</Button>
+                <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white hidden sm:flex" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Sunucu Ekle</span></Button>
                 <button onClick={() => setCurrentPage('profile')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <Avatar className="w-8 h-8 ring-2 ring-emerald-600/50">
                     <AvatarImage src={user.avatarUrl} />
                     <AvatarFallback className="bg-emerald-600 text-white">{user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-white hidden md:block">{user.username || user.email}</span>
-                  {user.role === 'ADMIN' && (<Badge className="bg-red-600 text-white text-xs">Admin</Badge>)}
+                  <span className="text-sm text-white hidden lg:block">{user.username || user.email}</span>
+                  {user.role === 'ADMIN' && (<Badge className="bg-red-600 text-white text-xs hidden md:inline-flex">Admin</Badge>)}
+                  {user.role === 'VERIFIED_HOSTING' && (<Badge className="bg-emerald-600 text-white text-xs hidden md:inline-flex">Hosting</Badge>)}
                 </button>
                 <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:bg-zinc-800"><LogOut className="w-4 h-4" /></Button>
               </>
