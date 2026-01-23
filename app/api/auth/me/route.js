@@ -2,28 +2,39 @@ import { NextResponse } from 'next/server';
 import getPrisma, { isDatabaseAvailable } from '@/lib/db';
 import { verifyToken, getTokenFromRequest } from '@/lib/auth';
 
+// Force dynamic - no caching for auth endpoint
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request) {
   try {
-    // Debug: Log request info
-    const cookieHeader = request.headers.get('cookie');
-    console.log('Auth/me - Cookie header:', cookieHeader ? 'present' : 'missing');
-    
     const token = await getTokenFromRequest(request);
     if (!token) {
-      console.log('Auth/me - No token found');
-      return NextResponse.json({ user: null });
+      return NextResponse.json({ user: null }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
     }
     
-    console.log('Auth/me - Token found, verifying...');
     const payload = await verifyToken(token);
     if (!payload) {
-      console.log('Auth/me - Invalid token');
-      return NextResponse.json({ user: null });
+      return NextResponse.json({ user: null }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
     }
     
     if (!isDatabaseAvailable()) {
-      console.log('Auth/me - Database not available');
-      return NextResponse.json({ user: null });
+      return NextResponse.json({ user: null }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
     }
     
     const prisma = getPrisma();
@@ -41,10 +52,19 @@ export async function GET(request) {
       }
     });
 
-    console.log('Auth/me - User found:', user ? user.email : 'null');
-    return NextResponse.json({ user });
+    return NextResponse.json({ user }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
   } catch (error) {
     console.error('Auth me error:', error);
-    return NextResponse.json({ user: null });
+    return NextResponse.json({ user: null }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
   }
 }
