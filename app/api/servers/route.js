@@ -32,11 +32,13 @@ export async function GET(request) {
       })
     };
 
+    // Get servers with active boosts first, then by votes
     const [servers, total] = await Promise.all([
       prisma.server.findMany({
         where,
         orderBy: [
           { isSponsored: 'desc' },
+          { sponsoredUntil: 'desc' }, // Boost remaining time
           { voteCount: 'desc' }
         ],
         skip: (page - 1) * limit,
