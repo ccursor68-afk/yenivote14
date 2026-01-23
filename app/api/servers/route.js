@@ -62,6 +62,7 @@ export async function GET(request) {
           monthlyVotes: true,
           isSponsored: true,
           sponsoredUntil: true,
+          clickCount: true,
           createdAt: true
         }
       }),
