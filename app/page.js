@@ -1258,8 +1258,9 @@ function HostingPage({ onBack, user, onOpenAuth }) {
                         {index + 1}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-bold text-white text-lg">{hosting.name}</h3>
+                          {hosting.isVerified && <Badge className="bg-emerald-500/20 text-emerald-400 text-xs border-emerald-500/30"><CheckCircle2 className="w-3 h-3 mr-1" />Onaylı</Badge>}
                           {hosting.isSponsored && <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Sponsor</Badge>}
                         </div>
                         <div className="flex items-center gap-1 text-yellow-500">
