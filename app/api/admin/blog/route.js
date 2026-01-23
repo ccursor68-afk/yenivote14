@@ -68,7 +68,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { title, content, excerpt, coverImage, tags, published, categoryId } = body;
+    const { title, content, excerpt, coverImage, tags, published, categoryId, blogType } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Başlık ve içerik gerekli' }, { status: 400 });
@@ -97,6 +97,7 @@ export async function POST(request) {
         coverImage,
         tags: tags || [],
         published: published || false,
+        blogType: blogType || 'NEWS',
         authorId: admin.id,
         categoryId: categoryId || null
       }
