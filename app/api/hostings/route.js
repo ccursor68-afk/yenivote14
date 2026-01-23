@@ -3,11 +3,17 @@ import { v4 as uuidv4 } from 'uuid';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 
+// Force dynamic - no caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // GET /api/hostings - List all approved hostings
 export async function GET(request) {
   try {
     if (!isDatabaseAvailable()) {
-      return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
+      return NextResponse.json({ hostings: [] }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+      });
     }
 
     const { searchParams } = new URL(request.url);
@@ -16,9 +22,9 @@ export async function GET(request) {
 
     const prisma = getPrisma();
 
+    // Only filter by approvalStatus, not isActive
     const where = {
       approvalStatus: 'APPROVED',
-      isActive: true,
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -27,12 +33,14 @@ export async function GET(request) {
       })
     };
 
+    console.log('Hostings query where:', JSON.stringify(where));
+
     const hostings = await prisma.hosting.findMany({
       where,
       orderBy: [
-        { isVerified: 'desc' }, // Verified hostings first
+        { isVerified: 'desc' },
         { isSponsored: 'desc' },
-        { [sort]: 'desc' }
+        { avgOverall: 'desc' }
       ],
       include: {
         owner: {
@@ -41,10 +49,16 @@ export async function GET(request) {
       }
     });
 
-    return NextResponse.json({ hostings });
+    console.log('Hostings found:', hostings.length);
+
+    return NextResponse.json({ hostings }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+    });
   } catch (error) {
     console.error('Hostings list error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ hostings: [], error: error.message }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+    });
   }
 }
 
@@ -87,6 +101,7 @@ export async function POST(request) {
         features: features || [],
         startingPrice: parseFloat(startingPrice),
         approvalStatus: 'PENDING',
+        isActive: true,
         ownerId: user.id
       }
     });
