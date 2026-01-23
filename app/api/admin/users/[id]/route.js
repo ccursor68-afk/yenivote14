@@ -10,6 +10,44 @@ async function requireAdmin(request) {
   return user;
 }
 
+// GET /api/admin/users/[id] - Get user details
+export async function GET(request, { params }) {
+  try {
+    if (!isDatabaseAvailable()) {
+      return NextResponse.json(dbNotAvailableResponse(), { status: 503 });
+    }
+
+    const admin = await requireAdmin(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'Admin yetkisi gerekli' }, { status: 403 });
+    }
+
+    const { id } = params;
+    const prisma = getPrisma();
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        servers: true,
+        hostings: true,
+        tickets: true,
+        _count: {
+          select: { servers: true, tickets: true, hostings: true }
+        }
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
+    }
+
+    return NextResponse.json({ user });
+  } catch (error) {
+    console.error('Get user error:', error);
+    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+  }
+}
+
 // DELETE /api/admin/users/[id] - Delete user
 export async function DELETE(request, { params }) {
   try {
@@ -23,18 +61,25 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = params;
+    const prisma = getPrisma();
 
-    // Prevent self-deletion
-    if (id === admin.id) {
-      return NextResponse.json({ error: 'Kendinizi silemezsiniz' }, { status: 400 });
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
 
-    const prisma = getPrisma();
+    // Prevent deleting admin users
+    if (user.role === 'ADMIN') {
+      return NextResponse.json({ error: 'Admin kullanıcılar silinemez' }, { status: 403 });
+    }
+
+    // Delete user (cascade will handle related records)
     await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Kullanıcı silindi' });
   } catch (error) {
-    console.error('Admin user delete error:', error);
+    console.error('Delete user error:', error);
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
