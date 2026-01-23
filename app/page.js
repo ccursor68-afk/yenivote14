@@ -2183,59 +2183,223 @@ function AdminPanel({ user, onBack }) {
           <TabsContent value="servers">
             <Card className="bg-zinc-900/50 border-zinc-800">
               <CardHeader>
-                <CardTitle className="text-white">Tüm Sunucular</CardTitle>
+                <CardTitle className="text-white">Tüm Sunucular ({allServers.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                {pendingServers.length === 0 ? (
+                {allServers.length === 0 ? (
                   <p className="text-zinc-500 text-center py-8">Sunucu yok</p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-zinc-800">
-                        <TableHead className="text-zinc-400">Sunucu</TableHead>
-                        <TableHead className="text-zinc-400">IP</TableHead>
-                        <TableHead className="text-zinc-400">Durum</TableHead>
-                        <TableHead className="text-zinc-400">Sponsor</TableHead>
-                        <TableHead className="text-zinc-400">İşlemler</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingServers.map(server => (
-                        <TableRow key={server.id} className="border-zinc-800">
-                          <TableCell className="font-medium text-white">{server.name}</TableCell>
-                          <TableCell className="text-zinc-400">{server.ip}</TableCell>
-                          <TableCell>
-                            <Badge className={server.approvalStatus === 'APPROVED' ? 'bg-emerald-600' : server.approvalStatus === 'PENDING' ? 'bg-amber-600' : 'bg-red-600'}>
-                              {server.approvalStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Select onValueChange={(v) => handleSponsor(server.id, v)}>
-                              <SelectTrigger className="w-32 bg-zinc-800 border-zinc-700">
-                                <SelectValue placeholder={server.isSponsored ? 'Aktif' : 'Yok'} />
-                              </SelectTrigger>
-                              <SelectContent className="bg-zinc-800 border-zinc-700">
-                                <SelectItem value="0">Kaldır</SelectItem>
-                                <SelectItem value="7">7 Gün</SelectItem>
-                                <SelectItem value="30">30 Gün</SelectItem>
-                                <SelectItem value="90">90 Gün</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button size="sm" variant="outline" className="border-zinc-700">
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-zinc-800">
+                          <TableHead className="text-zinc-400">Sunucu</TableHead>
+                          <TableHead className="text-zinc-400 hidden md:table-cell">IP</TableHead>
+                          <TableHead className="text-zinc-400">Durum</TableHead>
+                          <TableHead className="text-zinc-400 hidden lg:table-cell">Sponsor</TableHead>
+                          <TableHead className="text-zinc-400">İşlemler</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {allServers.map(server => (
+                          <TableRow key={server.id} className="border-zinc-800">
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-white">{server.name}</p>
+                                <p className="text-xs text-zinc-500 md:hidden">{server.ip}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-zinc-400 hidden md:table-cell">{server.ip}:{server.port}</TableCell>
+                            <TableCell>
+                              <Badge className={server.approvalStatus === 'APPROVED' ? 'bg-emerald-600' : server.approvalStatus === 'PENDING' ? 'bg-amber-600' : 'bg-red-600'}>
+                                {server.approvalStatus === 'APPROVED' ? 'Onaylı' : server.approvalStatus === 'PENDING' ? 'Beklemede' : 'Reddedildi'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <Select onValueChange={(v) => handleSponsor(server.id, v)}>
+                                <SelectTrigger className="w-28 bg-zinc-800 border-zinc-700 h-8 text-xs">
+                                  <SelectValue placeholder={server.isSponsored ? 'Aktif' : 'Yok'} />
+                                </SelectTrigger>
+                                <SelectContent className="bg-zinc-800 border-zinc-700">
+                                  <SelectItem value="0">Kaldır</SelectItem>
+                                  <SelectItem value="7">7 Gün</SelectItem>
+                                  <SelectItem value="30">30 Gün</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 flex-wrap">
+                                <Button size="sm" variant="outline" className="border-zinc-700 h-8 w-8 p-0" onClick={() => openEditServer(server)}>
+                                  <PenSquare className="w-3 h-3" />
+                                </Button>
+                                <Button size="sm" variant="destructive" className="h-8 w-8 p-0" onClick={() => setDeleteConfirm(server)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Edit Server Modal */}
+            <Dialog open={!!editingServer} onOpenChange={(open) => !open && setEditingServer(null)}>
+              <DialogContent className="bg-zinc-900 border-zinc-800 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Sunucu Düzenle</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label className="text-white">Sunucu Adı</Label>
+                    <Input
+                      value={editServerForm.name || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, name: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">IP Adresi</Label>
+                    <Input
+                      value={editServerForm.ip || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, ip: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Port</Label>
+                    <Input
+                      type="number"
+                      value={editServerForm.port || 25565}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, port: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Versiyon</Label>
+                    <Input
+                      value={editServerForm.version || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, version: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Platform</Label>
+                    <Select value={editServerForm.platform} onValueChange={(v) => setEditServerForm({ ...editServerForm, platform: v })}>
+                      <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="JAVA">Java</SelectItem>
+                        <SelectItem value="BEDROCK">Bedrock</SelectItem>
+                        <SelectItem value="CROSSPLAY">Crossplay</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Oyun Modu</Label>
+                    <Select value={editServerForm.gameMode} onValueChange={(v) => setEditServerForm({ ...editServerForm, gameMode: v })}>
+                      <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="SURVIVAL">Survival</SelectItem>
+                        <SelectItem value="SKYBLOCK">Skyblock</SelectItem>
+                        <SelectItem value="FACTION">Faction</SelectItem>
+                        <SelectItem value="TOWNY">Towny</SelectItem>
+                        <SelectItem value="CREATIVE">Creative</SelectItem>
+                        <SelectItem value="MINIGAMES">Minigames</SelectItem>
+                        <SelectItem value="PRISON">Prison</SelectItem>
+                        <SelectItem value="KITPVP">KitPvP</SelectItem>
+                        <SelectItem value="OTHER">Diğer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-white">Kısa Açıklama</Label>
+                    <Input
+                      value={editServerForm.shortDescription || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, shortDescription: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-white">Detaylı Açıklama</Label>
+                    <Textarea
+                      value={editServerForm.longDescription || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, longDescription: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700 min-h-[100px]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Website</Label>
+                    <Input
+                      value={editServerForm.website || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, website: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Discord</Label>
+                    <Input
+                      value={editServerForm.discord || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, discord: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                      placeholder="https://discord.gg/..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Banner URL</Label>
+                    <Input
+                      value={editServerForm.bannerUrl || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, bannerUrl: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Logo URL</Label>
+                    <Input
+                      value={editServerForm.logoUrl || ''}
+                      onChange={(e) => setEditServerForm({ ...editServerForm, logoUrl: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setEditingServer(null)} className="border-zinc-700">İptal</Button>
+                  <Button onClick={handleEditServer} disabled={serverActionLoading} className="bg-emerald-600 hover:bg-emerald-500">
+                    {serverActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Kaydet'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Modal */}
+            <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+              <DialogContent className="bg-zinc-900 border-zinc-800">
+                <DialogHeader>
+                  <DialogTitle className="text-white flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                    Sunucu Silme Onayı
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-zinc-400 py-4">
+                  <strong className="text-white">{deleteConfirm?.name}</strong> sunucusunu silmek istediğinizden emin misiniz?
+                  <br /><br />
+                  <span className="text-red-400">Bu işlem geri alınamaz. Sunucuya ait tüm veriler (oylar, istatistikler, boostlar) silinecektir.</span>
+                </p>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDeleteConfirm(null)} className="border-zinc-700">İptal</Button>
+                  <Button variant="destructive" onClick={() => handleDeleteServer(deleteConfirm?.id)} disabled={serverActionLoading}>
+                    {serverActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Trash2 className="w-4 h-4 mr-2" />Sil</>}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Users Tab */}
