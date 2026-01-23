@@ -1202,12 +1202,16 @@ function BlogPostPage({ slug, onBack }) {
 }
 
 // Hosting Page Component
-function HostingPage({ onBack, user, onOpenAuth }) {
+function HostingPage({ onBack, user, onOpenAuth, onGoToSupport }) {
   const [hostings, setHostings] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewModal, setReviewModal] = useState(null)
   const [reviewForm, setReviewForm] = useState({ performance: 5, support: 5, priceValue: 5, comment: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addForm, setAddForm] = useState({
+    name: '', website: '', description: '', longDescription: '', startingPrice: '', features: ''
+  })
 
   useEffect(() => {
     fetch('/api/hostings', { credentials: 'include' })
@@ -1218,6 +1222,42 @@ function HostingPage({ onBack, user, onOpenAuth }) {
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const canAddHosting = user && (user.role === 'ADMIN' || user.role === 'VERIFIED_HOSTING')
+
+  const submitHosting = async () => {
+    if (!addForm.name || !addForm.website || !addForm.description || !addForm.startingPrice) {
+      toast.error('Zorunlu alanları doldurun')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/hostings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...addForm,
+          startingPrice: parseFloat(addForm.startingPrice),
+          features: addForm.features.split(',').map(f => f.trim()).filter(Boolean)
+        })
+      })
+      if (res.ok) {
+        toast.success('Hosting başvurunuz gönderildi! Onay bekliyor.')
+        setShowAddModal(false)
+        setAddForm({ name: '', website: '', description: '', longDescription: '', startingPrice: '', features: '' })
+        const updated = await fetch('/api/hostings', { credentials: 'include' }).then(r => r.json())
+        setHostings(updated.hostings || [])
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Hata oluştu')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const submitReview = async () => {
     if (!user) {
@@ -1268,21 +1308,47 @@ function HostingPage({ onBack, user, onOpenAuth }) {
   return (
     <div className="min-h-screen bg-zinc-950">
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800"><ChevronLeft className="w-5 h-5" /></Button>
-          <Logo className="w-8 h-8" />
-          <span className="text-lg font-bold text-emerald-500">Minecraft Hosting Karşılaştırma</span>
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800"><ChevronLeft className="w-5 h-5" /></Button>
+            <Logo className="w-8 h-8" />
+            <span className="text-lg font-bold text-emerald-500 hidden sm:block">Minecraft Hosting Karşılaştırma</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {canAddHosting ? (
+              <Button onClick={() => setShowAddModal(true)} className="bg-emerald-600 hover:bg-emerald-500">
+                <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Hosting Ekle</span>
+              </Button>
+            ) : user ? (
+              <Button variant="outline" className="border-zinc-700" onClick={() => onGoToSupport?.('VERIFICATION_REQUEST')}>
+                <Shield className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Hosting Sahibi Ol</span>
+              </Button>
+            ) : null}
+          </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">En İyi Minecraft Hosting Firmaları</h1>
-          <p className="text-zinc-400">Performans, destek ve fiyat/performans açısından karşılaştırın</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">En İyi Minecraft Hosting Firmaları</h1>
+          <p className="text-zinc-400 text-sm md:text-base">Performans, destek ve fiyat/performans açısından karşılaştırın</p>
+          {!canAddHosting && user && (
+            <p className="text-xs text-amber-400 mt-2">
+              Hosting firmanızı eklemek için "Hosting Sahibi Ol" butonuna tıklayarak başvuru yapın.
+            </p>
+          )}
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+        ) : hostings.length === 0 ? (
+          <Card className="bg-zinc-900/50 border-zinc-800 max-w-md mx-auto">
+            <CardContent className="py-12 text-center">
+              <Server className="w-16 h-16 mx-auto text-zinc-700 mb-4" />
+              <h3 className="text-lg font-medium text-white mb-2">Henüz hosting yok</h3>
+              <p className="text-zinc-400 text-sm">İlk hosting firmasını ekleyen siz olun!</p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-4 max-w-4xl mx-auto">
             {hostings.map((hosting, index) => (
@@ -1290,53 +1356,53 @@ function HostingPage({ onBack, user, onOpenAuth }) {
                 <CardContent className="p-0">
                   <div className="flex flex-col md:flex-row">
                     {/* Rank & Logo */}
-                    <div className="flex items-center gap-4 p-6 md:w-64 border-b md:border-b-0 md:border-r border-zinc-800">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${index === 0 ? 'bg-yellow-500 text-black' : index === 1 ? 'bg-gray-400 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-zinc-700 text-white'}`}>
+                    <div className="flex items-center gap-4 p-4 md:p-6 md:w-64 border-b md:border-b-0 md:border-r border-zinc-800">
+                      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-lg md:text-xl ${index === 0 ? 'bg-yellow-500 text-black' : index === 1 ? 'bg-gray-400 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-zinc-700 text-white'}`}>
                         {index + 1}
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-white text-lg">{hosting.name}</h3>
+                          <h3 className="font-bold text-white text-base md:text-lg truncate">{hosting.name}</h3>
                           {hosting.isVerified && <Badge className="bg-emerald-500/20 text-emerald-400 text-xs border-emerald-500/30"><CheckCircle2 className="w-3 h-3 mr-1" />Onaylı</Badge>}
                           {hosting.isSponsored && <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Sponsor</Badge>}
                         </div>
-                        <div className="flex items-center gap-1 text-yellow-500">
+                        <div className="flex items-center gap-1 text-yellow-500 mt-1">
                           {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${i < Math.round(hosting.avgOverall) ? 'fill-yellow-500' : 'fill-zinc-700 text-zinc-700'}`} />
+                            <Star key={i} className={`w-3 h-3 md:w-4 md:h-4 ${i < Math.round(hosting.avgOverall) ? 'fill-yellow-500' : 'fill-zinc-700 text-zinc-700'}`} />
                           ))}
-                          <span className="text-white ml-1 font-bold">{hosting.avgOverall?.toFixed(1) || '0.0'}</span>
-                          <span className="text-zinc-500 text-sm">({hosting.reviewCount} değerlendirme)</span>
+                          <span className="text-white ml-1 font-bold text-sm">{hosting.avgOverall?.toFixed(1) || '0.0'}</span>
+                          <span className="text-zinc-500 text-xs">({hosting.reviewCount})</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Ratings */}
-                    <div className="flex-1 p-6 space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex-1 p-4 md:p-6 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                         <div>
-                          <div className="flex justify-between text-sm mb-1">
+                          <div className="flex justify-between text-xs md:text-sm mb-1">
                             <span className="text-zinc-400">Performans</span>
                             <span className="text-white font-medium">{hosting.avgPerformance?.toFixed(1) || '0.0'}</span>
                           </div>
                           <Progress value={(hosting.avgPerformance || 0) * 20} className="h-2 bg-zinc-800" />
                         </div>
                         <div>
-                          <div className="flex justify-between text-sm mb-1">
+                          <div className="flex justify-between text-xs md:text-sm mb-1">
                             <span className="text-zinc-400">Destek</span>
                             <span className="text-white font-medium">{hosting.avgSupport?.toFixed(1) || '0.0'}</span>
                           </div>
                           <Progress value={(hosting.avgSupport || 0) * 20} className="h-2 bg-zinc-800" />
                         </div>
                         <div>
-                          <div className="flex justify-between text-sm mb-1">
+                          <div className="flex justify-between text-xs md:text-sm mb-1">
                             <span className="text-zinc-400">Fiyat/Performans</span>
                             <span className="text-white font-medium">{hosting.avgPriceValue?.toFixed(1) || '0.0'}</span>
                           </div>
                           <Progress value={(hosting.avgPriceValue || 0) * 20} className="h-2 bg-zinc-800" />
                         </div>
                       </div>
-                      <p className="text-sm text-zinc-400">{hosting.description}</p>
-                      <div className="flex flex-wrap gap-2">
+                      <p className="text-xs md:text-sm text-zinc-400 line-clamp-2">{hosting.description}</p>
+                      <div className="flex flex-wrap gap-1 md:gap-2">
                         {hosting.features?.slice(0, 4).map((f, i) => (
                           <Badge key={i} variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">{f}</Badge>
                         ))}
@@ -1344,22 +1410,24 @@ function HostingPage({ onBack, user, onOpenAuth }) {
                     </div>
 
                     {/* Price & Actions */}
-                    <div className="p-6 md:w-48 flex flex-col items-center justify-center gap-3 border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900">
+                    <div className="p-4 md:p-6 md:w-44 flex flex-row md:flex-col items-center justify-between md:justify-center gap-3 border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900">
                       <div className="text-center">
-                        <span className="text-2xl font-bold text-emerald-500">{parseFloat(hosting.startingPrice).toFixed(2)}</span>
-                        <span className="text-zinc-400 text-sm"> ₺/ay</span>
+                        <span className="text-xl md:text-2xl font-bold text-emerald-500">{parseFloat(hosting.startingPrice).toFixed(0)}</span>
+                        <span className="text-zinc-400 text-xs md:text-sm"> ₺/ay</span>
                       </div>
-                      <a href={hosting.website} target="_blank" rel="noopener noreferrer" className="w-full">
-                        <Button className="w-full bg-emerald-600 hover:bg-emerald-500">
-                          <ExternalLink className="w-4 h-4 mr-1" /> Siteye Git
+                      <div className="flex md:flex-col gap-2">
+                        <a href={hosting.website} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-500">
+                            <ExternalLink className="w-4 h-4 md:mr-1" /> <span className="hidden md:inline">Siteye Git</span>
+                          </Button>
+                        </a>
+                        <Button size="sm" variant="outline" className="border-zinc-700" onClick={() => {
+                          setReviewForm({ performance: 5, support: 5, priceValue: 5, comment: '' })
+                          setReviewModal(hosting)
+                        }}>
+                          <Star className="w-4 h-4 md:mr-1" /> <span className="hidden md:inline">Değerlendir</span>
                         </Button>
-                      </a>
-                      <Button variant="outline" className="w-full border-zinc-700" onClick={() => {
-                        setReviewForm({ performance: 5, support: 5, priceValue: 5, comment: '' })
-                        setReviewModal(hosting)
-                      }}>
-                        <Star className="w-4 h-4 mr-1" /> Değerlendir
-                      </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -1368,6 +1436,48 @@ function HostingPage({ onBack, user, onOpenAuth }) {
           </div>
         )}
       </div>
+
+      {/* Add Hosting Modal */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Hosting Firması Ekle</DialogTitle>
+            <DialogDescription className="text-zinc-400">Hosting firmanızın bilgilerini girin. Başvurunuz incelendikten sonra yayınlanacaktır.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-white">Firma Adı *</Label>
+              <Input value={addForm.name} onChange={(e) => setAddForm(f => ({ ...f, name: e.target.value }))} className="bg-zinc-800 border-zinc-700" placeholder="Örn: TurboHost" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Website URL *</Label>
+              <Input value={addForm.website} onChange={(e) => setAddForm(f => ({ ...f, website: e.target.value }))} className="bg-zinc-800 border-zinc-700" placeholder="https://..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Kısa Açıklama *</Label>
+              <Input value={addForm.description} onChange={(e) => setAddForm(f => ({ ...f, description: e.target.value }))} className="bg-zinc-800 border-zinc-700" placeholder="Firmanızı kısaca tanıtın" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Detaylı Açıklama</Label>
+              <Textarea value={addForm.longDescription} onChange={(e) => setAddForm(f => ({ ...f, longDescription: e.target.value }))} className="bg-zinc-800 border-zinc-700 min-h-[100px]" placeholder="Detaylı bilgi..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Başlangıç Fiyatı (₺/ay) *</Label>
+              <Input type="number" value={addForm.startingPrice} onChange={(e) => setAddForm(f => ({ ...f, startingPrice: e.target.value }))} className="bg-zinc-800 border-zinc-700" placeholder="29.90" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Özellikler (virgülle ayırın)</Label>
+              <Input value={addForm.features} onChange={(e) => setAddForm(f => ({ ...f, features: e.target.value }))} className="bg-zinc-800 border-zinc-700" placeholder="DDoS Koruması, 7/24 Destek, SSD Depolama" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddModal(false)} className="border-zinc-700">İptal</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={submitHosting} disabled={submitting}>
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Gönder'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Review Modal */}
       <Dialog open={!!reviewModal} onOpenChange={() => setReviewModal(null)}>
