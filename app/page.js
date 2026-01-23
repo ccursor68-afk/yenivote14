@@ -3245,9 +3245,20 @@ export default function App() {
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState(null)
   
+  // Support page state
+  const [supportCategory, setSupportCategory] = useState(null)
+  const [supportSubject, setSupportSubject] = useState('')
+  
   // Dialogs
   const [authOpen, setAuthOpen] = useState(false)
   const [voteServer, setVoteServer] = useState(null)
+
+  // Go to support with pre-filled data
+  const goToSupport = (category, subject = '') => {
+    setSupportCategory(category)
+    setSupportSubject(subject)
+    setCurrentPage('support')
+  }
 
   // Fetch current user - HYDRATION CHECK with retry
   useEffect(() => {
