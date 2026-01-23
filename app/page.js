@@ -1912,12 +1912,18 @@ function AdminPanel({ user, onBack }) {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-zinc-800 mb-6">
+          <TabsList className="bg-zinc-800 mb-6 flex-wrap">
             <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-600">
               <BarChart3 className="w-4 h-4 mr-2" /> Genel
             </TabsTrigger>
             <TabsTrigger value="servers" className="data-[state=active]:bg-emerald-600">
               <ServerCog className="w-4 h-4 mr-2" /> Sunucular
+            </TabsTrigger>
+            <TabsTrigger value="boosts" className="data-[state=active]:bg-emerald-600">
+              <Zap className="w-4 h-4 mr-2" /> Boostlar
+            </TabsTrigger>
+            <TabsTrigger value="hostings" className="data-[state=active]:bg-emerald-600">
+              <Shield className="w-4 h-4 mr-2" /> Hostingler
             </TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-emerald-600">
               <UserCog className="w-4 h-4 mr-2" /> Kullanıcılar
@@ -1956,6 +1962,137 @@ function AdminPanel({ user, onBack }) {
                           </Button>
                           <Button size="sm" variant="destructive" onClick={() => handleServerAction(server.id, 'REJECTED')}>
                             <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Boosts Tab */}
+          <TabsContent value="boosts">
+            <div className="space-y-6">
+              {/* Add Boost Form */}
+              <Card className="bg-zinc-900/50 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-yellow-500" /> Yeni Boost Ekle
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-white">Sunucu</Label>
+                      <Select value={boostForm.serverId} onValueChange={(v) => setBoostForm(f => ({ ...f, serverId: v }))}>
+                        <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                          <SelectValue placeholder="Sunucu seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allServers.filter(s => s.approvalStatus === 'APPROVED').map(server => (
+                            <SelectItem key={server.id} value={server.id}>{server.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-white">Süre (Gün)</Label>
+                      <Select value={String(boostForm.durationDays)} onValueChange={(v) => setBoostForm(f => ({ ...f, durationDays: parseInt(v) }))}>
+                        <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="7">7 Gün</SelectItem>
+                          <SelectItem value="14">14 Gün</SelectItem>
+                          <SelectItem value="30">30 Gün</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button onClick={handleCreateBoost} className="bg-yellow-600 hover:bg-yellow-500 w-full">
+                        <Zap className="w-4 h-4 mr-2" /> Boost Ekle
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Active Boosts */}
+              <Card className="bg-zinc-900/50 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Aktif Boostlar</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {boosts.filter(b => b.isActive && new Date(b.endTime) > new Date()).length === 0 ? (
+                    <p className="text-zinc-500 text-center py-8">Aktif boost yok</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {boosts.filter(b => b.isActive && new Date(b.endTime) > new Date()).map(boost => (
+                        <div key={boost.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                              <Zap className="w-5 h-5 text-yellow-500" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">{boost.server?.name || 'Sunucu'}</p>
+                              <p className="text-xs text-zinc-500">
+                                Kalan: {Math.ceil((new Date(boost.endTime) - new Date()) / (1000 * 60 * 60 * 24))} gün
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeactivateBoost(boost.id)}>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Hostings Tab */}
+          <TabsContent value="hostings">
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardHeader>
+                <CardTitle className="text-white">Hosting Firmaları</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {hostings.length === 0 ? (
+                  <p className="text-zinc-500 text-center py-8">Hosting firması yok</p>
+                ) : (
+                  <div className="space-y-3">
+                    {hostings.map(hosting => (
+                      <div key={hosting.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <Server className="w-5 h-5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-white">{hosting.name}</p>
+                              {hosting.isVerified && (
+                                <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">Onaylı</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-zinc-500">{hosting.owner?.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant={hosting.isVerified ? "destructive" : "default"}
+                            onClick={() => handleToggleHostingVerify(hosting.id)}
+                            className={hosting.isVerified ? "" : "bg-emerald-600 hover:bg-emerald-500"}
+                          >
+                            {hosting.isVerified ? (
+                              <><X className="w-4 h-4 mr-1" /> Onayı Kaldır</>
+                            ) : (
+                              <><CheckCircle2 className="w-4 h-4 mr-1" /> Onayla</>
+                            )}
                           </Button>
                         </div>
                       </div>
