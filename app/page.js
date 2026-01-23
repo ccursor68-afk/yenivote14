@@ -2217,12 +2217,35 @@ function AdminPanel({ user, onBack }) {
     }
   }
 
-  // Toggle hosting verification
+  // Toggle hosting verification (verified badge)
   const handleToggleHostingVerify = async (hostingId) => {
     try {
       const res = await fetch(`/api/admin/hostings/${hostingId}/verify`, {
         method: 'PUT',
         credentials: 'include'
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        toast.success(data.message)
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
+  // Approve/Reject hosting application (approvalStatus)
+  const handleHostingStatus = async (hostingId, status) => {
+    try {
+      const res = await fetch(`/api/admin/hostings/${hostingId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status })
       })
 
       if (res.ok) {
