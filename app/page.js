@@ -2384,6 +2384,78 @@ function AdminPanel({ user, onBack }) {
     }
   }
 
+  // Admin Ticket Management
+  const [selectedAdminTicket, setSelectedAdminTicket] = useState(null)
+  const [adminTicketMessages, setAdminTicketMessages] = useState([])
+  const [adminReplyMessage, setAdminReplyMessage] = useState('')
+  const [adminReplyLoading, setAdminReplyLoading] = useState(false)
+
+  const openAdminTicket = async (ticket) => {
+    setSelectedAdminTicket(ticket)
+    try {
+      const res = await fetch(`/api/admin/tickets/${ticket.id}/messages`, { credentials: 'include' })
+      const data = await res.json()
+      setAdminTicketMessages(data.messages || [])
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const updateTicketStatus = async (ticketId, newStatus) => {
+    try {
+      const res = await fetch(`/api/admin/tickets/${ticketId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      if (res.ok) {
+        toast.success('Ticket durumu güncellendi!')
+        setSelectedAdminTicket(prev => prev ? { ...prev, status: newStatus } : null)
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
+  const sendAdminReply = async () => {
+    if (!adminReplyMessage.trim() || !selectedAdminTicket) return
+    setAdminReplyLoading(true)
+    try {
+      const res = await fetch(`/api/admin/tickets/${selectedAdminTicket.id}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: adminReplyMessage, isAdmin: true })
+      })
+
+      if (res.ok) {
+        setAdminReplyMessage('')
+        // Refresh messages
+        const msgRes = await fetch(`/api/admin/tickets/${selectedAdminTicket.id}/messages`, { credentials: 'include' })
+        const msgData = await msgRes.json()
+        setAdminTicketMessages(msgData.messages || [])
+        // Set ticket to IN_PROGRESS if it was OPEN
+        if (selectedAdminTicket.status === 'OPEN') {
+          updateTicketStatus(selectedAdminTicket.id, 'IN_PROGRESS')
+        }
+        toast.success('Yanıt gönderildi!')
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Yanıt gönderilemedi')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setAdminReplyLoading(false)
+    }
+  }
+
   if (user?.role !== 'ADMIN') {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center">
