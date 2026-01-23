@@ -929,19 +929,46 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
 }
 
 // Blog Page Component
+// Blog type labels and colors
+const blogTypeLabels = {
+  GUIDE: { label: 'Rehber', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  UPDATE: { label: 'Güncelleme', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  NEWS: { label: 'Haber', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  TUTORIAL: { label: 'Eğitim', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' }
+}
+
 function BlogPage({ onBack, onViewPost }) {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeType, setActiveType] = useState(null)
+  const [typeCounts, setTypeCounts] = useState({})
 
-  useEffect(() => {
-    fetch('/api/blog')
+  const fetchPosts = (type = null) => {
+    setLoading(true)
+    const url = type ? `/api/blog?type=${type}` : '/api/blog'
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setPosts(data.posts || [])
+        setTypeCounts(data.typeCounts || {})
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchPosts()
   }, [])
+
+  const handleTypeFilter = (type) => {
+    if (activeType === type) {
+      setActiveType(null)
+      fetchPosts()
+    } else {
+      setActiveType(type)
+      fetchPosts(type)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -957,9 +984,35 @@ function BlogPage({ onBack, onViewPost }) {
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Blog</h1>
           <p className="text-zinc-400">Minecraft dünyasından haberler ve rehberler</p>
+        </div>
+
+        {/* Type Filter Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <Button
+            variant={activeType === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTypeFilter(null)}
+            className={activeType === null ? "bg-emerald-600" : "border-zinc-700"}
+          >
+            Tümü
+          </Button>
+          {Object.entries(blogTypeLabels).map(([type, { label, color }]) => (
+            <Button
+              key={type}
+              variant="outline"
+              size="sm"
+              onClick={() => handleTypeFilter(type)}
+              className={`${activeType === type ? color : 'border-zinc-700'}`}
+            >
+              {label}
+              {typeCounts[type] > 0 && (
+                <span className="ml-1 text-xs opacity-70">({typeCounts[type]})</span>
+              )}
+            </Button>
+          ))}
         </div>
 
         {loading ? (
@@ -988,6 +1041,18 @@ function BlogPage({ onBack, onViewPost }) {
                   </div>
                 )}
                 <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    {post.blogType && blogTypeLabels[post.blogType] && (
+                      <Badge variant="outline" className={blogTypeLabels[post.blogType].color}>
+                        {blogTypeLabels[post.blogType].label}
+                      </Badge>
+                    )}
+                    {post.category && (
+                      <Badge variant="outline" style={{ borderColor: post.category.color + '50', color: post.category.color }}>
+                        {post.category.name}
+                      </Badge>
+                    )}
+                  </div>
                   <h2 className="text-xl font-bold text-white mb-2 line-clamp-2">{post.title}</h2>
                   {post.excerpt && (
                     <p className="text-zinc-400 text-sm line-clamp-3 mb-4">{post.excerpt}</p>
