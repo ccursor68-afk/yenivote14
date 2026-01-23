@@ -439,3 +439,46 @@ agent_communication:
       - Test server ping functionality
       - Test boost system
       - Test hosting verification
+
+  - agent: "main"
+    message: |
+      SESSION 4 - BUG FIXES & ADMIN FEATURES:
+      
+      1. ✅ SESSION PERSISTENCE FIX (CRITICAL):
+         - Updated lib/auth.js with improved cookie handling
+         - Added isSecureRequest() function for HTTPS detection
+         - Cookie now properly sets secure flag based on actual protocol
+         - clearAuthCookie() now matches setAuthCookie() config
+         - /api/auth/me now returns Cache-Control: no-store headers
+         - App component has proper hydration check with retry mechanism
+         - Added window focus listener for auth re-check
+      
+      2. ✅ BLOG VISIBILITY FIX:
+         - Added `export const dynamic = 'force-dynamic'` to /api/blog
+         - Added `export const revalidate = 0` to disable caching
+         - Added Cache-Control headers to response
+         - Added console.log for debugging query and results
+         - Blog posts should now appear on public page
+      
+      3. ✅ ADMIN SERVER MANAGEMENT:
+         - Admin Panel → Sunucular tab now shows ALL servers
+         - Edit button opens modal with all server fields
+         - Delete button with confirmation modal
+         - API: PUT /api/admin/all-servers for updates
+         - Proper cascade delete (stats, boosts, votes)
+      
+      4. ✅ MOBILE RESPONSIVE:
+         - Admin panel table columns hide on smaller screens
+         - Server info stacks vertically on mobile
+         - Edit modal scrollable on mobile
+         - Tables have overflow-x-auto
+      
+      Updated Files:
+      - lib/auth.js (cookie fix)
+      - app/api/auth/me/route.js (no-cache)
+      - app/api/auth/login/route.js (createdAt in response)
+      - app/api/blog/route.js (force-dynamic, debug logs)
+      - app/api/admin/all-servers/route.js (PUT for edit)
+      - app/page.js (hydration check, server edit/delete modals)
+      
+      Build Status: ✅ SUCCESS
