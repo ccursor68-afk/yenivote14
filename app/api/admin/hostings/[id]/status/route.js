@@ -33,8 +33,13 @@ export async function PUT(request, { params }) {
     const prisma = getPrisma();
     const hosting = await prisma.hosting.update({
       where: { id },
-      data: { approvalStatus: status }
+      data: { 
+        approvalStatus: status,
+        isActive: status === 'APPROVED' ? true : false
+      }
     });
+
+    console.log('Hosting status updated:', hosting.id, status);
 
     return NextResponse.json({ hosting, message: `Hosting ${status === 'APPROVED' ? 'onaylandı' : 'reddedildi'}` });
   } catch (error) {
