@@ -239,6 +239,10 @@ model Hosting {
   sponsoredUntil  DateTime?
   approvalStatus  ApprovalStatus  @default(PENDING)
   
+  // Verified status (admin controlled)
+  isVerified      Boolean         @default(false)
+  verifiedAt      DateTime?
+  
   // Calculated ratings (updated on review)
   avgPerformance  Float           @default(0)
   avgSupport      Float           @default(0)
@@ -256,6 +260,7 @@ model Hosting {
 
   @@index([approvalStatus])
   @@index([isSponsored])
+  @@index([isVerified])
   @@index([avgOverall])
   @@index([slug])
 }
