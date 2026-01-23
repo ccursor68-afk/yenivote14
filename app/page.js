@@ -1516,64 +1516,60 @@ function HostingPage({ onBack, user, onOpenAuth, onGoToSupport }) {
 }
 
 // Pricing Page Component
-function PricingPage({ onBack, user, onOpenAuth }) {
-  const [packages, setPackages] = useState([])
-  const [loading, setLoading] = useState(true)
+function PricingPage({ onBack, user, onOpenAuth, onGoToSupport }) {
+  // Static pricing packages (no DB needed)
+  const packages = [
+    {
+      id: '1',
+      name: 'Standart Header Reklam',
+      packageType: 'HEADER_AD',
+      price: 100,
+      duration: 7,
+      description: 'Ana sayfanın üstünde banner reklamı',
+      features: ['Tüm sayfalarda görünür', 'Yüksek tıklama oranı', 'Özelleştirilebilir tasarım']
+    },
+    {
+      id: '2',
+      name: 'Sponsorlu Sunucu',
+      packageType: 'SERVER_SPONSOR',
+      price: 250,
+      duration: 30,
+      description: 'Sunucu listesinde en üstte sabitlenir',
+      features: ['Liste başında görünüm', 'Özel sponsor rozeti', 'Arama sonuçlarında öncelik', 'İstatistik paneli']
+    },
+    {
+      id: '3',
+      name: 'Verified Hosting Pro',
+      packageType: 'HOSTING_VERIFIED',
+      price: 500,
+      duration: 0, // Lifetime
+      description: 'Hosting firmanız için onaylı rozet ve üst sıra',
+      features: ['Ömür boyu onaylı rozet', 'Hosting listesinde üst sıra', 'VERIFIED_HOSTING rolü', 'Hosting ekleme yetkisi', 'Öncelikli destek']
+    }
+  ]
 
-  useEffect(() => {
-    fetch('/api/pricing', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        setPackages(data.packages || [])
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
-
-  const handlePackageClick = async (pkg) => {
+  const handlePackageClick = (pkg) => {
     if (!user) {
       onOpenAuth?.()
       toast.error('Lütfen önce giriş yapın')
       return
     }
-
-    // Auto create ticket
-    try {
-      const res = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          subject: `${pkg.name} Talebi`,
-          message: `Merhaba,\n\n"${pkg.name}" paketini satın almak istiyorum.\n\nPaket: ${pkg.name}\nFiyat: ${parseFloat(pkg.price).toFixed(2)} ₺\nSüre: ${pkg.duration} gün\n\nLütfen ödeme bilgilerini iletir misiniz?`,
-          category: pkg.packageType.includes('SPONSOR') ? 'SPONSORSHIP' : 'ADVERTISING',
-          packageType: pkg.packageType
-        })
-      })
-
-      if (res.ok) {
-        toast.success('Destek talebi oluşturuldu! Profilinizdeki destek bölümünden takip edebilirsiniz.')
-      } else {
-        const data = await res.json()
-        toast.error(data.error || 'Hata oluştu')
-      }
-    } catch (err) {
-      toast.error('Bir hata oluştu')
-    }
+    // Go to support with pre-filled subject
+    onGoToSupport?.(pkg.packageType === 'HOSTING_VERIFIED' ? 'VERIFICATION_REQUEST' : 'SPONSORSHIP', `${pkg.name} Satın Alma Talebi`)
   }
 
   const packageIcons = {
     HEADER_AD: <BarChart3 className="w-8 h-8" />,
     SIDEBAR_AD: <Menu className="w-8 h-8" />,
     SERVER_SPONSOR: <Crown className="w-8 h-8" />,
-    HOSTING_SPONSOR: <Gem className="w-8 h-8" />
+    HOSTING_VERIFIED: <Shield className="w-8 h-8" />
   }
 
   const packageColors = {
     HEADER_AD: 'from-blue-600 to-blue-800',
     SIDEBAR_AD: 'from-purple-600 to-purple-800',
     SERVER_SPONSOR: 'from-yellow-600 to-yellow-800',
-    HOSTING_SPONSOR: 'from-emerald-600 to-emerald-800'
+    HOSTING_VERIFIED: 'from-emerald-600 to-emerald-800'
   }
 
   return (
@@ -1586,53 +1582,389 @@ function PricingPage({ onBack, user, onOpenAuth }) {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Reklam & Sponsorluk Paketleri</h1>
-          <p className="text-zinc-400 text-lg">Sunucunuzu veya hosting firmanızı öne çıkarın</p>
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">Reklam & Sponsorluk Paketleri</h1>
+          <p className="text-zinc-400 text-sm md:text-lg">Sunucunuzu veya hosting firmanızı öne çıkarın</p>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {packages.map((pkg) => (
-              <Card key={pkg.id} className="bg-zinc-900/80 border-zinc-800 overflow-hidden hover:border-emerald-600/50 transition-colors">
-                <div className={`bg-gradient-to-r ${packageColors[pkg.packageType] || 'from-zinc-600 to-zinc-800'} p-6 text-center`}>
-                  <div className="bg-white/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-white">
-                    {packageIcons[pkg.packageType] || <Gem className="w-8 h-8" />}
-                  </div>
-                  <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
+          {packages.map((pkg) => (
+            <Card key={pkg.id} className={`bg-zinc-900/80 border-zinc-800 overflow-hidden hover:border-emerald-600/50 transition-all hover:scale-[1.02] ${pkg.packageType === 'HOSTING_VERIFIED' ? 'ring-2 ring-emerald-500/30' : ''}`}>
+              <div className={`bg-gradient-to-r ${packageColors[pkg.packageType] || 'from-zinc-600 to-zinc-800'} p-4 md:p-6 text-center`}>
+                {pkg.packageType === 'HOSTING_VERIFIED' && (
+                  <Badge className="bg-white/20 text-white mb-2">EN POPÜLER</Badge>
+                )}
+                <div className="bg-white/10 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 text-white">
+                  {packageIcons[pkg.packageType] || <Gem className="w-8 h-8" />}
                 </div>
-                <CardContent className="p-6">
-                  <div className="text-center mb-6">
-                    <span className="text-4xl font-bold text-white">{parseFloat(pkg.price).toFixed(0)}</span>
-                    <span className="text-zinc-400"> ₺</span>
-                    <p className="text-sm text-zinc-500 mt-1">{pkg.duration} gün</p>
-                  </div>
-                  <p className="text-sm text-zinc-400 mb-6 text-center">{pkg.description}</p>
-                  <ul className="space-y-2 mb-6">
-                    {pkg.features?.map((f, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-500" onClick={() => handlePackageClick(pkg)}>
-                    <Ticket className="w-4 h-4 mr-1" /> Satın Al
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                <h3 className="text-lg md:text-xl font-bold text-white">{pkg.name}</h3>
+              </div>
+              <CardContent className="p-4 md:p-6">
+                <div className="text-center mb-4 md:mb-6">
+                  <span className="text-3xl md:text-4xl font-bold text-white">{pkg.price}</span>
+                  <span className="text-zinc-400"> ₺</span>
+                  <p className="text-xs md:text-sm text-zinc-500 mt-1">{pkg.duration > 0 ? `${pkg.duration} gün` : 'Ömür boyu'}</p>
+                </div>
+                <p className="text-xs md:text-sm text-zinc-400 mb-4 md:mb-6 text-center">{pkg.description}</p>
+                <ul className="space-y-2 mb-4 md:mb-6">
+                  {pkg.features?.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2 text-xs md:text-sm text-zinc-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-500" onClick={() => handlePackageClick(pkg)}>
+                  <Ticket className="w-4 h-4 mr-1" /> Satın Al
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        <div className="mt-12 text-center text-zinc-500 text-sm">
+        <div className="mt-8 md:mt-12 text-center text-zinc-500 text-xs md:text-sm">
           <p>Ödeme işlemleri destek talebi üzerinden gerçekleştirilmektedir.</p>
           <p>EFT/Havale ve kredi kartı ile ödeme kabul edilmektedir.</p>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Support Page Component
+function SupportPage({ onBack, user, onOpenAuth, initialCategory, initialSubject }) {
+  const [tickets, setTickets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showNewTicket, setShowNewTicket] = useState(!!initialCategory)
+  const [selectedTicket, setSelectedTicket] = useState(null)
+  const [newTicketForm, setNewTicketForm] = useState({
+    subject: initialSubject || '',
+    message: '',
+    category: initialCategory || 'GENERAL'
+  })
+  const [ticketMessages, setTicketMessages] = useState([])
+  const [replyMessage, setReplyMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      fetchTickets()
+    } else {
+      setLoading(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (initialCategory) {
+      setShowNewTicket(true)
+      setNewTicketForm(f => ({ ...f, category: initialCategory, subject: initialSubject || '' }))
+    }
+  }, [initialCategory, initialSubject])
+
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('/api/tickets', { credentials: 'include' })
+      const data = await res.json()
+      setTickets(data.tickets || [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchTicketMessages = async (ticketId) => {
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}/messages`, { credentials: 'include' })
+      const data = await res.json()
+      setTicketMessages(data.messages || [])
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const openTicket = async (ticket) => {
+    setSelectedTicket(ticket)
+    await fetchTicketMessages(ticket.id)
+  }
+
+  const createTicket = async () => {
+    if (!newTicketForm.subject || !newTicketForm.message) {
+      toast.error('Konu ve mesaj gerekli')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(newTicketForm)
+      })
+      if (res.ok) {
+        toast.success('Destek talebi oluşturuldu!')
+        setShowNewTicket(false)
+        setNewTicketForm({ subject: '', message: '', category: 'GENERAL' })
+        fetchTickets()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Hata oluştu')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const sendReply = async () => {
+    if (!replyMessage.trim()) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/tickets/${selectedTicket.id}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: replyMessage })
+      })
+      if (res.ok) {
+        setReplyMessage('')
+        fetchTicketMessages(selectedTicket.id)
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Hata oluştu')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const categoryLabels = {
+    GENERAL: 'Genel',
+    SUPPORT: 'Teknik Destek',
+    BUG_REPORT: 'Hata Bildirimi',
+    ADVERTISING: 'Reklam',
+    SPONSORSHIP: 'Sponsorluk',
+    VERIFICATION_REQUEST: 'Hosting Onayı',
+    OTHER: 'Diğer'
+  }
+
+  const statusColors = {
+    OPEN: 'bg-emerald-500/20 text-emerald-400',
+    IN_PROGRESS: 'bg-amber-500/20 text-amber-400',
+    CLOSED: 'bg-zinc-500/20 text-zinc-400'
+  }
+
+  const statusLabels = {
+    OPEN: 'Açık',
+    IN_PROGRESS: 'İşlemde',
+    CLOSED: 'Kapalı'
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-zinc-950">
+        <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+          <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800"><ChevronLeft className="w-5 h-5" /></Button>
+            <Logo className="w-8 h-8" />
+            <span className="text-lg font-bold text-emerald-500">Destek</span>
+          </div>
+        </header>
+        <div className="container mx-auto px-4 py-12">
+          <Card className="bg-zinc-900/50 border-zinc-800 max-w-md mx-auto">
+            <CardContent className="py-12 text-center">
+              <Ticket className="w-16 h-16 mx-auto text-zinc-700 mb-4" />
+              <h3 className="text-lg font-medium text-white mb-2">Giriş Yapmanız Gerekiyor</h3>
+              <p className="text-zinc-400 text-sm mb-4">Destek talebi oluşturmak için lütfen giriş yapın.</p>
+              <Button onClick={onOpenAuth} className="bg-emerald-600 hover:bg-emerald-500">
+                <LogIn className="w-4 h-4 mr-2" /> Giriş Yap
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={selectedTicket ? () => setSelectedTicket(null) : onBack} className="hover:bg-zinc-800">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Logo className="w-8 h-8" />
+            <span className="text-lg font-bold text-emerald-500">
+              {selectedTicket ? `Ticket #${selectedTicket.id.slice(0, 8)}` : 'Destek'}
+            </span>
+          </div>
+          {!selectedTicket && (
+            <Button onClick={() => setShowNewTicket(true)} className="bg-emerald-600 hover:bg-emerald-500">
+              <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Yeni Talep</span>
+            </Button>
+          )}
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {selectedTicket ? (
+          // Ticket Detail View
+          <div className="space-y-4">
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-white">{selectedTicket.subject}</CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-1">
+                      <Badge className={statusColors[selectedTicket.status]}>{statusLabels[selectedTicket.status]}</Badge>
+                      <span className="text-zinc-500">•</span>
+                      <span className="text-zinc-500">{categoryLabels[selectedTicket.category]}</span>
+                    </CardDescription>
+                  </div>
+                  <span className="text-xs text-zinc-500">
+                    {new Date(selectedTicket.createdAt).toLocaleDateString('tr-TR')}
+                  </span>
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Messages */}
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardContent className="p-4 space-y-4 max-h-[50vh] overflow-y-auto">
+                {ticketMessages.map(msg => (
+                  <div key={msg.id} className={`flex ${msg.isAdmin ? 'justify-start' : 'justify-end'}`}>
+                    <div className={`max-w-[80%] p-3 rounded-lg ${msg.isAdmin ? 'bg-emerald-600/20 border border-emerald-600/30' : 'bg-zinc-800'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs font-medium ${msg.isAdmin ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                          {msg.isAdmin ? 'Destek Ekibi' : 'Siz'}
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          {new Date(msg.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-white whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Reply */}
+            {selectedTicket.status !== 'CLOSED' && (
+              <Card className="bg-zinc-900/50 border-zinc-800">
+                <CardContent className="p-4">
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      placeholder="Mesajınızı yazın..."
+                      className="bg-zinc-800 border-zinc-700 min-h-[80px]"
+                    />
+                    <Button onClick={sendReply} disabled={submitting || !replyMessage.trim()} className="bg-emerald-600 hover:bg-emerald-500 self-end">
+                      {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        ) : (
+          // Tickets List
+          <>
+            {loading ? (
+              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+            ) : tickets.length === 0 ? (
+              <Card className="bg-zinc-900/50 border-zinc-800">
+                <CardContent className="py-12 text-center">
+                  <Ticket className="w-16 h-16 mx-auto text-zinc-700 mb-4" />
+                  <h3 className="text-lg font-medium text-white mb-2">Henüz destek talebiniz yok</h3>
+                  <p className="text-zinc-400 text-sm mb-4">Soru veya sorunlarınız için yeni bir talep oluşturun.</p>
+                  <Button onClick={() => setShowNewTicket(true)} className="bg-emerald-600 hover:bg-emerald-500">
+                    <Plus className="w-4 h-4 mr-2" /> Yeni Talep Oluştur
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {tickets.map(ticket => (
+                  <Card key={ticket.id} className="bg-zinc-900/50 border-zinc-800 cursor-pointer hover:border-zinc-700 transition-colors" onClick={() => openTicket(ticket)}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-medium text-white truncate">{ticket.subject}</h3>
+                            <Badge className={statusColors[ticket.status]}>{statusLabels[ticket.status]}</Badge>
+                          </div>
+                          <p className="text-xs text-zinc-500 mt-1">
+                            {categoryLabels[ticket.category]} • {new Date(ticket.createdAt).toLocaleDateString('tr-TR')}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-zinc-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* New Ticket Modal */}
+      <Dialog open={showNewTicket} onOpenChange={setShowNewTicket}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white">Yeni Destek Talebi</DialogTitle>
+            <DialogDescription className="text-zinc-400">Sorununuzu veya talebinizi detaylı şekilde açıklayın.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-white">Kategori</Label>
+              <Select value={newTicketForm.category} onValueChange={(v) => setNewTicketForm(f => ({ ...f, category: v }))}>
+                <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GENERAL">Genel</SelectItem>
+                  <SelectItem value="SUPPORT">Teknik Destek</SelectItem>
+                  <SelectItem value="BUG_REPORT">Hata Bildirimi</SelectItem>
+                  <SelectItem value="ADVERTISING">Reklam</SelectItem>
+                  <SelectItem value="SPONSORSHIP">Sponsorluk</SelectItem>
+                  <SelectItem value="VERIFICATION_REQUEST">Hosting Onay Başvurusu</SelectItem>
+                  <SelectItem value="OTHER">Diğer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Konu</Label>
+              <Input value={newTicketForm.subject} onChange={(e) => setNewTicketForm(f => ({ ...f, subject: e.target.value }))} className="bg-zinc-800 border-zinc-700" placeholder="Talebinizin konusu" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Mesaj</Label>
+              <Textarea value={newTicketForm.message} onChange={(e) => setNewTicketForm(f => ({ ...f, message: e.target.value }))} className="bg-zinc-800 border-zinc-700 min-h-[120px]" placeholder="Detaylı açıklama..." />
+            </div>
+            {newTicketForm.category === 'VERIFICATION_REQUEST' && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                <p className="text-xs text-emerald-400">
+                  <Shield className="w-4 h-4 inline mr-1" />
+                  Hosting onayı için firma bilgilerinizi ve hosting firmanızın adresini mesajınıza ekleyin.
+                </p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewTicket(false)} className="border-zinc-700">İptal</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={createTicket} disabled={submitting}>
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Gönder</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
