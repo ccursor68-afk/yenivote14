@@ -2340,6 +2340,50 @@ function AdminPanel({ user, onBack }) {
     }
   }
 
+  // User role change
+  const handleUserRoleChange = async (userId, newRole) => {
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ role: newRole })
+      })
+
+      if (res.ok) {
+        toast.success('Kullanıcı rolü güncellendi!')
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
+  // Delete user
+  const handleDeleteUser = async (userId) => {
+    if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) return
+    
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        toast.success('Kullanıcı silindi!')
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    }
+  }
+
   if (user?.role !== 'ADMIN') {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center">
