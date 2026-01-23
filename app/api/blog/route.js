@@ -11,13 +11,15 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const tag = searchParams.get('tag');
     const category = searchParams.get('category');
+    const blogType = searchParams.get('type'); // NEW: Filter by type
 
     const prisma = getPrisma();
     
     const where = {
       published: true,
       ...(tag && { tags: { has: tag } }),
-      ...(category && { category: { slug: category } })
+      ...(category && { category: { slug: category } }),
+      ...(blogType && { blogType: blogType.toUpperCase() }) // NEW: Filter by type
     };
 
     const posts = await prisma.blogPost.findMany({
@@ -30,6 +32,7 @@ export async function GET(request) {
         excerpt: true,
         coverImage: true,
         tags: true,
+        blogType: true, // NEW: Include blog type
         createdAt: true,
         author: {
           select: { username: true, avatarUrl: true }
@@ -47,9 +50,17 @@ export async function GET(request) {
     });
     const allTags = [...new Set(allPosts.flatMap(p => p.tags))];
 
-    return NextResponse.json({ posts, tags: allTags });
+    // NEW: Get blog type counts
+    const typeCounts = {
+      GUIDE: await prisma.blogPost.count({ where: { published: true, blogType: 'GUIDE' } }),
+      UPDATE: await prisma.blogPost.count({ where: { published: true, blogType: 'UPDATE' } }),
+      NEWS: await prisma.blogPost.count({ where: { published: true, blogType: 'NEWS' } }),
+      TUTORIAL: await prisma.blogPost.count({ where: { published: true, blogType: 'TUTORIAL' } })
+    };
+
+    return NextResponse.json({ posts, tags: allTags, typeCounts });
   } catch (error) {
     console.error('Blog list error:', error);
-    return NextResponse.json({ posts: [], tags: [] });
+    return NextResponse.json({ posts: [], tags: [], typeCounts: {} });
   }
 }
