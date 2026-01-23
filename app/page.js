@@ -1796,6 +1796,82 @@ function AdminPanel({ user, onBack }) {
     }
   }
 
+  // Server edit state
+  const [editingServer, setEditingServer] = useState(null)
+  const [editServerForm, setEditServerForm] = useState({})
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [serverActionLoading, setServerActionLoading] = useState(false)
+
+  // Delete server
+  const handleDeleteServer = async (serverId) => {
+    setServerActionLoading(true)
+    try {
+      const res = await fetch(`/api/admin/all-servers?id=${serverId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        toast.success('Sunucu silindi!')
+        setDeleteConfirm(null)
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    } finally {
+      setServerActionLoading(false)
+    }
+  }
+
+  // Edit server
+  const handleEditServer = async () => {
+    setServerActionLoading(true)
+    try {
+      const res = await fetch('/api/admin/all-servers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: editingServer.id, ...editServerForm })
+      })
+
+      if (res.ok) {
+        toast.success('Sunucu güncellendi!')
+        setEditingServer(null)
+        setEditServerForm({})
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'İşlem başarısız')
+      }
+    } catch (err) {
+      toast.error('İşlem başarısız')
+    } finally {
+      setServerActionLoading(false)
+    }
+  }
+
+  // Open edit modal
+  const openEditServer = (server) => {
+    setEditingServer(server)
+    setEditServerForm({
+      name: server.name,
+      ip: server.ip,
+      port: server.port,
+      version: server.version,
+      shortDescription: server.shortDescription,
+      longDescription: server.longDescription || '',
+      platform: server.platform,
+      gameMode: server.gameMode,
+      website: server.website || '',
+      discord: server.discord || '',
+      bannerUrl: server.bannerUrl || '',
+      logoUrl: server.logoUrl || ''
+    })
+  }
+
   const handleBlogSubmit = async () => {
     setBlogLoading(true)
     try {
