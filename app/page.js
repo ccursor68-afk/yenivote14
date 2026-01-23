@@ -2221,6 +2221,21 @@ function AdminPanel({ user, onBack }) {
                   </div>
 
                   <div className="space-y-2">
+                    <Label className="text-white">Yazı Türü</Label>
+                    <Select value={blogForm.blogType} onValueChange={(v) => setBlogForm({ ...blogForm, blogType: v })}>
+                      <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NEWS">Haber</SelectItem>
+                        <SelectItem value="GUIDE">Rehber</SelectItem>
+                        <SelectItem value="UPDATE">Güncelleme</SelectItem>
+                        <SelectItem value="TUTORIAL">Eğitim</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-white">Özet</Label>
                     <Input
                       value={blogForm.excerpt}
