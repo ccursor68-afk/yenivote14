@@ -30,6 +30,7 @@ export async function GET(request) {
     const hostings = await prisma.hosting.findMany({
       where,
       orderBy: [
+        { isVerified: 'desc' }, // Verified hostings first
         { isSponsored: 'desc' },
         { [sort]: 'desc' }
       ],
