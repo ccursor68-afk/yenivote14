@@ -48,7 +48,23 @@ enum TicketCategory {
   BUG_REPORT
   ADVERTISING
   SPONSORSHIP
+  VERIFICATION_REQUEST
   OTHER
+}
+
+enum BadgeType {
+  CRITIC
+  EXPLORER
+  VERIFIED_OWNER
+  EARLY_ADOPTER
+  TOP_VOTER
+}
+
+enum BlogType {
+  GUIDE
+  UPDATE
+  NEWS
+  TUTORIAL
 }
 
 model User {
@@ -64,6 +80,10 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  // Gamification
+  badges            UserBadge[]
+  serverVisits      ServerVisit[]
+
   servers           Server[]
   tickets           Ticket[]  @relation("UserTickets")
   ticketMessages    TicketMessage[]
@@ -73,6 +93,31 @@ model User {
 
   @@index([email])
   @@index([discordId])
+}
+
+// ==================== GAMIFICATION - BADGES ====================
+model UserBadge {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeType   BadgeType
+  earnedAt    DateTime  @default(now())
+  
+  @@unique([userId, badgeType])
+  @@index([userId])
+}
+
+// ==================== SERVER VISIT TRACKING ====================
+model ServerVisit {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serverId    String
+  visitedAt   DateTime  @default(now())
+  
+  @@unique([userId, serverId])
+  @@index([userId])
+  @@index([serverId])
 }
 
 model Server {
