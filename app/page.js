@@ -4023,6 +4023,280 @@ function AddServerPage({ onBack, onSuccess }) {
   )
 }
 
+// Privacy Policy Page Component
+function PrivacyPolicyPage({ onBack }) {
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800">
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <Logo className="w-8 h-8" />
+          <span className="text-lg font-bold text-emerald-500">Gizlilik Politikası</span>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <Card className="bg-zinc-900/50 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white flex items-center gap-3">
+              <Shield className="w-7 h-7 text-emerald-500" />
+              Gizlilik Politikası
+            </CardTitle>
+            <CardDescription className="text-zinc-400">
+              Son güncelleme: {new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="prose prose-invert max-w-none">
+            <div className="space-y-6 text-zinc-300">
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">1. Giriş</h2>
+                <p>
+                  ServerListRank olarak, kullanıcılarımızın gizliliğini korumayı taahhüt ediyoruz. 
+                  Bu Gizlilik Politikası, web sitemizi kullandığınızda kişisel bilgilerinizi nasıl 
+                  topladığımızı, kullandığımızı ve koruduğumuzu açıklamaktadır.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">2. Toplanan Bilgiler</h2>
+                <p>Hizmetlerimizi kullanırken aşağıdaki bilgileri toplayabiliriz:</p>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li><strong>Hesap Bilgileri:</strong> E-posta adresi, kullanıcı adı, Minecraft nick</li>
+                  <li><strong>Sunucu Bilgileri:</strong> Sunucu IP adresi, port, açıklama ve diğer teknik bilgiler</li>
+                  <li><strong>Kullanım Verileri:</strong> IP adresi, tarayıcı türü, ziyaret edilen sayfalar</li>
+                  <li><strong>Çerezler:</strong> Oturum yönetimi ve kullanıcı deneyimini iyileştirmek için</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">3. Bilgilerin Kullanımı</h2>
+                <p>Toplanan bilgiler aşağıdaki amaçlarla kullanılmaktadır:</p>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Hesap oluşturma ve yönetimi</li>
+                  <li>Sunucu listeleme hizmetlerinin sağlanması</li>
+                  <li>Oy sistemi ve istatistiklerin yönetimi</li>
+                  <li>Destek taleplerinin işlenmesi</li>
+                  <li>Hizmet kalitesinin iyileştirilmesi</li>
+                  <li>Güvenlik ve dolandırıcılık önleme</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">4. Bilgi Paylaşımı</h2>
+                <p>
+                  Kişisel bilgilerinizi üçüncü taraflarla satmıyoruz veya kiralamıyoruz. 
+                  Bilgileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:
+                </p>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Yasal zorunluluk halinde</li>
+                  <li>Hizmet sağlayıcılarımızla (güvenlik, analitik)</li>
+                  <li>Açık onayınız ile</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">5. Çerezler</h2>
+                <p>
+                  Web sitemiz, oturum yönetimi ve kullanıcı deneyimini geliştirmek için çerezler kullanmaktadır. 
+                  Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz, ancak bu bazı özelliklerin 
+                  çalışmamasına neden olabilir.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">6. Veri Güvenliği</h2>
+                <p>
+                  Bilgilerinizi korumak için endüstri standardı güvenlik önlemleri kullanıyoruz:
+                </p>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>SSL/TLS şifreleme</li>
+                  <li>Güvenli şifre hashleme (bcrypt)</li>
+                  <li>Düzenli güvenlik güncellemeleri</li>
+                  <li>Erişim kontrolü ve izleme</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">7. Kullanıcı Hakları</h2>
+                <p>Aşağıdaki haklara sahipsiniz:</p>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Kişisel verilerinize erişim talep etme</li>
+                  <li>Yanlış bilgilerin düzeltilmesini isteme</li>
+                  <li>Hesabınızı ve verilerinizi silme</li>
+                  <li>Veri işlemeye itiraz etme</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">8. İletişim</h2>
+                <p>
+                  Gizlilik politikamız hakkında sorularınız varsa, destek sistemi üzerinden 
+                  bizimle iletişime geçebilirsiniz.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">9. Değişiklikler</h2>
+                <p>
+                  Bu Gizlilik Politikası zaman zaman güncellenebilir. Önemli değişiklikler 
+                  olduğunda kullanıcılarımızı bilgilendireceğiz.
+                </p>
+              </section>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// Terms of Service Page Component
+function TermsOfServicePage({ onBack }) {
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800">
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <Logo className="w-8 h-8" />
+          <span className="text-lg font-bold text-emerald-500">Kullanım Koşulları</span>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <Card className="bg-zinc-900/50 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white flex items-center gap-3">
+              <FileText className="w-7 h-7 text-emerald-500" />
+              Kullanım Koşulları
+            </CardTitle>
+            <CardDescription className="text-zinc-400">
+              Son güncelleme: {new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="prose prose-invert max-w-none">
+            <div className="space-y-6 text-zinc-300">
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">1. Hizmet Tanımı</h2>
+                <p>
+                  ServerListRank, Minecraft sunucularının listelenmesi, oylanması ve tanıtılması için 
+                  bir platform sağlamaktadır. Bu hizmetleri kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">2. Hesap Oluşturma</h2>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Hesap oluşturmak için geçerli bir e-posta adresi gereklidir</li>
+                  <li>Hesap bilgilerinizi gizli tutmak sizin sorumluluğunuzdadır</li>
+                  <li>Hesabınız üzerinden yapılan tüm işlemlerden siz sorumlusunuz</li>
+                  <li>Her kullanıcı yalnızca bir hesap oluşturabilir</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">3. Sunucu Listeleme Kuralları</h2>
+                <p>Sunucu eklerken aşağıdaki kurallara uymalısınız:</p>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Sunucu bilgileri doğru ve güncel olmalıdır</li>
+                  <li>Sunucu adı ve açıklaması yanıltıcı olmamalıdır</li>
+                  <li>Yasadışı içerik barındıran sunucular listelenemez</li>
+                  <li>Başkasının sunucusunu izinsiz listelemek yasaktır</li>
+                  <li>Aynı sunucu birden fazla kez listelenemez</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">4. Oylama Kuralları</h2>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Her kullanıcı günde bir kez oy kullanabilir</li>
+                  <li>Bot veya otomatik sistemlerle oy kullanmak yasaktır</li>
+                  <li>Sahte hesaplarla oy manipülasyonu yasaktır</li>
+                  <li>Oy satın almak veya satmak yasaktır</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">5. Yasaklanan Davranışlar</h2>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Spam, reklam veya istenmeyen içerik paylaşımı</li>
+                  <li>Diğer kullanıcılara hakaret veya taciz</li>
+                  <li>Sistemin kötüye kullanımı veya hackleme girişimleri</li>
+                  <li>Telif hakkı ihlali</li>
+                  <li>Yasa dışı faaliyetler</li>
+                  <li>DDoS veya benzeri saldırılar</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">6. Sponsorluk ve Reklamlar</h2>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Sponsorlu sunucular "SPONSOR" etiketi ile işaretlenir</li>
+                  <li>Reklam içerikleri site kurallarına uygun olmalıdır</li>
+                  <li>Ödeme yapılan hizmetler için iade politikası destek üzerinden belirlenir</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">7. İçerik Sahipliği</h2>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Paylaştığınız içeriklerin telif haklarına sahip olmalısınız</li>
+                  <li>ServerListRank, platform üzerindeki içerikleri düzenleme hakkını saklı tutar</li>
+                  <li>Sunucu listeleme bilgileri herkese açık olarak görüntülenebilir</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">8. Hesap Askıya Alma ve Silme</h2>
+                <p>
+                  Kullanım koşullarını ihlal eden hesaplar uyarılabilir, geçici olarak askıya alınabilir 
+                  veya kalıcı olarak silinebilir. Ciddi ihlallerde yasal işlem başlatılabilir.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">9. Sorumluluk Reddi</h2>
+                <ul className="list-disc list-inside space-y-2 mt-3 ml-4">
+                  <li>Listelenen sunucuların içeriklerinden sorumlu değiliz</li>
+                  <li>Hizmet kesintileri için sorumluluk kabul etmiyoruz</li>
+                  <li>Üçüncü taraf hizmetlerinden kaynaklanan sorunlardan sorumlu değiliz</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">10. Değişiklikler</h2>
+                <p>
+                  Bu kullanım koşulları önceden haber verilmeksizin değiştirilebilir. 
+                  Değişiklikler yayınlandıktan sonra hizmeti kullanmaya devam etmeniz, 
+                  yeni koşulları kabul ettiğiniz anlamına gelir.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-white mb-3">11. İletişim</h2>
+                <p>
+                  Bu koşullar hakkında sorularınız varsa, destek sistemi üzerinden 
+                  bizimle iletişime geçebilirsiniz.
+                </p>
+              </section>
+
+              <div className="mt-8 p-4 bg-emerald-900/20 border border-emerald-800/50 rounded-lg">
+                <p className="text-emerald-400 text-sm">
+                  <strong>Not:</strong> Bu platformu kullanarak yukarıdaki tüm koşulları okuduğunuzu, 
+                  anladığınızı ve kabul ettiğinizi beyan etmiş olursunuz.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
 // Main App Component
 export default function App() {
   const [user, setUser] = useState(null)
