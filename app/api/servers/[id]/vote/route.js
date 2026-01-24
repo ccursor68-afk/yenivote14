@@ -86,7 +86,6 @@ export async function POST(request, { params }) {
       try {
         votifierResult = await sendVotifierVote(server, minecraftUsername, clientIP);
       } catch (err) {
-        console.error('Votifier error:', err);
         // Continue even if votifier fails - record vote anyway
         votifierResult = { success: false, error: err.message };
       }
@@ -117,7 +116,6 @@ export async function POST(request, { params }) {
       votifier: votifierResult
     });
   } catch (error) {
-    console.error('Vote error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }

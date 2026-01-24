@@ -59,7 +59,6 @@ export async function GET(request) {
       }
     });
   } catch (error) {
-    console.error('Auth me error:', error);
     return NextResponse.json({ user: null }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',

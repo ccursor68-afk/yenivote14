@@ -38,8 +38,7 @@ export async function GET(request, { params }) {
       server: { ...publicServer, hasVotifier } 
     });
   } catch (error) {
-    console.error('Server get error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 
@@ -89,8 +88,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ server: updatedServer });
   } catch (error) {
-    console.error('Server update error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 
@@ -123,7 +121,6 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({ message: 'Sunucu silindi' });
   } catch (error) {
-    console.error('Server delete error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
