@@ -70,7 +70,6 @@ export async function generateMetadata({ params }) {
       }
     };
   } catch (error) {
-    console.error('Blog metadata error:', error);
     return {
       title: 'Blog Yazısı',
       description: 'Minecraft blog yazısı'

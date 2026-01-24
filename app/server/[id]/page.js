@@ -56,7 +56,6 @@ export async function generateMetadata({ params }) {
       }
     };
   } catch (error) {
-    console.error('Metadata generation error:', error);
     return {
       title: 'Sunucu - ServerListRank',
       description: 'Minecraft sunucu detayları'

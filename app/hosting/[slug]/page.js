@@ -55,7 +55,6 @@ export async function generateMetadata({ params }) {
       }
     };
   } catch (error) {
-    console.error('Metadata generation error:', error);
     return {
       title: 'Hosting - ServerListRank',
       description: 'Minecraft hosting detayları'
