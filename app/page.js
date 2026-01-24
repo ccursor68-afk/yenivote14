@@ -4503,6 +4503,14 @@ export default function App() {
     return <AdminPanel user={user} onBack={() => setCurrentPage('home')} />
   }
 
+  if (currentPage === 'privacy') {
+    return <PrivacyPolicyPage onBack={() => setCurrentPage('home')} />
+  }
+
+  if (currentPage === 'terms') {
+    return <TermsOfServicePage onBack={() => setCurrentPage('home')} />
+  }
+
   // Sort servers - recent ones for sidebar
   const recentServers = [...servers].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5)
   const sponsoredServers = servers.filter(s => s.isSponsored)
