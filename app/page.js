@@ -2071,7 +2071,7 @@ function SupportPage({ onBack, user, onOpenAuth, initialCategory, initialSubject
       const data = await res.json()
       setTickets(data.tickets || [])
     } catch (err) {
-      console.error(err)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -2083,7 +2083,7 @@ function SupportPage({ onBack, user, onOpenAuth, initialCategory, initialSubject
       const data = await res.json()
       setTicketMessages(data.messages || [])
     } catch (err) {
-      console.error(err)
+      // Silent fail
     }
   }
 
@@ -2525,7 +2525,7 @@ function AdminPanel({ user, onBack }) {
       setBoosts(boostsRes.boosts || [])
       setAllServers(allServersRes.servers || [])
     } catch (err) {
-      console.error(err)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -2823,7 +2823,7 @@ function AdminPanel({ user, onBack }) {
       const data = await res.json()
       setAdminTicketMessages(data.messages || [])
     } catch (err) {
-      console.error(err)
+      // Silent fail
     }
   }
 
@@ -4343,7 +4343,7 @@ export default function App() {
           setStatusLastUpdated(new Date())
         }
       } catch (err) {
-        console.error('Status fetch failed:', err)
+        // Silent fail for status polling
       } finally {
         setStatusRefreshing(false)
       }
@@ -4383,7 +4383,6 @@ export default function App() {
           setUser(null)
         }
       } catch (err) {
-        console.error('Auth check failed:', err)
         if (mounted) setUser(null)
       } finally {
         if (mounted) setAuthLoading(false)
