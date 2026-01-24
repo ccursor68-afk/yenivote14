@@ -541,3 +541,48 @@ agent_communication:
       - app/page.js (HostingPage, PricingPage, SupportPage, Admin Users)
       
       Build Status: ✅ SUCCESS
+
+  - agent: "main"
+    message: |
+      SESSION 6 - LIVE SERVER STATUS & AUTO FAVICON:
+      
+      1. ✅ LIVE SERVER STATUS POLLING (60 saniye):
+         - Yeni API: GET /api/servers/status
+           * Hafif payload - sadece id, isOnline, playerCount, maxPlayers döndürür
+           * Cache-Control headers ile optimize edilmiş
+         - Frontend 60 saniyede bir status endpoint'ini çağırır
+         - Sunucu listesinde anlık oyuncu sayıları güncellenir
+         - "Son güncelleme" göstergesi eklendi (saat:dakika formatında)
+         - Güncelleme sırasında sarı pulse animasyonu
+      
+      2. ✅ AUTO SERVER FAVICON (mc-api.net):
+         - Sunucu kartlarında logoUrl yoksa otomatik olarak mc-api.net'ten çekilir
+         - API: https://eu.mc-api.net/v3/server/favicon/[ServerIP]
+         - Hata durumunda fallback yeşil icon gösterilir
+         - ServerCard ve ServerDetailPage'de uygulandı
+      
+      3. ✅ SERVERCARD GÜNCELLEMELERI:
+         - liveStatus prop'u eklendi (anlık durum için)
+         - faviconError state'i eklendi (favicon hata yönetimi)
+         - Online durum ve oyuncu sayısı renk değişimi (online yeşil, offline gri)
+         - getServerFaviconUrl() helper fonksiyonu
+      
+      4. ✅ APP COMPONENT GÜNCELLEMELERI:
+         - serverStatus state (live status map)
+         - statusLastUpdated state (son güncelleme zamanı)
+         - statusRefreshing state (yenilenme animasyonu)
+         - 60 saniyede bir status polling useEffect
+      
+      New Files:
+      - app/api/servers/status/route.js
+      
+      Updated Files:
+      - app/page.js (ServerCard, ServerDetailPage, App component)
+      
+      Build Status: ✅ SUCCESS
+      
+      Özellikler:
+      - 🔄 60 saniyede bir otomatik güncelleme (siteyi yormadan)
+      - 🖼️ Sunucu ikonları mc-api.net'ten otomatik çekilir
+      - 📊 "Son güncelleme: 14:32" formatında gösterge
+      - 💚 Online/offline renk animasyonları
