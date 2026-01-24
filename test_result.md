@@ -586,3 +586,38 @@ agent_communication:
       - 🖼️ Sunucu ikonları mc-api.net'ten otomatik çekilir
       - 📊 "Son güncelleme: 14:32" formatında gösterge
       - 💚 Online/offline renk animasyonları
+
+  - agent: "main"
+    message: |
+      SESSION 7 - PROFIL SUNUCU DÜZENLEME & SILME:
+      
+      1. ✅ PROFIL SAYFASI SUNUCU YÖNETİMİ:
+         - Düzenle butonu (Edit icon) - her sunucu için
+         - Sil butonu (Trash icon) - kırmızı, her sunucu için
+         - Sunucu logosu mc-api.net'ten otomatik çekilir
+      
+      2. ✅ SUNUCU DÜZENLEME MODAL:
+         - Tüm sunucu alanları düzenlenebilir:
+           * Temel: Ad, IP, Port, Platform, Oyun Modu, Versiyon
+           * Açıklamalar: Kısa ve Detaylı
+           * Linkler: Website, Discord, Logo URL, Banner URL
+           * Etiketler
+           * Votifier: Host, Port, Public Key, Token
+         - Kaydet ve İptal butonları
+         - Loading spinner
+      
+      3. ✅ SUNUCU SILME ONAY MODAL:
+         - Silme işlemi onay gerektirir
+         - Sunucu adı gösterilir
+         - "Bu işlem geri alınamaz" uyarısı
+         - Sil ve İptal butonları
+      
+      4. ✅ API ENDPOINT'LERI (MEVCUT):
+         - PUT /api/servers/[id] - Sunucu güncelleme
+         - DELETE /api/servers/[id] - Sunucu silme
+         - Yetkilendirme: Sadece sahip veya ADMIN
+      
+      Updated Files:
+      - app/page.js (ProfilePage component)
+      
+      Build Status: ✅ SUCCESS
