@@ -4705,15 +4705,120 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 py-12 bg-zinc-900/50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><Logo className="w-8 h-8" /><span className="font-bold text-white">ServerListRank</span></div>
-            <div className="flex items-center gap-6">
-              <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-white">Blog</button>
-              {user?.role === 'ADMIN' && <button onClick={() => setCurrentPage('admin')} className="text-sm text-zinc-400 hover:text-white">Admin</button>}
+      <footer className="border-t border-zinc-800 bg-zinc-900/50">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Brand */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Logo className="w-10 h-10" />
+                <span className="text-xl font-bold text-white">ServerListRank</span>
+              </div>
+              <p className="text-sm text-zinc-400">
+                Türkiye'nin en kapsamlı Minecraft sunucu listesi. 
+                Sunucunuzu ekleyin, oy toplayın ve binlerce oyuncuya ulaşın.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 rounded-full">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-xs text-emerald-400">Çevrimiçi</span>
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-zinc-500">© 2024 ServerListRank. Tüm hakları saklıdır.</p>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <Link className="w-4 h-4 text-emerald-500" />
+                Hızlı Bağlantılar
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <Home className="w-4 h-4" /> Ana Sayfa
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => user ? setCurrentPage('add-server') : setAuthOpen(true)} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <Plus className="w-4 h-4" /> Sunucu Ekle
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Blog
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <Globe className="w-4 h-4" /> Hosting Firmaları
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setCurrentPage('pricing')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <Gem className="w-4 h-4" /> Fiyatlandırma
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-emerald-500" />
+                Destek
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => user ? setCurrentPage('support') : setAuthOpen(true)} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4" /> Destek Talebi
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => user ? setCurrentPage('profile') : setAuthOpen(true)} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <User className="w-4 h-4" /> Profilim
+                  </button>
+                </li>
+                {user?.role === 'ADMIN' && (
+                  <li>
+                    <button onClick={() => setCurrentPage('admin')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                      <Settings className="w-4 h-4" /> Admin Paneli
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-500" />
+                Yasal
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setCurrentPage('privacy')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <Shield className="w-4 h-4" /> Gizlilik Politikası
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setCurrentPage('terms')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Kullanım Koşulları
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-zinc-800 mt-8 pt-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-zinc-500">
+                © {new Date().getFullYear()} ServerListRank. Tüm hakları saklıdır.
+              </p>
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-zinc-600">Minecraft, Mojang Studios'un tescilli markasıdır.</span>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
