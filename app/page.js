@@ -3720,6 +3720,25 @@ export default function App() {
       .catch(() => setLoading(false))
   }, [search, platform, gameMode])
 
+  // Auto-refresh servers every 5 minutes
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      if (platform !== 'ALL') params.set('platform', platform)
+      if (gameMode !== 'ALL') params.set('gameMode', gameMode)
+
+      fetch(`/api/servers?${params}`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          setServers(data.servers || [])
+        })
+        .catch(() => {})
+    }, 5 * 60 * 1000) // 5 dakika
+
+    return () => clearInterval(refreshInterval)
+  }, [search, platform, gameMode])
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     setUser(null)
