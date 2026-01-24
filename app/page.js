@@ -77,9 +77,23 @@ const minecraftVersions = [
   '1.12.2', '1.8.9', '1.7.10'
 ]
 
+// Helper function to get server favicon URL from mc-api.net
+const getServerFaviconUrl = (ip) => {
+  if (!ip) return null
+  // Remove port if present for the API call
+  const cleanIp = ip.split(':')[0]
+  return `https://eu.mc-api.net/v3/server/favicon/${cleanIp}`
+}
+
 // Server Card Component
-function ServerCard({ server, onVote, onView, rank }) {
+function ServerCard({ server, onVote, onView, rank, liveStatus }) {
   const [copied, setCopied] = useState(false)
+  const [faviconError, setFaviconError] = useState(false)
+
+  // Use live status if available, otherwise fall back to server data
+  const isOnline = liveStatus?.isOnline ?? server.isOnline
+  const playerCount = liveStatus?.playerCount ?? server.playerCount ?? 0
+  const maxPlayers = liveStatus?.maxPlayers ?? server.maxPlayers ?? 0
 
   const copyIP = async () => {
     try {
@@ -101,6 +115,9 @@ function ServerCard({ server, onVote, onView, rank }) {
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
+  // Get favicon URL - prefer logoUrl if set, otherwise use mc-api.net
+  const faviconUrl = server.logoUrl || (!faviconError ? getServerFaviconUrl(server.ip) : null)
 
   return (
     <Card className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 border-zinc-800 bg-zinc-900/50 backdrop-blur cursor-pointer ${server.isSponsored ? 'ring-2 ring-yellow-500/50' : ''}`}
@@ -133,17 +150,22 @@ function ServerCard({ server, onVote, onView, rank }) {
         
         {/* Online status */}
         <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/50 px-2 py-1 rounded-full">
-          <div className={`w-2 h-2 rounded-full ${server.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-          <span className="text-xs text-white">{server.isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+          <span className="text-xs text-white">{isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
         </div>
       </div>
 
       <CardContent className="relative -mt-10 p-4">
         <div className="flex items-start gap-3">
-          {/* Logo */}
+          {/* Logo - Now uses mc-api.net favicon */}
           <div className="w-16 h-16 rounded-lg bg-zinc-800 border-2 border-zinc-700 overflow-hidden flex-shrink-0 shadow-lg">
-            {server.logoUrl ? (
-              <img src={server.logoUrl} alt={server.name} className="w-full h-full object-cover" />
+            {faviconUrl ? (
+              <img 
+                src={faviconUrl} 
+                alt={server.name} 
+                className="w-full h-full object-cover"
+                onError={() => setFaviconError(true)}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-600 to-emerald-800">
                 <Server className="w-8 h-8 text-white" />
@@ -168,12 +190,14 @@ function ServerCard({ server, onVote, onView, rank }) {
           </div>
         </div>
 
-        {/* Stats Row */}
+        {/* Stats Row - Now with live player count */}
         <div className="flex items-center gap-4 mt-4 py-3 border-y border-zinc-800">
           <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-emerald-500" />
-            <span className="text-sm font-medium text-white">{server.playerCount}</span>
-            <span className="text-xs text-zinc-500">/ {server.maxPlayers}</span>
+            <Users className={`w-4 h-4 ${isOnline ? 'text-emerald-500' : 'text-zinc-500'}`} />
+            <span className={`text-sm font-medium transition-all duration-300 ${isOnline ? 'text-white' : 'text-zinc-500'}`}>
+              {playerCount}
+            </span>
+            <span className="text-xs text-zinc-500">/ {maxPlayers}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Trophy className="w-4 h-4 text-yellow-500" />
