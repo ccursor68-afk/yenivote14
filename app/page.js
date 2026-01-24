@@ -3538,8 +3538,41 @@ function AddServerPage({ onBack, onSuccess }) {
                   <div className="space-y-2"><Label className="text-white">Port *</Label><Input placeholder="25565" value={form.port} onChange={(e) => setForm({ ...form, port: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div>
                 </div>
                 <Button onClick={verifyIP} disabled={verifying || !form.ip} className={`w-full h-11 ${verified ? 'bg-emerald-600/20 text-emerald-500 border border-emerald-600' : 'bg-blue-600 hover:bg-blue-500'}`}>
-                  {verifying ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Doğrulanıyor...</> : verified ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Sunucu IP'si Doğrulandı</> : <><Check className="w-4 h-4 mr-2" /> Sunucu IP'sini Doğrula</>}
+                  {verifying ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sunucu Kontrol Ediliyor...</> : verified ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Sunucu Doğrulandı</> : <><RefreshCw className="w-4 h-4 mr-2" /> Sunucu Durumunu Kontrol Et</>}
                 </Button>
+                
+                {/* Sunucu Durumu Bilgisi */}
+                {serverStatus && (
+                  <div className={`p-4 rounded-lg border ${serverStatus.online ? 'bg-emerald-900/20 border-emerald-800/50' : 'bg-red-900/20 border-red-800/50'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${serverStatus.online ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                      <span className={`font-medium ${serverStatus.online ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {serverStatus.online ? 'Çevrimiçi' : 'Çevrimdışı'}
+                      </span>
+                    </div>
+                    {serverStatus.online ? (
+                      <div className="grid grid-cols-3 gap-4 mt-3">
+                        <div className="text-center p-2 bg-zinc-800/50 rounded">
+                          <Users className="w-5 h-5 mx-auto text-emerald-500 mb-1" />
+                          <p className="text-lg font-bold text-white">{serverStatus.playerCount}/{serverStatus.maxPlayers}</p>
+                          <p className="text-xs text-zinc-500">Oyuncu</p>
+                        </div>
+                        <div className="text-center p-2 bg-zinc-800/50 rounded">
+                          <Zap className="w-5 h-5 mx-auto text-yellow-500 mb-1" />
+                          <p className="text-lg font-bold text-white">{serverStatus.latency}ms</p>
+                          <p className="text-xs text-zinc-500">Gecikme</p>
+                        </div>
+                        <div className="text-center p-2 bg-zinc-800/50 rounded">
+                          <Server className="w-5 h-5 mx-auto text-blue-500 mb-1" />
+                          <p className="text-lg font-bold text-white truncate">{serverStatus.version || 'N/A'}</p>
+                          <p className="text-xs text-zinc-500">Versiyon</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-red-400 mt-2">{serverStatus.error || 'Sunucuya bağlanılamadı'}</p>
+                    )}
+                  </div>
+                )}
                 <div className="space-y-2"><Label className="text-white">Minecraft Versiyonu *</Label><Select value={form.version} onValueChange={(v) => setForm({ ...form, version: v })}><SelectTrigger className="bg-zinc-800 border-zinc-700 h-11"><SelectValue /></SelectTrigger><SelectContent className="bg-zinc-800 border-zinc-700 max-h-60">{minecraftVersions.map(v => (<SelectItem key={v} value={v}>{v}</SelectItem>))}</SelectContent></Select></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label className="text-white">Platform</Label><Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}><SelectTrigger className="bg-zinc-800 border-zinc-700 h-11"><SelectValue /></SelectTrigger><SelectContent className="bg-zinc-800 border-zinc-700"><SelectItem value="JAVA">☕ Java Edition</SelectItem><SelectItem value="BEDROCK">🪨 Bedrock Edition</SelectItem><SelectItem value="CROSSPLAY">🔄 Crossplay</SelectItem></SelectContent></Select></div>
