@@ -9,17 +9,10 @@ async function requireAdmin(request) {
   const prisma = getPrisma();
   const user = await getAuthUser(request, prisma);
   
-  if (!user) {
-    console.log('Admin check: No user found');
+  if (!user || user.role !== 'ADMIN') {
     return null;
   }
   
-  if (user.role !== 'ADMIN') {
-    console.log('Admin check: User is not admin, role:', user.role);
-    return null;
-  }
-  
-  console.log('Admin check: User is admin:', user.email);
   return user;
 }
 
@@ -50,8 +43,7 @@ export async function GET(request) {
 
     return NextResponse.json({ posts, categories });
   } catch (error) {
-    console.error('Admin blog list error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 
@@ -105,8 +97,7 @@ export async function POST(request) {
 
     return NextResponse.json({ post, message: 'Blog yazısı oluşturuldu' });
   } catch (error) {
-    console.error('Admin blog create error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 
@@ -147,8 +138,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ post, message: 'Blog yazısı güncellendi' });
   } catch (error) {
-    console.error('Admin blog update error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 
@@ -176,7 +166,6 @@ export async function DELETE(request) {
 
     return NextResponse.json({ message: 'Yazı silindi' });
   } catch (error) {
-    console.error('Admin blog delete error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
