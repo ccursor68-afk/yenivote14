@@ -1060,24 +1060,48 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                   {servers.map(server => (
                     <div key={server.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded bg-zinc-700 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded bg-zinc-700 flex items-center justify-center overflow-hidden">
                           {server.logoUrl ? (
                             <img src={server.logoUrl} alt={server.name} className="w-full h-full rounded object-cover" />
-                          ) : (
-                            <Server className="w-5 h-5 text-zinc-400" />
-                          )}
+                          ) : server.ip ? (
+                            <img 
+                              src={getServerFaviconUrl(server.ip)} 
+                              alt={server.name} 
+                              className="w-full h-full rounded object-cover"
+                              onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                            />
+                          ) : null}
+                          <div className="w-full h-full items-center justify-center bg-gradient-to-br from-emerald-600 to-emerald-800" style={{ display: server.logoUrl || server.ip ? 'none' : 'flex' }}>
+                            <Server className="w-5 h-5 text-white" />
+                          </div>
                         </div>
                         <div>
                           <p className="font-medium text-white">{server.name}</p>
-                          <p className="text-xs text-zinc-500">{server.ip}</p>
+                          <p className="text-xs text-zinc-500">{server.ip}{server.port !== 25565 ? `:${server.port}` : ''}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <Badge className={statusColors[server.approvalStatus]}>
                           {server.approvalStatus === 'PENDING' ? 'Beklemede' : 
                            server.approvalStatus === 'APPROVED' ? 'Onaylı' : 'Reddedildi'}
                         </Badge>
-                        <span className="text-sm text-zinc-500">{server.voteCount} oy</span>
+                        <span className="text-sm text-zinc-500 hidden sm:inline">{server.voteCount} oy</span>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-zinc-700 hover:bg-zinc-700"
+                          onClick={() => openEditServer(server)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-red-800 text-red-400 hover:bg-red-900/50"
+                          onClick={() => setDeletingServer(server)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -1087,6 +1111,259 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
           </Card>
         </div>
       </div>
+
+      {/* Edit Server Dialog */}
+      <Dialog open={!!editingServer} onOpenChange={() => setEditingServer(null)}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Edit className="w-5 h-5 text-emerald-500" />
+              Sunucu Düzenle
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              {editingServer?.name} sunucusunu düzenleyin
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white">Sunucu Adı *</Label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="Sunucu adı"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">IP Adresi *</Label>
+                <Input
+                  value={editForm.ip}
+                  onChange={(e) => setEditForm({ ...editForm, ip: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="play.sunucu.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white">Port</Label>
+                <Input
+                  type="number"
+                  value={editForm.port}
+                  onChange={(e) => setEditForm({ ...editForm, port: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="25565"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Platform</Label>
+                <Select value={editForm.platform} onValueChange={(v) => setEditForm({ ...editForm, platform: v })}>
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                    <SelectItem value="JAVA">Java</SelectItem>
+                    <SelectItem value="BEDROCK">Bedrock</SelectItem>
+                    <SelectItem value="CROSSPLAY">Crossplay</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Oyun Modu</Label>
+                <Select value={editForm.gameMode} onValueChange={(v) => setEditForm({ ...editForm, gameMode: v })}>
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                    {gameModes.map(mode => (
+                      <SelectItem key={mode.value} value={mode.value}>{mode.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white">Versiyon *</Label>
+                <Input
+                  value={editForm.version}
+                  onChange={(e) => setEditForm({ ...editForm, version: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="1.20.4"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Etiketler</Label>
+                <Input
+                  value={editForm.tags}
+                  onChange={(e) => setEditForm({ ...editForm, tags: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="pvp, survival, türkçe"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Kısa Açıklama *</Label>
+              <Textarea
+                value={editForm.shortDescription}
+                onChange={(e) => setEditForm({ ...editForm, shortDescription: e.target.value })}
+                className="bg-zinc-800 border-zinc-700"
+                placeholder="Sunucunuzun kısa açıklaması"
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Detaylı Açıklama</Label>
+              <Textarea
+                value={editForm.longDescription}
+                onChange={(e) => setEditForm({ ...editForm, longDescription: e.target.value })}
+                className="bg-zinc-800 border-zinc-700"
+                placeholder="Sunucunuzun detaylı açıklaması"
+                rows={4}
+              />
+            </div>
+
+            {/* URLs */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white">Website</Label>
+                <Input
+                  value={editForm.website}
+                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="https://sunucu.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Discord</Label>
+                <Input
+                  value={editForm.discord}
+                  onChange={(e) => setEditForm({ ...editForm, discord: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="https://discord.gg/xxx"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white">Logo URL</Label>
+                <Input
+                  value={editForm.logoUrl}
+                  onChange={(e) => setEditForm({ ...editForm, logoUrl: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Banner URL</Label>
+                <Input
+                  value={editForm.bannerUrl}
+                  onChange={(e) => setEditForm({ ...editForm, bannerUrl: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            {/* Votifier Settings */}
+            <Separator className="bg-zinc-800" />
+            <div className="space-y-2">
+              <Label className="text-white flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-500" />
+                Votifier Ayarları
+              </Label>
+              <p className="text-xs text-zinc-500">Oyunculara oyun içi ödül vermek için</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white">Votifier Host</Label>
+                <Input
+                  value={editForm.votifierHost}
+                  onChange={(e) => setEditForm({ ...editForm, votifierHost: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="play.sunucu.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Votifier Port</Label>
+                <Input
+                  type="number"
+                  value={editForm.votifierPort}
+                  onChange={(e) => setEditForm({ ...editForm, votifierPort: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700"
+                  placeholder="8192"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Public Key</Label>
+              <Textarea
+                value={editForm.votifierPublicKey}
+                onChange={(e) => setEditForm({ ...editForm, votifierPublicKey: e.target.value })}
+                className="bg-zinc-800 border-zinc-700 font-mono text-xs"
+                placeholder="-----BEGIN PUBLIC KEY-----"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Token (Opsiyonel)</Label>
+              <Input
+                value={editForm.votifierToken}
+                onChange={(e) => setEditForm({ ...editForm, votifierToken: e.target.value })}
+                className="bg-zinc-800 border-zinc-700"
+                placeholder="NuVotifier token"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingServer(null)} className="border-zinc-700">
+              İptal
+            </Button>
+            <Button onClick={handleSaveServer} disabled={serverLoading} className="bg-emerald-600 hover:bg-emerald-500">
+              {serverLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+              Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Server Confirmation Dialog */}
+      <Dialog open={!!deletingServer} onOpenChange={() => setDeletingServer(null)}>
+        <DialogContent className="bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              Sunucu Silme Onayı
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              <strong className="text-white">{deletingServer?.name}</strong> sunucusunu silmek istediğinize emin misiniz? 
+              Bu işlem geri alınamaz ve tüm oylar silinecektir.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeletingServer(null)} className="border-zinc-700">
+              İptal
+            </Button>
+            <Button onClick={handleDeleteServer} disabled={serverLoading} className="bg-red-600 hover:bg-red-500">
+              {serverLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              Sil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
