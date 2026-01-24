@@ -79,8 +79,7 @@ export async function GET(request) {
       }
     });
   } catch (error) {
-    console.error('Servers list error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 
@@ -92,19 +91,11 @@ export async function POST(request) {
     }
 
     const prisma = getPrisma();
-    
-    // Debug logging
-    const cookieHeader = request.headers.get('cookie');
-    console.log('POST /api/servers - Cookie header:', cookieHeader ? 'present' : 'missing');
-    
     const user = await getAuthUser(request, prisma);
     
     if (!user) {
-      console.log('POST /api/servers - No authenticated user');
       return NextResponse.json({ error: 'Giriş yapmalısınız' }, { status: 401 });
     }
-    
-    console.log('POST /api/servers - User authenticated:', user.email);
 
     const body = await request.json();
     const { 
@@ -144,7 +135,6 @@ export async function POST(request) {
 
     return NextResponse.json({ server, message: 'Sunucu eklendi, onay bekleniyor' });
   } catch (error) {
-    console.error('Server create error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
