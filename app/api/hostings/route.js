@@ -33,8 +33,6 @@ export async function GET(request) {
       })
     };
 
-    console.log('Hostings query where:', JSON.stringify(where));
-
     const hostings = await prisma.hosting.findMany({
       where,
       orderBy: [
@@ -49,14 +47,11 @@ export async function GET(request) {
       }
     });
 
-    console.log('Hostings found:', hostings.length);
-
     return NextResponse.json({ hostings }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
     });
   } catch (error) {
-    console.error('Hostings list error:', error);
-    return NextResponse.json({ hostings: [], error: error.message }, {
+    return NextResponse.json({ hostings: [], error: 'Sunucu hatası' }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
     });
   }
@@ -108,7 +103,6 @@ export async function POST(request) {
 
     return NextResponse.json({ hosting, message: 'Hosting eklendi, onay bekleniyor' });
   } catch (error) {
-    console.error('Hosting create error:', error);
-    return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
