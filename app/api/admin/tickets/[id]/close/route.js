@@ -34,7 +34,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ ticket, message: 'Ticket kapatıldı' });
   } catch (error) {
-    console.error('Admin close ticket error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

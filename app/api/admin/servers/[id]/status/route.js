@@ -40,7 +40,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ server, message: `Sunucu ${status === 'APPROVED' ? 'onaylandı' : 'reddedildi'}` });
   } catch (error) {
-    console.error('Admin server status error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

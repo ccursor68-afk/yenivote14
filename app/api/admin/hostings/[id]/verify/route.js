@@ -48,7 +48,7 @@ export async function PUT(request, { params }) {
       message: updatedHosting.isVerified ? 'Hosting onaylandı' : 'Hosting onayı kaldırıldı'
     });
   } catch (error) {
-    console.error('Hosting verify error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

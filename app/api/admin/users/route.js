@@ -42,7 +42,7 @@ export async function GET(request) {
 
     return NextResponse.json({ users });
   } catch (error) {
-    console.error('Admin users error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

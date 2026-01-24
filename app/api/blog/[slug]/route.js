@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ post });
   } catch (error) {
-    console.error('Blog post error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

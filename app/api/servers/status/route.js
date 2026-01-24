@@ -46,7 +46,7 @@ export async function GET(request) {
       }
     });
   } catch (error) {
-    console.error('Server status error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

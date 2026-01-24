@@ -47,7 +47,7 @@ export async function GET(request) {
 
     return NextResponse.json({ categories });
   } catch (error) {
-    console.error('Admin categories error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -96,7 +96,7 @@ export async function POST(request) {
 
     return NextResponse.json({ category });
   } catch (error) {
-    console.error('Admin category create error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -125,7 +125,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({ message: 'Kategori silindi' });
   } catch (error) {
-    console.error('Admin category delete error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

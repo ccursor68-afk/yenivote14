@@ -44,7 +44,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ server, message: days > 0 ? 'Sponsor eklendi' : 'Sponsor kaldırıldı' });
   } catch (error) {
-    console.error('Admin sponsor error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

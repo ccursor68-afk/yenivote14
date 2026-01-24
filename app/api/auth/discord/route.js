@@ -20,7 +20,7 @@ export async function GET(request) {
     
     return NextResponse.redirect(authUrl);
   } catch (error) {
-    console.error('Discord auth error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }

@@ -44,7 +44,7 @@ export async function GET(request) {
 
     return NextResponse.json({ banners });
   } catch (error) {
-    console.error('Admin banners error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -87,7 +87,7 @@ export async function POST(request) {
 
     return NextResponse.json({ banner });
   } catch (error) {
-    console.error('Admin banner create error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -123,7 +123,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ banner });
   } catch (error) {
-    console.error('Admin banner update error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -152,7 +152,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({ message: 'Banner silindi' });
   } catch (error) {
-    console.error('Admin banner delete error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

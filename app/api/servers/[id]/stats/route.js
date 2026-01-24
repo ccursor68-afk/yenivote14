@@ -66,7 +66,7 @@ export async function GET(request, { params }) {
       activeBoost
     });
   } catch (error) {
-    console.error('Server stats error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -101,7 +101,7 @@ export async function POST(request, { params }) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Record visit error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

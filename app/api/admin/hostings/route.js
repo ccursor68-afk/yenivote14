@@ -32,7 +32,7 @@ export async function GET(request) {
 
     return NextResponse.json({ hostings });
   } catch (error) {
-    console.error('Admin hostings error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -61,7 +61,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({ message: 'Hosting silindi' });
   } catch (error) {
-    console.error('Admin hosting delete error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

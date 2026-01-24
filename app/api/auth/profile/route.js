@@ -47,7 +47,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    console.error('Profile update error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

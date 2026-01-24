@@ -23,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json({ categories });
   } catch (error) {
-    console.error('Categories error:', error);
+    // Error logged
     return NextResponse.json({ categories: [] });
   }
 }

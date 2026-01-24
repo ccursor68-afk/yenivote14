@@ -39,11 +39,11 @@ export async function PUT(request, { params }) {
       }
     });
 
-    console.log('Hosting status updated:', hosting.id, status);
+    // Log removed
 
     return NextResponse.json({ hosting, message: `Hosting ${status === 'APPROVED' ? 'onaylandı' : 'reddedildi'}` });
   } catch (error) {
-    console.error('Admin hosting status error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

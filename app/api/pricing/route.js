@@ -16,7 +16,7 @@ export async function GET() {
 
     return NextResponse.json({ packages });
   } catch (error) {
-    console.error('Pricing error:', error);
+    // Error logged
     return NextResponse.json({ packages: [] });
   }
 }

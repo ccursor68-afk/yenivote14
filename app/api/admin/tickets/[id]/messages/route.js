@@ -36,7 +36,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ messages });
   } catch (error) {
-    console.error('Get ticket messages error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -90,7 +90,7 @@ export async function POST(request, { params }) {
 
     return NextResponse.json({ message, success: true });
   } catch (error) {
-    console.error('Admin reply error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

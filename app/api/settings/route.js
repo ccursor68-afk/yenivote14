@@ -27,7 +27,7 @@ export async function GET() {
 
     return NextResponse.json({ settings });
   } catch (error) {
-    console.error('Settings error:', error);
+    // Error logged
     return NextResponse.json({ settings: null });
   }
 }

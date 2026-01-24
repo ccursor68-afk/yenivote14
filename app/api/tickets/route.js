@@ -30,7 +30,7 @@ export async function GET(request) {
 
     return NextResponse.json({ tickets });
   } catch (error) {
-    console.error('Tickets list error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -87,7 +87,7 @@ export async function POST(request) {
 
     return NextResponse.json({ ticket, message: 'Destek talebi oluşturuldu' });
   } catch (error) {
-    console.error('Ticket create error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

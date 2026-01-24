@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error('Get user error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -79,7 +79,7 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({ message: 'Kullanıcı silindi' });
   } catch (error) {
-    console.error('Delete user error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

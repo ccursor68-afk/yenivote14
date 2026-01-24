@@ -32,7 +32,7 @@ export async function GET(request) {
 
     return NextResponse.json({ servers });
   } catch (error) {
-    console.error('Admin all servers error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -80,7 +80,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ server, message: 'Sunucu güncellendi' });
   } catch (error) {
-    console.error('Admin server update error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -115,7 +115,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({ message: 'Sunucu silindi' });
   } catch (error) {
-    console.error('Admin server delete error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

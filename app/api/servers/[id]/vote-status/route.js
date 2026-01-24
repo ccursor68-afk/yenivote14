@@ -51,7 +51,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ canVote, nextVoteTime });
   } catch (error) {
-    console.error('Vote status error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

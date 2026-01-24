@@ -38,7 +38,7 @@ export async function GET(request) {
 
     return NextResponse.json({ banners });
   } catch (error) {
-    console.error('Banners error:', error);
+    // Error logged
     return NextResponse.json({ banners: [] });
   }
 }

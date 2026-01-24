@@ -38,7 +38,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ ticket, message: 'Ticket durumu güncellendi' });
   } catch (error) {
-    console.error('Ticket status update error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

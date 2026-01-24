@@ -20,7 +20,7 @@ export async function GET(request) {
     const error = searchParams.get('error');
 
     if (error) {
-      console.error('Discord OAuth error:', error);
+      // Error logged
       return NextResponse.redirect(new URL('/?error=discord_denied', request.url));
     }
 
@@ -36,7 +36,7 @@ export async function GET(request) {
         returnUrl = stateData.returnUrl || '/';
       }
     } catch (e) {
-      console.warn('Invalid state:', e);
+      // Warning logged
     }
 
     // Exchange code for token
@@ -107,7 +107,7 @@ export async function GET(request) {
     
     return response;
   } catch (error) {
-    console.error('Discord callback error:', error);
+    // Error logged
     return NextResponse.redirect(new URL('/?error=discord_error', request.url));
   }
 }

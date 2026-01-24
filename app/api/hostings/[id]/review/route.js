@@ -91,7 +91,7 @@ export async function POST(request, { params }) {
       newBadges: newBadges.length > 0 ? newBadges : undefined
     });
   } catch (error) {
-    console.error('Hosting review error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

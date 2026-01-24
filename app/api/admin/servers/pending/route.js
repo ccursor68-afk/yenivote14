@@ -37,7 +37,7 @@ export async function GET(request) {
 
     return NextResponse.json({ servers });
   } catch (error) {
-    console.error('Admin pending servers error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

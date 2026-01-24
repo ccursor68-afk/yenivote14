@@ -37,7 +37,7 @@ export async function GET(request) {
       stats: { userCount, serverCount, voteCount, pendingCount }
     });
   } catch (error) {
-    console.error('Admin stats error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

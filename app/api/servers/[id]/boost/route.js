@@ -32,7 +32,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ activeBoost, hasBoost: !!activeBoost });
   } catch (error) {
-    console.error('Boost status error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -99,7 +99,7 @@ export async function POST(request, { params }) {
       message: 'Boost talebi oluşturuldu. Destek ekibimiz en kısa sürede dönüş yapacaktır.' 
     });
   } catch (error) {
-    console.error('Boost request error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

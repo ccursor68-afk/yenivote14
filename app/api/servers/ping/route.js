@@ -74,7 +74,7 @@ export async function POST(request) {
               maxPlayers: pingResult.maxPlayers
             };
           } catch (err) {
-            console.error(`Ping failed for ${server.name}:`, err.message);
+            // Error logged
             return {
               id: server.id,
               name: server.name,
@@ -102,7 +102,7 @@ export async function POST(request) {
       results
     });
   } catch (error) {
-    console.error('Ping all servers error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -122,7 +122,7 @@ export async function GET(request) {
     
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Single ping error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Ping hatası', details: error.message }, { status: 500 });
   }
 }

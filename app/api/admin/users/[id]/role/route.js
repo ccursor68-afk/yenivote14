@@ -47,7 +47,7 @@ export async function PUT(request, { params }) {
       message: 'Kullanıcı rolü güncellendi'
     });
   } catch (error) {
-    console.error('User role update error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

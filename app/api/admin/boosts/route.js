@@ -35,7 +35,7 @@ export async function GET(request) {
 
     return NextResponse.json({ boosts });
   } catch (error) {
-    console.error('Admin boosts error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -101,7 +101,7 @@ export async function POST(request) {
       message: `${server.name} için ${durationDays} günlük boost eklendi`
     });
   } catch (error) {
-    console.error('Create boost error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
@@ -164,7 +164,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({ message: 'Boost deaktif edildi' });
   } catch (error) {
-    console.error('Deactivate boost error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }

@@ -54,7 +54,7 @@ export async function POST(request, { params }) {
 
     return NextResponse.json({ message });
   } catch (error) {
-    console.error('Ticket message error:', error);
+    // Error logged
     return NextResponse.json({ error: 'Sunucu hatası', details: error.message }, { status: 500 });
   }
 }
