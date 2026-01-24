@@ -3662,6 +3662,11 @@ export default function App() {
   const [supportCategory, setSupportCategory] = useState(null)
   const [supportSubject, setSupportSubject] = useState('')
   
+  // Live server status - for real-time player counts
+  const [serverStatus, setServerStatus] = useState({})
+  const [statusLastUpdated, setStatusLastUpdated] = useState(null)
+  const [statusRefreshing, setStatusRefreshing] = useState(false)
+  
   // Dialogs
   const [authOpen, setAuthOpen] = useState(false)
   const [voteServer, setVoteServer] = useState(null)
@@ -3672,6 +3677,33 @@ export default function App() {
     setSupportSubject(subject)
     setCurrentPage('support')
   }
+  
+  // Fetch live server status (lightweight endpoint) - every 60 seconds
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        setStatusRefreshing(true)
+        const res = await fetch('/api/servers/status', { credentials: 'include' })
+        const data = await res.json()
+        if (data.status) {
+          setServerStatus(data.status)
+          setStatusLastUpdated(new Date())
+        }
+      } catch (err) {
+        console.error('Status fetch failed:', err)
+      } finally {
+        setStatusRefreshing(false)
+      }
+    }
+    
+    // Initial fetch
+    fetchStatus()
+    
+    // Poll every 60 seconds for live updates
+    const statusInterval = setInterval(fetchStatus, 60 * 1000)
+    
+    return () => clearInterval(statusInterval)
+  }, [])
 
   // Fetch current user - HYDRATION CHECK with retry
   useEffect(() => {
