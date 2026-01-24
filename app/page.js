@@ -255,6 +255,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
   const [server, setServer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [faviconError, setFaviconError] = useState(false)
 
   useEffect(() => {
     fetch(`/api/servers/${serverId}`, { credentials: 'include' })
@@ -287,6 +288,9 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
+  // Get favicon URL
+  const faviconUrl = server?.logoUrl || (!faviconError && server?.ip ? getServerFaviconUrl(server.ip) : null)
 
   if (loading) {
     return (
@@ -343,8 +347,13 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-24 h-24 rounded-xl bg-zinc-800 border-2 border-zinc-700 overflow-hidden flex-shrink-0">
-                    {server.logoUrl ? (
-                      <img src={server.logoUrl} alt={server.name} className="w-full h-full object-cover" />
+                    {faviconUrl ? (
+                      <img 
+                        src={faviconUrl} 
+                        alt={server.name} 
+                        className="w-full h-full object-cover"
+                        onError={() => setFaviconError(true)}
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-600 to-emerald-800">
                         <Server className="w-12 h-12 text-white" />
