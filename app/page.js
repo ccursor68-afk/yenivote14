@@ -3974,7 +3974,7 @@ export default function App() {
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-2 mb-6"><Crown className="w-6 h-6 text-yellow-500" /><h2 className="text-2xl font-bold text-white">Sponsorlu Sunucular</h2></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sponsoredServers.map(server => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} />))}
+              {sponsoredServers.map(server => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} liveStatus={serverStatus[server.id]} />))}
             </div>
           </div>
         </section>
@@ -3983,7 +3983,21 @@ export default function App() {
       {/* Top Servers */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 mb-6"><Trophy className="w-6 h-6 text-emerald-500" /><h2 className="text-2xl font-bold text-white">En Çok Oy Alan Sunucular</h2></div>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-emerald-500" />
+              <h2 className="text-2xl font-bold text-white">En Çok Oy Alan Sunucular</h2>
+            </div>
+            {/* Live status indicator */}
+            {statusLastUpdated && (
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <div className={`w-2 h-2 rounded-full ${statusRefreshing ? 'bg-yellow-500 animate-pulse' : 'bg-emerald-500'}`} />
+                <span>
+                  {statusRefreshing ? 'Güncelleniyor...' : `Son güncelleme: ${statusLastUpdated.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`}
+                </span>
+              </div>
+            )}
+          </div>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -4004,7 +4018,7 @@ export default function App() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topServers.map((server, index) => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} rank={index + 1} />))}
+              {topServers.map((server, index) => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} rank={index + 1} liveStatus={serverStatus[server.id]} />))}
             </div>
           )}
         </div>
