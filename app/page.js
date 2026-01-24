@@ -770,6 +770,12 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
     username: user?.username || '',
     minecraftNick: user?.minecraftNick || ''
   })
+  
+  // Server edit/delete states
+  const [editingServer, setEditingServer] = useState(null)
+  const [deletingServer, setDeletingServer] = useState(null)
+  const [serverLoading, setServerLoading] = useState(false)
+  const [editForm, setEditForm] = useState({})
 
   useEffect(() => {
     // Fetch user's servers
@@ -816,6 +822,93 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
       toast.error('Bir hata oluştu')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Open edit modal
+  const openEditServer = (server) => {
+    setEditForm({
+      name: server.name || '',
+      ip: server.ip || '',
+      port: server.port || 25565,
+      platform: server.platform || 'JAVA',
+      gameMode: server.gameMode || 'SURVIVAL',
+      version: server.version || '',
+      website: server.website || '',
+      discord: server.discord || '',
+      bannerUrl: server.bannerUrl || '',
+      logoUrl: server.logoUrl || '',
+      shortDescription: server.shortDescription || '',
+      longDescription: server.longDescription || '',
+      tags: server.tags?.join(', ') || '',
+      votifierHost: server.votifierHost || '',
+      votifierPort: server.votifierPort || '',
+      votifierPublicKey: server.votifierPublicKey || '',
+      votifierToken: server.votifierToken || ''
+    })
+    setEditingServer(server)
+  }
+
+  // Save server changes
+  const handleSaveServer = async () => {
+    if (!editingServer) return
+    setServerLoading(true)
+    
+    try {
+      const res = await fetch(`/api/servers/${editingServer.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...editForm,
+          port: parseInt(editForm.port) || 25565,
+          votifierPort: editForm.votifierPort ? parseInt(editForm.votifierPort) : null,
+          tags: editForm.tags ? editForm.tags.split(',').map(t => t.trim()).filter(Boolean) : []
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Güncelleme başarısız')
+        return
+      }
+
+      toast.success('Sunucu güncellendi!')
+      setServers(servers.map(s => s.id === editingServer.id ? data.server : s))
+      setEditingServer(null)
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setServerLoading(false)
+    }
+  }
+
+  // Delete server
+  const handleDeleteServer = async () => {
+    if (!deletingServer) return
+    setServerLoading(true)
+    
+    try {
+      const res = await fetch(`/api/servers/${deletingServer.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Silme başarısız')
+        return
+      }
+
+      toast.success('Sunucu silindi!')
+      setServers(servers.filter(s => s.id !== deletingServer.id))
+      setDeletingServer(null)
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setServerLoading(false)
     }
   }
 
