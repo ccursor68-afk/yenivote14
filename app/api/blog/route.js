@@ -28,8 +28,6 @@ export async function GET(request) {
       ...(blogType && { blogType: blogType.toUpperCase() })
     };
 
-    console.log('Blog query where:', JSON.stringify(where));
-
     const posts = await prisma.blogPost.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -52,8 +50,6 @@ export async function GET(request) {
       }
     });
 
-    console.log('Blog posts found:', posts.length);
-
     // Get all unique tags for filtering
     const allPosts = await prisma.blogPost.findMany({
       where: { published: true },
@@ -73,8 +69,7 @@ export async function GET(request) {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
     });
   } catch (error) {
-    console.error('Blog list error:', error);
-    return NextResponse.json({ posts: [], tags: [], typeCounts: {}, error: error.message }, {
+    return NextResponse.json({ posts: [], tags: [], typeCounts: {} }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
     });
   }
