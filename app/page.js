@@ -3378,6 +3378,7 @@ function AddServerPage({ onBack, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [verified, setVerified] = useState(false)
+  const [serverStatus, setServerStatus] = useState(null) // { online, playerCount, maxPlayers, version, latency }
   const [form, setForm] = useState({
     name: '',
     ip: '',
@@ -3412,10 +3413,33 @@ function AddServerPage({ onBack, onSuccess }) {
       return
     }
     setVerifying(true)
-    await new Promise(r => setTimeout(r, 1500))
-    setVerified(true)
-    setVerifying(false)
-    toast.success('Sunucu IP\'si doğrulandı!')
+    setServerStatus(null)
+    
+    try {
+      const port = parseInt(form.port) || 25565
+      const res = await fetch(`/api/servers/ping?ip=${encodeURIComponent(form.ip)}&port=${port}`)
+      const data = await res.json()
+      
+      setServerStatus(data)
+      
+      if (data.online) {
+        setVerified(true)
+        toast.success(`Sunucu çevrimiçi! ${data.playerCount}/${data.maxPlayers} oyuncu`)
+        // Versiyon bilgisini otomatik al
+        if (data.version && !form.version) {
+          setForm(f => ({ ...f, version: data.version }))
+        }
+      } else {
+        setVerified(false)
+        toast.error(data.error || 'Sunucu çevrimdışı veya erişilemiyor')
+      }
+    } catch (err) {
+      setVerified(false)
+      setServerStatus({ online: false, error: 'Bağlantı hatası' })
+      toast.error('Sunucu durumu kontrol edilemedi')
+    } finally {
+      setVerifying(false)
+    }
   }
 
   const addTag = () => {
