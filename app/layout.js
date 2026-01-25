@@ -69,6 +69,11 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="min-h-screen bg-background antialiased">
+        {/* Google Analytics - tracks page views */}
+        <GoogleAnalytics />
+        {/* Google AdSense - Auto Ads */}
+        <GoogleAdSense />
+        
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
