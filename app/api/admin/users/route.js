@@ -33,6 +33,9 @@ export async function GET(request) {
         minecraftNick: true,
         role: true,
         createdAt: true,
+        discordId: true,
+        discordUsername: true,
+        avatarUrl: true,
         _count: {
           select: { servers: true }
         }
