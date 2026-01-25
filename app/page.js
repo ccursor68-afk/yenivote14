@@ -1541,7 +1541,17 @@ function BlogPage({ onBack, onViewPost }) {
                   </div>
                   <h2 className="text-xl font-bold text-white mb-2 line-clamp-2">{post.title}</h2>
                   {post.excerpt && (
-                    <p className="text-zinc-400 text-sm line-clamp-3 mb-4">{post.excerpt}</p>
+                    <p className="text-zinc-400 text-sm line-clamp-3 mb-3">{post.excerpt}</p>
+                  )}
+                  {/* Tags */}
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {post.tags.slice(0, 4).map((tag, idx) => (
+                        <span key={idx} className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-zinc-500">
