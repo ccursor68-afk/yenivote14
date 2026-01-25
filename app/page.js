@@ -766,6 +766,7 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
   const [servers, setServers] = useState([])
   const [tickets, setTickets] = useState([])
   const [badges, setBadges] = useState([])
+  const [serverStatus, setServerStatus] = useState({}) // Live status from API
   const [form, setForm] = useState({
     username: user?.username || '',
     minecraftNick: user?.minecraftNick || ''
@@ -776,6 +777,19 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
   const [deletingServer, setDeletingServer] = useState(null)
   const [serverLoading, setServerLoading] = useState(false)
   const [editForm, setEditForm] = useState({})
+
+  // Fetch live server status
+  const fetchServerStatus = async () => {
+    try {
+      const res = await fetch('/api/servers/status')
+      const data = await res.json()
+      if (data.status) {
+        setServerStatus(data.status)
+      }
+    } catch (err) {
+      console.error('Status fetch error:', err)
+    }
+  }
 
   useEffect(() => {
     // Fetch user's servers
@@ -797,6 +811,13 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
         .then(data => setBadges(data.badges || []))
         .catch(() => {})
     }
+
+    // Fetch live server status
+    fetchServerStatus()
+    
+    // Refresh status every 60 seconds
+    const statusInterval = setInterval(fetchServerStatus, 60000)
+    return () => clearInterval(statusInterval)
   }, [user?.id])
 
   const handleSave = async () => {
