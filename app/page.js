@@ -5103,6 +5103,9 @@ export default function App() {
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState(null)
   
+  // Site statistics
+  const [siteStats, setSiteStats] = useState({ serverCount: 0, totalPlayers: 0, totalVotes: 0 })
+  
   // Support page state
   const [supportCategory, setSupportCategory] = useState(null)
   const [supportSubject, setSupportSubject] = useState('')
