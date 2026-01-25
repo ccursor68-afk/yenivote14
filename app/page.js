@@ -844,9 +844,36 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
       votifierHost: server.votifierHost || '',
       votifierPort: server.votifierPort || '',
       votifierPublicKey: server.votifierPublicKey || '',
-      votifierToken: server.votifierToken || ''
+      votifierToken: server.votifierToken || '',
+      isOnline: server.isOnline ?? false,
+      playerCount: server.playerCount || 0,
+      maxPlayers: server.maxPlayers || 100
     })
     setEditingServer(server)
+  }
+
+  // Toggle server online status
+  const toggleServerOnline = async (server) => {
+    try {
+      const res = await fetch(`/api/servers/${server.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isOnline: !server.isOnline })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Güncelleme başarısız')
+        return
+      }
+
+      toast.success(data.server.isOnline ? 'Sunucu çevrimiçi olarak işaretlendi' : 'Sunucu çevrimdışı olarak işaretlendi')
+      setServers(servers.map(s => s.id === server.id ? data.server : s))
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    }
   }
 
   // Save server changes
