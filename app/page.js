@@ -1099,20 +1099,6 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {/* Online/Offline Toggle */}
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className={`border-zinc-700 ${server.isOnline ? 'hover:bg-red-900/30 hover:border-red-700' : 'hover:bg-emerald-900/30 hover:border-emerald-700'}`}
-                          onClick={() => toggleServerOnline(server)}
-                          title={server.isOnline ? 'Çevrimdışı yap' : 'Çevrimiçi yap'}
-                        >
-                          {server.isOnline ? (
-                            <X className="w-4 h-4 text-red-400" />
-                          ) : (
-                            <Check className="w-4 h-4 text-emerald-400" />
-                          )}
-                        </Button>
                         <Badge className={statusColors[server.approvalStatus]}>
                           {server.approvalStatus === 'PENDING' ? 'Beklemede' : 
                            server.approvalStatus === 'APPROVED' ? 'Onaylı' : 'Reddedildi'}
