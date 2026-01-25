@@ -128,6 +128,7 @@ model Server {
   port              Int             @default(25565)
   platform          Platform        @default(JAVA)
   gameMode          GameMode        @default(SURVIVAL)
+  gameModes         GameMode[]      @default([SURVIVAL])
   version           String
   website           String?
   discord           String?
