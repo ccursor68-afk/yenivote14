@@ -1,82 +1,150 @@
-import getPrisma, { isDatabaseAvailable } from '@/lib/db';
-import BlogPostClient from './BlogPostClient';
+import getPrisma, { isDatabaseAvailable } from '@/lib/db'
+import BlogPostClient from './BlogPostClient'
 
-// Dynamic metadata for SEO
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://serverlistrank.com'
+
 export async function generateMetadata({ params }) {
-  const { slug } = params;
+  const { slug } = await params
   
   if (!isDatabaseAvailable()) {
     return {
       title: 'Blog Yazısı',
-      description: 'Minecraft blog yazısı'
-    };
+      description: 'ServerListRank blog yazısı',
+    }
   }
 
   try {
-    const prisma = getPrisma();
+    const prisma = getPrisma()
     const post = await prisma.blogPost.findUnique({
       where: { slug },
-      select: {
-        title: true,
-        excerpt: true,
-        content: true,
-        coverImage: true,
-        tags: true,
-        blogType: true,
+      include: {
         author: { select: { username: true } },
-        createdAt: true
-      }
-    });
+        category: { select: { name: true } },
+      },
+    })
 
     if (!post) {
       return {
         title: 'Yazı Bulunamadı',
-        description: 'Aradığınız blog yazısı bulunamadı'
-      };
+        description: 'Bu blog yazısı bulunamadı.',
+      }
     }
 
-    const description = post.excerpt || post.content?.substring(0, 160) || 'Minecraft blog yazısı';
     const blogTypeLabels = {
       GUIDE: 'Rehber',
       UPDATE: 'Güncelleme',
       NEWS: 'Haber',
-      TUTORIAL: 'Eğitim'
-    };
+      TUTORIAL: 'Eğitim',
+    }
+
+    const typeLabel = blogTypeLabels[post.blogType] || ''
+    const authorName = post.author?.username || 'ServerListRank'
+    const tags = post.tags || []
 
     return {
       title: post.title,
-      description,
-      keywords: [...(post.tags || []), 'minecraft', 'blog', blogTypeLabels[post.blogType] || ''].filter(Boolean),
-      authors: [{ name: post.author?.username || 'ServerListRank' }],
+      description: post.excerpt || post.content.substring(0, 160),
+      keywords: ['minecraft', 'blog', typeLabel.toLowerCase(), ...tags],
+      authors: [{ name: authorName }],
       openGraph: {
-        title: post.title,
-        description,
         type: 'article',
-        publishedTime: post.createdAt?.toISOString(),
-        authors: [post.author?.username || 'ServerListRank'],
-        images: post.coverImage ? [{
-          url: post.coverImage,
-          width: 1200,
-          height: 630,
-          alt: post.title
-        }] : [],
-        tags: post.tags
+        locale: 'tr_TR',
+        url: `${BASE_URL}/blog/${slug}`,
+        title: post.title,
+        description: post.excerpt || post.content.substring(0, 160),
+        siteName: 'ServerListRank',
+        images: post.coverImage ? [
+          {
+            url: post.coverImage,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ] : [],
+        publishedTime: post.createdAt.toISOString(),
+        modifiedTime: post.updatedAt.toISOString(),
+        authors: [authorName],
+        tags: tags,
       },
       twitter: {
         card: 'summary_large_image',
         title: post.title,
-        description,
-        images: post.coverImage ? [post.coverImage] : []
-      }
-    };
+        description: post.excerpt || post.content.substring(0, 160),
+        images: post.coverImage ? [post.coverImage] : [],
+      },
+      alternates: {
+        canonical: `${BASE_URL}/blog/${slug}`,
+      },
+    }
   } catch (error) {
+    console.error('Blog metadata error:', error)
     return {
       title: 'Blog Yazısı',
-      description: 'Minecraft blog yazısı'
-    };
+      description: 'ServerListRank blog yazısı',
+    }
   }
 }
 
-export default function BlogPostPage({ params }) {
-  return <BlogPostClient slug={params.slug} />;
+export default async function BlogPostPage({ params }) {
+  const { slug } = await params
+  
+  let post = null
+  let jsonLd = null
+
+  if (isDatabaseAvailable()) {
+    try {
+      const prisma = getPrisma()
+      post = await prisma.blogPost.findUnique({
+        where: { slug, published: true },
+        include: {
+          author: { select: { username: true, avatarUrl: true } },
+          category: { select: { name: true, slug: true, color: true } },
+        },
+      })
+
+      if (post) {
+        // JSON-LD Structured Data
+        jsonLd = {
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: post.title,
+          description: post.excerpt || post.content.substring(0, 160),
+          image: post.coverImage || `${BASE_URL}/og-image.png`,
+          datePublished: post.createdAt.toISOString(),
+          dateModified: post.updatedAt.toISOString(),
+          author: {
+            '@type': 'Person',
+            name: post.author?.username || 'ServerListRank',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'ServerListRank',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://customer-assets.emergentagent.com/job_5d2bb20d-ffe5-4fb3-8c06-f22ef6426f62/artifacts/2drde4ew_Gemini_Generated_Image_jnmakrjnmakrjnma-removebg-preview.png',
+            },
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${BASE_URL}/blog/${slug}`,
+          },
+          keywords: (post.tags || []).join(', '),
+        }
+      }
+    } catch (error) {
+      console.error('Blog post fetch error:', error)
+    }
+  }
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <BlogPostClient slug={slug} initialPost={post} />
+    </>
+  )
 }
