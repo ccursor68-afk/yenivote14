@@ -2537,9 +2537,11 @@ function AdminPanel({ user, onBack }) {
   const [loading, setLoading] = useState(true)
 
   // Blog form state
-  const [blogForm, setBlogForm] = useState({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS' })
+  const [blogForm, setBlogForm] = useState({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS', tags: '' })
   const [editingBlog, setEditingBlog] = useState(null)
   const [blogLoading, setBlogLoading] = useState(false)
+  const [blogEditModal, setBlogEditModal] = useState(false)
+  const [blogDeleteConfirm, setBlogDeleteConfirm] = useState(null)
   
   // Boost form state
   const [boostForm, setBoostForm] = useState({ serverId: '', durationDays: 7 })
