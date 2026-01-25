@@ -863,9 +863,7 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
           ...editForm,
           port: parseInt(editForm.port) || 25565,
           votifierPort: editForm.votifierPort ? parseInt(editForm.votifierPort) : null,
-          tags: editForm.tags ? editForm.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-          playerCount: parseInt(editForm.playerCount) || 0,
-          maxPlayers: parseInt(editForm.maxPlayers) || 100
+          tags: editForm.tags ? editForm.tags.split(',').map(t => t.trim()).filter(Boolean) : []
         })
       })
 
