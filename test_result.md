@@ -621,3 +621,54 @@ agent_communication:
       - app/page.js (ProfilePage component)
       
       Build Status: ✅ SUCCESS
+
+  - agent: "main"
+    message: |
+      SESSION 8 - MCSRVSTAT.US API ENTEGRASYONu & AUTH FIX:
+      
+      1. ✅ DOMAIN + NGINX AUTH FIX:
+         - lib/auth.js - Geliştirilmiş cookie yapılandırması
+         - Çoklu header desteği: X-Forwarded-Proto, X-Forwarded-SSL, CF-Visitor
+         - TRUST_HOST environment variable desteği
+         - logout route request parametresi düzeltmesi
+         - next.config.js - CORS credentials desteği
+         - nginx.conf.example - Tam HTTPS yapılandırması
+         - .env.example - Tüm gerekli değişkenler
+      
+      2. ✅ MCSRVSTAT.US API ENTEGRASYONU:
+         - /api/servers/status - mcsrvstat.us'tan gerçek zamanlı veri çeker
+         - API: https://api.mcsrvstat.us/3/{server_ip}
+         - Batch processing (10'ar sunucu) rate limit için
+         - Database otomatik güncelleme (fire and forget)
+         - 30 saniye cache desteği
+      
+      3. ✅ PROFİL SAYFASI TOGGLE KALDIRILDI:
+         - toggleServerOnline fonksiyonu kaldırıldı
+         - Online/Offline toggle butonu kaldırıldı
+         - editForm'dan isOnline, playerCount, maxPlayers kaldırıldı
+         - Manuel durum değiştirme artık yok
+      
+      4. ✅ LIVE STATUS DESTEĞİ (PROFIL):
+         - serverStatus state eklendi
+         - fetchServerStatus fonksiyonu
+         - 60 saniyede bir otomatik güncelleme
+         - Sunucu listesinde gerçek zamanlı oyuncu sayısı
+         - Online ise yeşil pulse animasyonu
+      
+      Updated Files:
+      - lib/auth.js (proxy-compatible cookie fix)
+      - app/api/auth/logout/route.js (request param)
+      - next.config.js (CORS credentials)
+      - nginx.conf.example (full HTTPS config)
+      - .env.example (new file)
+      - app/api/servers/status/route.js (mcsrvstat.us integration)
+      - app/page.js (ProfilePage live status)
+      
+      Build Status: ✅ SUCCESS
+      
+      Özellikler:
+      - 🔐 Domain arkasında session düzgün çalışır
+      - 📊 mcsrvstat.us'tan gerçek zamanlı sunucu durumu
+      - 👥 Oyuncu sayısı otomatik güncellenir
+      - ❌ Manuel online/offline toggle kaldırıldı
+
