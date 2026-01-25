@@ -114,7 +114,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, title, content, excerpt, coverImage, tags, published, categoryId } = body;
+    const { id, title, content, excerpt, coverImage, tags, published, categoryId, blogType } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Post ID gerekli' }, { status: 400 });
@@ -130,6 +130,7 @@ export async function PUT(request) {
     if (tags !== undefined) updateData.tags = tags;
     if (published !== undefined) updateData.published = published;
     if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (blogType !== undefined) updateData.blogType = blogType;
 
     const post = await prisma.blogPost.update({
       where: { id },
