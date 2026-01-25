@@ -5199,6 +5199,27 @@ export default function App() {
     }
   }, [])
   
+  // Fetch site statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/stats')
+        const data = await res.json()
+        if (data.stats) {
+          setSiteStats(data.stats)
+        }
+      } catch (err) {
+        // Silent fail - use defaults
+      }
+    }
+    
+    fetchStats()
+    
+    // Refresh stats every 2 minutes
+    const statsInterval = setInterval(fetchStats, 2 * 60 * 1000)
+    return () => clearInterval(statsInterval)
+  }, [])
+  
   // Fetch banners separately
   useEffect(() => {
     fetch('/api/banners', { credentials: 'include' })
