@@ -305,8 +305,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Verify all UI components render"
-    - "API returns proper database not configured message"
+    - "Auth Routes (Login/Register/Logout)"
+    - "Server CRUD Routes"
+    - "Voting System with NuVotifier"
+    - "Ticket System Routes"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
