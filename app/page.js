@@ -2791,21 +2791,99 @@ function AdminPanel({ user, onBack }) {
   const handleBlogSubmit = async () => {
     setBlogLoading(true)
     try {
+      // Parse tags from comma-separated string to array
+      const tagsArray = blogForm.tags ? blogForm.tags.split(',').map(t => t.trim()).filter(Boolean) : []
+      
       const res = await fetch('/api/admin/blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(blogForm)
+        body: JSON.stringify({ ...blogForm, tags: tagsArray })
       })
 
       const data = await res.json()
       
       if (res.ok) {
         toast.success('Blog yazısı oluşturuldu!')
-        setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS' })
+        setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS', tags: '' })
         loadData()
       } else {
         toast.error(data.error || 'Yazı oluşturulamadı')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setBlogLoading(false)
+    }
+  }
+
+  // Open blog edit modal
+  const openBlogEdit = (post) => {
+    setEditingBlog(post)
+    setBlogForm({
+      title: post.title || '',
+      content: post.content || '',
+      excerpt: post.excerpt || '',
+      coverImage: post.coverImage || '',
+      published: post.published || false,
+      blogType: post.blogType || 'NEWS',
+      tags: (post.tags || []).join(', ')
+    })
+    setBlogEditModal(true)
+  }
+
+  // Handle blog update
+  const handleBlogUpdate = async () => {
+    if (!editingBlog) return
+    setBlogLoading(true)
+    try {
+      const tagsArray = blogForm.tags ? blogForm.tags.split(',').map(t => t.trim()).filter(Boolean) : []
+      
+      const res = await fetch('/api/admin/blog', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          id: editingBlog.id,
+          ...blogForm, 
+          tags: tagsArray 
+        })
+      })
+
+      const data = await res.json()
+      
+      if (res.ok) {
+        toast.success('Blog yazısı güncellendi!')
+        setBlogEditModal(false)
+        setEditingBlog(null)
+        setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS', tags: '' })
+        loadData()
+      } else {
+        toast.error(data.error || 'Yazı güncellenemedi')
+      }
+    } catch (err) {
+      toast.error('Bir hata oluştu')
+    } finally {
+      setBlogLoading(false)
+    }
+  }
+
+  // Handle blog delete
+  const handleBlogDelete = async (postId) => {
+    setBlogLoading(true)
+    try {
+      const res = await fetch(`/api/admin/blog?id=${postId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        toast.success('Blog yazısı silindi!')
+        setBlogDeleteConfirm(null)
+        loadData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Yazı silinemedi')
       }
     } catch (err) {
       toast.error('Bir hata oluştu')
