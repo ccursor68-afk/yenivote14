@@ -3726,6 +3726,19 @@ function AdminPanel({ user, onBack }) {
                     />
                   </div>
 
+                  <div className="space-y-2">
+                    <Label className="text-white flex items-center gap-2">
+                      <Tag className="w-4 h-4" /> Etiketler (SEO)
+                    </Label>
+                    <Input
+                      value={blogForm.tags}
+                      onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                      placeholder="minecraft, rehber, pvp (virgülle ayırın)"
+                    />
+                    <p className="text-xs text-zinc-500">Etiketler Google aramalarda sıralamanızı artırır</p>
+                  </div>
+
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={blogForm.published}
@@ -3748,25 +3761,55 @@ function AdminPanel({ user, onBack }) {
               {/* Blog List */}
               <Card className="bg-zinc-900/50 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-white">Mevcut Yazılar</CardTitle>
+                  <CardTitle className="text-white">Mevcut Yazılar ({blogPosts.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {blogPosts.length === 0 ? (
                     <p className="text-zinc-500 text-center py-8">Henüz yazı yok</p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
                       {blogPosts.map(post => (
-                        <div key={post.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-white">{post.title}</p>
-                            <p className="text-xs text-zinc-500">
-                              {new Date(post.createdAt).toLocaleDateString('tr-TR')}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={post.published ? 'bg-emerald-600' : 'bg-zinc-600'}>
-                              {post.published ? 'Yayında' : 'Taslak'}
-                            </Badge>
+                        <div key={post.id} className="p-4 bg-zinc-800/50 rounded-lg">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-white truncate">{post.title}</p>
+                              <p className="text-xs text-zinc-500 mt-1">
+                                {new Date(post.createdAt).toLocaleDateString('tr-TR')} • {post.blogType || 'NEWS'}
+                              </p>
+                              {post.tags && post.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {post.tags.slice(0, 3).map((tag, idx) => (
+                                    <span key={idx} className="text-xs bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">
+                                      #{tag}
+                                    </span>
+                                  ))}
+                                  {post.tags.length > 3 && (
+                                    <span className="text-xs text-zinc-500">+{post.tags.length - 3}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Badge className={post.published ? 'bg-emerald-600' : 'bg-zinc-600'}>
+                                {post.published ? 'Yayında' : 'Taslak'}
+                              </Badge>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 w-8 p-0 border-zinc-700 hover:bg-zinc-700"
+                                onClick={() => openBlogEdit(post)}
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive" 
+                                className="h-8 w-8 p-0"
+                                onClick={() => setBlogDeleteConfirm(post)}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -3775,6 +3818,140 @@ function AdminPanel({ user, onBack }) {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Blog Edit Modal */}
+            <Dialog open={blogEditModal} onOpenChange={(open) => { 
+              if (!open) { 
+                setBlogEditModal(false)
+                setEditingBlog(null)
+                setBlogForm({ title: '', content: '', excerpt: '', coverImage: '', published: false, blogType: 'NEWS', tags: '' })
+              } 
+            }}>
+              <DialogContent className="bg-zinc-900 border-zinc-800 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Blog Yazısını Düzenle</DialogTitle>
+                  <DialogDescription className="text-zinc-400">
+                    Yazı bilgilerini güncelleyin
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label className="text-white">Başlık</Label>
+                    <Input
+                      value={blogForm.title}
+                      onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-white">Yazı Türü</Label>
+                      <Select value={blogForm.blogType} onValueChange={(v) => setBlogForm({ ...blogForm, blogType: v })}>
+                        <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="NEWS">Haber</SelectItem>
+                          <SelectItem value="GUIDE">Rehber</SelectItem>
+                          <SelectItem value="UPDATE">Güncelleme</SelectItem>
+                          <SelectItem value="TUTORIAL">Eğitim</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Durum</Label>
+                      <div className="flex items-center gap-2 h-10">
+                        <Switch
+                          checked={blogForm.published}
+                          onCheckedChange={(checked) => setBlogForm({ ...blogForm, published: checked })}
+                        />
+                        <span className={blogForm.published ? 'text-emerald-400' : 'text-zinc-400'}>
+                          {blogForm.published ? 'Yayında' : 'Taslak'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Özet</Label>
+                    <Input
+                      value={blogForm.excerpt}
+                      onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Kapak Görseli URL</Label>
+                    <Input
+                      value={blogForm.coverImage}
+                      onChange={(e) => setBlogForm({ ...blogForm, coverImage: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white flex items-center gap-2">
+                      <Tag className="w-4 h-4" /> Etiketler (SEO)
+                    </Label>
+                    <Input
+                      value={blogForm.tags}
+                      onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700"
+                      placeholder="minecraft, rehber, pvp (virgülle ayırın)"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">İçerik</Label>
+                    <Textarea
+                      value={blogForm.content}
+                      onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700 min-h-[200px]"
+                    />
+                  </div>
+                </div>
+                <DialogFooter className="mt-6">
+                  <Button variant="outline" onClick={() => setBlogEditModal(false)} className="border-zinc-700">
+                    İptal
+                  </Button>
+                  <Button 
+                    onClick={handleBlogUpdate} 
+                    disabled={blogLoading || !blogForm.title || !blogForm.content}
+                    className="bg-emerald-600 hover:bg-emerald-500"
+                  >
+                    {blogLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+                    Kaydet
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Blog Delete Confirmation Modal */}
+            <Dialog open={!!blogDeleteConfirm} onOpenChange={(open) => !open && setBlogDeleteConfirm(null)}>
+              <DialogContent className="bg-zinc-900 border-zinc-800 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Blog Yazısını Sil</DialogTitle>
+                  <DialogDescription className="text-zinc-400">
+                    Bu işlem geri alınamaz!
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <p className="text-white">
+                    "<span className="font-semibold text-emerald-400">{blogDeleteConfirm?.title}</span>" başlıklı yazıyı silmek istediğinizden emin misiniz?
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setBlogDeleteConfirm(null)} className="border-zinc-700">
+                    İptal
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => handleBlogDelete(blogDeleteConfirm?.id)}
+                    disabled={blogLoading}
+                  >
+                    {blogLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                    Sil
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Tickets Tab */}
