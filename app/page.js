@@ -1078,7 +1078,14 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {servers.map(server => (
+                  {servers.map(server => {
+                    // Get live status from API
+                    const liveStatus = serverStatus[server.id] || {}
+                    const isOnline = liveStatus.isOnline ?? server.isOnline ?? false
+                    const playerCount = liveStatus.playerCount ?? server.playerCount ?? 0
+                    const maxPlayers = liveStatus.maxPlayers ?? server.maxPlayers ?? 0
+                    
+                    return (
                     <div key={server.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded bg-zinc-700 flex items-center justify-center overflow-hidden">
@@ -1099,22 +1106,22 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-white">{server.name}</p>
-                            {/* Online Status Badge */}
+                            {/* Online Status Badge - from mcsrvstat.us API */}
                             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
-                              server.isOnline 
+                              isOnline 
                                 ? 'bg-emerald-500/20 text-emerald-400' 
                                 : 'bg-red-500/20 text-red-400'
                             }`}>
-                              <div className={`w-1.5 h-1.5 rounded-full ${server.isOnline ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                              {server.isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
+                              <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                              {isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-zinc-500">
                             <span>{server.ip}{server.port !== 25565 ? `:${server.port}` : ''}</span>
                             <span>•</span>
-                            <span className="flex items-center gap-1">
+                            <span className={`flex items-center gap-1 ${isOnline ? 'text-emerald-400' : ''}`}>
                               <Users className="w-3 h-3" />
-                              {server.playerCount || 0}/{server.maxPlayers || 0}
+                              {playerCount}/{maxPlayers}
                             </span>
                           </div>
                         </div>
@@ -1143,7 +1150,7 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                         </Button>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </CardContent>
