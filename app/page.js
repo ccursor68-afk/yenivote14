@@ -5416,9 +5416,28 @@ export default function App() {
             </div>
 
             <div className="flex justify-center gap-8 mt-10">
-              <div className="text-center"><div className="text-2xl font-bold text-emerald-500">{servers.length}+</div><div className="text-sm text-zinc-500">Sunucu</div></div>
-              <div className="text-center"><div className="text-2xl font-bold text-emerald-500">10K+</div><div className="text-sm text-zinc-500">Oyuncu</div></div>
-              <div className="text-center"><div className="text-2xl font-bold text-emerald-500">50K+</div><div className="text-sm text-zinc-500">Oy</div></div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-emerald-500">
+                  {siteStats.serverCount > 0 ? siteStats.serverCount : servers.length}
+                </div>
+                <div className="text-sm text-zinc-500">Sunucu</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-emerald-500">
+                  {siteStats.totalPlayers > 1000 
+                    ? `${Math.floor(siteStats.totalPlayers / 1000)}K+` 
+                    : siteStats.totalPlayers}
+                </div>
+                <div className="text-sm text-zinc-500">Oyuncu</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-emerald-500">
+                  {siteStats.totalVotes > 1000 
+                    ? `${Math.floor(siteStats.totalVotes / 1000)}K+` 
+                    : siteStats.totalVotes}
+                </div>
+                <div className="text-sm text-zinc-500">Oy</div>
+              </div>
             </div>
           </div>
         </div>
