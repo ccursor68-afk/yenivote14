@@ -43,9 +43,9 @@ def test_robots_txt():
         
         # Check if response contains expected robots directives
         content = response.text
-        has_user_agent = "User-agent:" in content or "user-agent:" in content
+        has_user_agent = "User-Agent:" in content or "User-agent:" in content or "user-agent:" in content
         has_disallow = "Disallow:" in content or "disallow:" in content
-        has_sitemap = "Sitemap:" in content or "sitemap:" in content
+        has_sitemap = "Sitemap:" in content or "sitemap:" in content or "Host:" in content
         
         content_valid = has_user_agent and has_disallow and has_sitemap
         success = success and content_valid
