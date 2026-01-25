@@ -3859,18 +3859,18 @@ function AddServerPage({ onBack, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [verified, setVerified] = useState(false)
-  const [serverStatus, setServerStatus] = useState(null) // { online, playerCount, maxPlayers, version, latency }
+  const [serverStatus, setServerStatus] = useState(null)
+  const [contentWarnings, setContentWarnings] = useState({})
   const [form, setForm] = useState({
     name: '',
     ip: '',
     port: '25565',
     platform: 'JAVA',
-    gameMode: 'SURVIVAL',
-    version: '1.21',
+    gameModes: [],
+    version: '',
     website: '',
     discord: '',
     bannerUrl: '',
-    logoUrl: '',
     shortDescription: '',
     longDescription: '',
     tags: [],
@@ -3880,19 +3880,49 @@ function AddServerPage({ onBack, onSuccess }) {
     votifierToken: ''
   })
   const [tagInput, setTagInput] = useState('')
+  const [ipError, setIpError] = useState('')
+
+  // Turkish bad words filter (client-side basic check)
+  const badWordsBasic = ['amk', 'orospu', 'sik', 'göt', 'yarak', 'piç', 'pic', 'fuck', 'shit', 'ass', 'bitch', 'porn', 'xxx']
+  
+  const checkBadWords = (text) => {
+    if (!text) return { hasBadWords: false }
+    const normalized = text.toLowerCase()
+      .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[çÇ]/g, 'c')
+      .replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[öÖ]/g, 'o')
+    const found = badWordsBasic.filter(w => normalized.includes(w))
+    return { hasBadWords: found.length > 0, foundWords: found }
+  }
+
+  // IP/Hostname validation
+  const isValidIP = (value) => {
+    if (!value) return false
+    const ipv4 = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+    const hostname = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/
+    return ipv4.test(value.trim()) || hostname.test(value.trim())
+  }
 
   const steps = [
-    { num: 1, title: 'Temel Bilgiler', icon: Server },
-    { num: 2, title: 'Medya', icon: Image },
-    { num: 3, title: 'İçerik', icon: FileText },
-    { num: 4, title: 'Votifier', icon: Vote }
+    { num: 1, title: 'Sunucu Doğrulama', icon: Server },
+    { num: 2, title: 'Sunucu Bilgileri', icon: FileText },
+    { num: 3, title: 'Votifier', icon: Vote }
   ]
 
   const verifyIP = async () => {
+    setIpError('')
+    
     if (!form.ip) {
+      setIpError('IP adresi girin')
       toast.error('IP adresi girin')
       return
     }
+
+    if (!isValidIP(form.ip)) {
+      setIpError('Geçerli bir IP adresi veya hostname girin (örn: play.server.com veya 192.168.1.1)')
+      toast.error('Geçersiz IP/Hostname formatı')
+      return
+    }
+
     setVerifying(true)
     setServerStatus(null)
     
@@ -3906,7 +3936,6 @@ function AddServerPage({ onBack, onSuccess }) {
       if (data.online) {
         setVerified(true)
         toast.success(`Sunucu çevrimiçi! ${data.playerCount}/${data.maxPlayers} oyuncu`)
-        // Versiyon bilgisini otomatik al
         if (data.version && !form.version) {
           setForm(f => ({ ...f, version: data.version }))
         }
@@ -3923,6 +3952,39 @@ function AddServerPage({ onBack, onSuccess }) {
     }
   }
 
+  const handleNameChange = (value) => {
+    setForm({ ...form, name: value })
+    const check = checkBadWords(value)
+    if (check.hasBadWords) {
+      setContentWarnings(w => ({ ...w, name: 'Uygunsuz içerik tespit edildi' }))
+    } else {
+      setContentWarnings(w => ({ ...w, name: null }))
+    }
+  }
+
+  const handleDescriptionChange = (field, value) => {
+    setForm({ ...form, [field]: value })
+    const check = checkBadWords(value)
+    if (check.hasBadWords) {
+      setContentWarnings(w => ({ ...w, [field]: 'Uygunsuz içerik tespit edildi' }))
+    } else {
+      setContentWarnings(w => ({ ...w, [field]: null }))
+    }
+  }
+
+  const toggleGameMode = (mode) => {
+    const current = form.gameModes
+    if (current.includes(mode)) {
+      setForm({ ...form, gameModes: current.filter(m => m !== mode) })
+    } else {
+      if (current.length >= 3) {
+        toast.error('En fazla 3 oyun modu seçebilirsiniz')
+        return
+      }
+      setForm({ ...form, gameModes: [...current, mode] })
+    }
+  }
+
   const addTag = () => {
     if (tagInput.trim() && form.tags.length < 10 && !form.tags.includes(tagInput.trim())) {
       setForm({ ...form, tags: [...form.tags, tagInput.trim()] })
@@ -3935,6 +3997,32 @@ function AddServerPage({ onBack, onSuccess }) {
   }
 
   const handleSubmit = async () => {
+    // Final validation
+    if (!verified) {
+      toast.error('Önce sunucu durumunu doğrulayın')
+      return
+    }
+
+    if (form.gameModes.length === 0) {
+      toast.error('En az 1 oyun modu seçmelisiniz')
+      return
+    }
+
+    if (!form.name || form.name.trim().length < 3) {
+      toast.error('Sunucu adı en az 3 karakter olmalıdır')
+      return
+    }
+
+    if (!form.shortDescription || form.shortDescription.trim().length < 10) {
+      toast.error('Kısa açıklama en az 10 karakter olmalıdır')
+      return
+    }
+
+    if (contentWarnings.name || contentWarnings.shortDescription || contentWarnings.longDescription) {
+      toast.error('Lütfen uygunsuz içerikleri düzeltin')
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch('/api/servers', {
@@ -3944,7 +4032,8 @@ function AddServerPage({ onBack, onSuccess }) {
         body: JSON.stringify({
           ...form,
           port: parseInt(form.port) || 25565,
-          votifierPort: form.votifierPort ? parseInt(form.votifierPort) : null
+          votifierPort: form.votifierPort ? parseInt(form.votifierPort) : null,
+          serverVerified: true
         })
       })
 
@@ -3964,11 +4053,15 @@ function AddServerPage({ onBack, onSuccess }) {
     }
   }
 
-  const canProceed = () => {
-    if (step === 1) return form.name && form.ip && form.version
-    if (step === 3) return form.shortDescription
-    return true
-  }
+  const canProceedStep1 = verified
+  const canProceedStep2 = form.name.trim().length >= 3 && 
+                          form.shortDescription.trim().length >= 10 && 
+                          form.gameModes.length >= 1 && 
+                          form.gameModes.length <= 3 &&
+                          form.version &&
+                          !contentWarnings.name && 
+                          !contentWarnings.shortDescription &&
+                          !contentWarnings.longDescription
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -3988,21 +4081,22 @@ function AddServerPage({ onBack, onSuccess }) {
           <p className="text-zinc-400">Minecraft sunucunuzu listeleyin ve oy almaya başlayın!</p>
         </div>
 
+        {/* Steps Indicator */}
         <div className="flex items-center justify-center mb-10">
           {steps.map((s, i) => (
             <div key={s.num} className="flex items-center">
               <div className="flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                   step > s.num ? 'bg-emerald-600 text-white' :
                   step === s.num ? 'bg-emerald-600 text-white ring-4 ring-emerald-600/30' :
                   'bg-zinc-800 text-zinc-500'
                 }`}>
-                  {step > s.num ? <Check className="w-5 h-5" /> : s.num}
+                  {step > s.num ? <Check className="w-5 h-5" /> : <s.icon className="w-5 h-5" />}
                 </div>
-                <span className={`text-xs mt-2 font-medium ${step >= s.num ? 'text-emerald-500' : 'text-zinc-600'}`}>{s.title}</span>
+                <span className={`text-xs mt-2 font-medium hidden sm:block ${step >= s.num ? 'text-emerald-500' : 'text-zinc-600'}`}>{s.title}</span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`w-16 h-0.5 mx-2 mb-6 transition-colors ${step > s.num ? 'bg-emerald-600' : 'bg-zinc-800'}`} />
+                <div className={`w-12 sm:w-20 h-0.5 mx-2 mb-6 transition-colors ${step > s.num ? 'bg-emerald-600' : 'bg-zinc-800'}`} />
               )}
             </div>
           ))}
@@ -4010,92 +4104,445 @@ function AddServerPage({ onBack, onSuccess }) {
 
         <Card className="bg-zinc-900/50 border-zinc-800">
           <CardContent className="p-6">
+            {/* STEP 1: Server Verification */}
             {step === 1 && (
               <div className="space-y-6">
-                <div><h2 className="text-xl font-bold text-white mb-1">Temel Bilgiler</h2><p className="text-sm text-zinc-500">Sunucunuzun temel bilgilerini girin</p></div>
-                <div className="space-y-2"><Label className="text-white">Sunucu Adı *</Label><Input placeholder="My Awesome Server" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2 space-y-2"><Label className="text-white">Sunucu IP Adresi *</Label><Input placeholder="play.example.com" value={form.ip} onChange={(e) => { setForm({ ...form, ip: e.target.value }); setVerified(false) }} className="bg-zinc-800 border-zinc-700 h-11" /></div>
-                  <div className="space-y-2"><Label className="text-white">Port *</Label><Input placeholder="25565" value={form.port} onChange={(e) => setForm({ ...form, port: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div>
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-emerald-500" />
+                    Sunucu Doğrulama
+                  </h2>
+                  <p className="text-sm text-zinc-500">Sunucunuzun çevrimiçi olduğunu doğrulayın</p>
                 </div>
-                <Button onClick={verifyIP} disabled={verifying || !form.ip} className={`w-full h-11 ${verified ? 'bg-emerald-600/20 text-emerald-500 border border-emerald-600' : 'bg-blue-600 hover:bg-blue-500'}`}>
-                  {verifying ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sunucu Kontrol Ediliyor...</> : verified ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Sunucu Doğrulandı</> : <><RefreshCw className="w-4 h-4 mr-2" /> Sunucu Durumunu Kontrol Et</>}
+
+                {/* IP Input */}
+                <div className="space-y-2">
+                  <Label className="text-white">Sunucu IP Adresi / Hostname *</Label>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <Input 
+                        placeholder="play.example.com veya 192.168.1.1" 
+                        value={form.ip} 
+                        onChange={(e) => { 
+                          setForm({ ...form, ip: e.target.value })
+                          setVerified(false)
+                          setServerStatus(null)
+                          setIpError('')
+                        }} 
+                        className={`bg-zinc-800 border-zinc-700 h-12 ${ipError ? 'border-red-500' : ''}`}
+                      />
+                      {ipError && <p className="text-xs text-red-400 mt-1">{ipError}</p>}
+                    </div>
+                    <div className="w-28">
+                      <Input 
+                        placeholder="25565" 
+                        value={form.port} 
+                        onChange={(e) => setForm({ ...form, port: e.target.value })} 
+                        className="bg-zinc-800 border-zinc-700 h-12"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Geçerli formatlar: <code className="bg-zinc-800 px-1 rounded">play.server.com</code> veya <code className="bg-zinc-800 px-1 rounded">123.45.67.89</code>
+                  </p>
+                </div>
+
+                {/* Verify Button */}
+                <Button 
+                  onClick={verifyIP} 
+                  disabled={verifying || !form.ip} 
+                  className={`w-full h-12 text-base font-medium ${
+                    verified 
+                      ? 'bg-emerald-600/20 text-emerald-400 border-2 border-emerald-600 hover:bg-emerald-600/30' 
+                      : 'bg-blue-600 hover:bg-blue-500'
+                  }`}
+                >
+                  {verifying ? (
+                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Sunucu Kontrol Ediliyor...</>
+                  ) : verified ? (
+                    <><CheckCircle2 className="w-5 h-5 mr-2" /> Sunucu Doğrulandı ✓</>
+                  ) : (
+                    <><RefreshCw className="w-5 h-5 mr-2" /> Sunucu Durumunu Kontrol Et</>
+                  )}
                 </Button>
-                
-                {/* Sunucu Durumu Bilgisi */}
+
+                {/* Server Status Display */}
                 {serverStatus && (
-                  <div className={`p-4 rounded-lg border ${serverStatus.online ? 'bg-emerald-900/20 border-emerald-800/50' : 'bg-red-900/20 border-red-800/50'}`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${serverStatus.online ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                      <span className={`font-medium ${serverStatus.online ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <div className={`p-5 rounded-xl border-2 ${
+                    serverStatus.online 
+                      ? 'bg-emerald-900/20 border-emerald-700/50' 
+                      : 'bg-red-900/20 border-red-700/50'
+                  }`}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`w-4 h-4 rounded-full ${serverStatus.online ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                      <span className={`text-lg font-bold ${serverStatus.online ? 'text-emerald-400' : 'text-red-400'}`}>
                         {serverStatus.online ? 'Çevrimiçi' : 'Çevrimdışı'}
                       </span>
                     </div>
+                    
                     {serverStatus.online ? (
-                      <div className="grid grid-cols-3 gap-4 mt-3">
-                        <div className="text-center p-2 bg-zinc-800/50 rounded">
-                          <Users className="w-5 h-5 mx-auto text-emerald-500 mb-1" />
-                          <p className="text-lg font-bold text-white">{serverStatus.playerCount}/{serverStatus.maxPlayers}</p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-3 bg-zinc-800/50 rounded-lg">
+                          <Users className="w-6 h-6 mx-auto text-emerald-500 mb-2" />
+                          <p className="text-xl font-bold text-white">{serverStatus.playerCount}/{serverStatus.maxPlayers}</p>
                           <p className="text-xs text-zinc-500">Oyuncu</p>
                         </div>
-                        <div className="text-center p-2 bg-zinc-800/50 rounded">
-                          <Zap className="w-5 h-5 mx-auto text-yellow-500 mb-1" />
-                          <p className="text-lg font-bold text-white">{serverStatus.latency}ms</p>
+                        <div className="text-center p-3 bg-zinc-800/50 rounded-lg">
+                          <Zap className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
+                          <p className="text-xl font-bold text-white">{serverStatus.latency || '?'}ms</p>
                           <p className="text-xs text-zinc-500">Gecikme</p>
                         </div>
-                        <div className="text-center p-2 bg-zinc-800/50 rounded">
-                          <Server className="w-5 h-5 mx-auto text-blue-500 mb-1" />
-                          <p className="text-lg font-bold text-white truncate">{serverStatus.version || 'N/A'}</p>
+                        <div className="text-center p-3 bg-zinc-800/50 rounded-lg">
+                          <Server className="w-6 h-6 mx-auto text-blue-500 mb-2" />
+                          <p className="text-xl font-bold text-white truncate">{serverStatus.version || 'N/A'}</p>
                           <p className="text-xs text-zinc-500">Versiyon</p>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-red-400 mt-2">{serverStatus.error || 'Sunucuya bağlanılamadı'}</p>
+                      <p className="text-sm text-red-400">{serverStatus.error || 'Sunucuya bağlanılamadı. IP adresini ve portu kontrol edin.'}</p>
                     )}
                   </div>
                 )}
-                <div className="space-y-2"><Label className="text-white">Minecraft Versiyonu *</Label><Select value={form.version} onValueChange={(v) => setForm({ ...form, version: v })}><SelectTrigger className="bg-zinc-800 border-zinc-700 h-11"><SelectValue /></SelectTrigger><SelectContent className="bg-zinc-800 border-zinc-700 max-h-60">{minecraftVersions.map(v => (<SelectItem key={v} value={v}>{v}</SelectItem>))}</SelectContent></Select></div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-white">Platform</Label><Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}><SelectTrigger className="bg-zinc-800 border-zinc-700 h-11"><SelectValue /></SelectTrigger><SelectContent className="bg-zinc-800 border-zinc-700"><SelectItem value="JAVA">☕ Java Edition</SelectItem><SelectItem value="BEDROCK">🪨 Bedrock Edition</SelectItem><SelectItem value="CROSSPLAY">🔄 Crossplay</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-2"><Label className="text-white">Oyun Modu *</Label><Select value={form.gameMode} onValueChange={(v) => setForm({ ...form, gameMode: v })}><SelectTrigger className="bg-zinc-800 border-zinc-700 h-11"><SelectValue /></SelectTrigger><SelectContent className="bg-zinc-800 border-zinc-700">{gameModes.map(gm => (<SelectItem key={gm.value} value={gm.value}>{gm.label}</SelectItem>))}</SelectContent></Select></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-white">Website (Opsiyonel)</Label><Input placeholder="https://example.com" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div>
-                  <div className="space-y-2"><Label className="text-white">Discord Daveti (Opsiyonel)</Label><Input placeholder="https://discord.gg/example" value={form.discord} onChange={(e) => setForm({ ...form, discord: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div>
-                </div>
+
+                {!verified && (
+                  <div className="p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+                    <p className="text-sm text-amber-400 flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span>Devam etmek için sunucunuzun çevrimiçi olması ve doğrulanması gerekir.</span>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* STEP 2: Server Details */}
             {step === 2 && (
               <div className="space-y-6">
-                <div><h2 className="text-xl font-bold text-white mb-1">Medya</h2><p className="text-sm text-zinc-500">Sunucunuz için görsel içerikler ekleyin</p></div>
-                <div className="space-y-2"><Label className="text-white">Banner URL (Opsiyonel)</Label><Input placeholder="https://example.com/banner.png" value={form.bannerUrl} onChange={(e) => setForm({ ...form, bannerUrl: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /><p className="text-xs text-zinc-500">Önerilen boyut: 1200x400px</p>{form.bannerUrl && (<div className="h-32 rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700"><img src={form.bannerUrl} alt="Banner" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} /></div>)}</div>
-                <div className="space-y-2"><Label className="text-white">Logo URL (Opsiyonel)</Label><Input placeholder="https://example.com/logo.png" value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /><p className="text-xs text-zinc-500">Önerilen boyut: 128x128px</p>{form.logoUrl && (<div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700"><img src={form.logoUrl} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} /></div>)}</div>
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-emerald-500" />
+                    Sunucu Bilgileri
+                  </h2>
+                  <p className="text-sm text-zinc-500">Sunucunuz hakkında detaylı bilgi girin</p>
+                </div>
+
+                {/* Server Name */}
+                <div className="space-y-2">
+                  <Label className="text-white">Sunucu Adı *</Label>
+                  <Input 
+                    placeholder="My Awesome Server" 
+                    value={form.name} 
+                    onChange={(e) => handleNameChange(e.target.value)} 
+                    className={`bg-zinc-800 border-zinc-700 h-11 ${contentWarnings.name ? 'border-red-500' : ''}`}
+                    maxLength={50}
+                  />
+                  <div className="flex justify-between">
+                    {contentWarnings.name ? (
+                      <p className="text-xs text-red-400 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> {contentWarnings.name}
+                      </p>
+                    ) : <span />}
+                    <p className="text-xs text-zinc-500">{form.name.length}/50</p>
+                  </div>
+                </div>
+
+                {/* Game Modes Multi-Select */}
+                <div className="space-y-3">
+                  <Label className="text-white flex items-center justify-between">
+                    <span>Oyun Modları * (1-3 seçin)</span>
+                    <span className={`text-xs ${form.gameModes.length === 0 ? 'text-red-400' : form.gameModes.length > 3 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {form.gameModes.length}/3 seçili
+                    </span>
+                  </Label>
+                  <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+                    {gameModes.map(mode => {
+                      const isSelected = form.gameModes.includes(mode.value)
+                      const isDisabled = !isSelected && form.gameModes.length >= 3
+                      return (
+                        <button
+                          key={mode.value}
+                          type="button"
+                          onClick={() => toggleGameMode(mode.value)}
+                          disabled={isDisabled}
+                          className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                            isSelected 
+                              ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' 
+                              : isDisabled
+                                ? 'bg-zinc-800/50 border-zinc-800 text-zinc-600 cursor-not-allowed'
+                                : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            {isSelected && <Check className="w-4 h-4" />}
+                            <span>{mode.label}</span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {form.gameModes.length === 0 && (
+                    <p className="text-xs text-red-400">En az 1 oyun modu seçmelisiniz</p>
+                  )}
+                </div>
+
+                {/* Version & Platform */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-white">Minecraft Versiyonu *</Label>
+                    <Select value={form.version} onValueChange={(v) => setForm({ ...form, version: v })}>
+                      <SelectTrigger className="bg-zinc-800 border-zinc-700 h-11">
+                        <SelectValue placeholder="Seçin..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-800 border-zinc-700 max-h-60">
+                        {minecraftVersions.map(v => (
+                          <SelectItem key={v} value={v}>{v}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Platform</Label>
+                    <Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}>
+                      <SelectTrigger className="bg-zinc-800 border-zinc-700 h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-800 border-zinc-700">
+                        <SelectItem value="JAVA">☕ Java Edition</SelectItem>
+                        <SelectItem value="BEDROCK">🪨 Bedrock Edition</SelectItem>
+                        <SelectItem value="CROSSPLAY">🔄 Crossplay</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Short Description */}
+                <div className="space-y-2">
+                  <Label className="text-white">Kısa Açıklama *</Label>
+                  <Input 
+                    placeholder="Sunucunuzu kısaca tanıtın (min 10, max 150 karakter)" 
+                    value={form.shortDescription} 
+                    onChange={(e) => handleDescriptionChange('shortDescription', e.target.value)} 
+                    className={`bg-zinc-800 border-zinc-700 h-11 ${contentWarnings.shortDescription ? 'border-red-500' : ''}`}
+                    maxLength={150}
+                  />
+                  <div className="flex justify-between">
+                    {contentWarnings.shortDescription ? (
+                      <p className="text-xs text-red-400 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> {contentWarnings.shortDescription}
+                      </p>
+                    ) : form.shortDescription.length < 10 ? (
+                      <p className="text-xs text-amber-400">En az 10 karakter girin</p>
+                    ) : <span />}
+                    <p className="text-xs text-zinc-500">{form.shortDescription.length}/150</p>
+                  </div>
+                </div>
+
+                {/* Long Description */}
+                <div className="space-y-2">
+                  <Label className="text-white">Detaylı Açıklama (Opsiyonel)</Label>
+                  <Textarea 
+                    placeholder="Sunucunuz hakkında detaylı bilgi..." 
+                    value={form.longDescription} 
+                    onChange={(e) => handleDescriptionChange('longDescription', e.target.value)} 
+                    className={`bg-zinc-800 border-zinc-700 min-h-[120px] ${contentWarnings.longDescription ? 'border-red-500' : ''}`}
+                  />
+                  {contentWarnings.longDescription && (
+                    <p className="text-xs text-red-400 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {contentWarnings.longDescription}
+                    </p>
+                  )}
+                </div>
+
+                {/* Links */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-white">Website (Opsiyonel)</Label>
+                    <Input 
+                      placeholder="https://example.com" 
+                      value={form.website} 
+                      onChange={(e) => setForm({ ...form, website: e.target.value })} 
+                      className="bg-zinc-800 border-zinc-700 h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Discord (Opsiyonel)</Label>
+                    <Input 
+                      placeholder="https://discord.gg/example" 
+                      value={form.discord} 
+                      onChange={(e) => setForm({ ...form, discord: e.target.value })} 
+                      className="bg-zinc-800 border-zinc-700 h-11"
+                    />
+                  </div>
+                </div>
+
+                {/* Banner */}
+                <div className="space-y-2">
+                  <Label className="text-white">Banner URL (Opsiyonel)</Label>
+                  <Input 
+                    placeholder="https://example.com/banner.png" 
+                    value={form.bannerUrl} 
+                    onChange={(e) => setForm({ ...form, bannerUrl: e.target.value })} 
+                    className="bg-zinc-800 border-zinc-700 h-11"
+                  />
+                  <p className="text-xs text-zinc-500">Önerilen boyut: 1200x400px</p>
+                  {form.bannerUrl && (
+                    <div className="h-32 rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700">
+                      <img src={form.bannerUrl} alt="Banner" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Tags */}
+                <div className="space-y-2">
+                  <Label className="text-white">Etiketler</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Etiket ekle (Enter)" 
+                      value={tagInput} 
+                      onChange={(e) => setTagInput(e.target.value)} 
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} 
+                      className="bg-zinc-800 border-zinc-700 h-11"
+                    />
+                    <Button type="button" onClick={addTag} variant="outline" className="border-zinc-700 h-11 px-4">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {form.tags.map(tag => (
+                      <Badge key={tag} variant="secondary" className="bg-zinc-800 gap-1 pr-1">
+                        {tag}
+                        <button onClick={() => removeTag(tag)} className="ml-1 hover:text-red-400">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-zinc-500">{form.tags.length}/10 etiket</p>
+                </div>
               </div>
             )}
+
+            {/* STEP 3: Votifier */}
             {step === 3 && (
               <div className="space-y-6">
-                <div><h2 className="text-xl font-bold text-white mb-1">İçerik</h2><p className="text-sm text-zinc-500">Sunucunuzu tanıtın</p></div>
-                <div className="space-y-2"><Label className="text-white">Kısa Açıklama *</Label><Input placeholder="Sunucunuzu kısaca tanıtın (max 150 karakter)" value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" maxLength={150} /><p className="text-xs text-zinc-500 text-right">{form.shortDescription.length}/150</p></div>
-                <div className="space-y-2"><Label className="text-white">Uzun Açıklama (Opsiyonel)</Label><Textarea placeholder="Sunucunuz hakkında detaylı bilgi..." value={form.longDescription} onChange={(e) => setForm({ ...form, longDescription: e.target.value })} className="bg-zinc-800 border-zinc-700 min-h-[150px]" /></div>
-                <div className="space-y-2"><Label className="text-white">Etiketler</Label><div className="flex gap-2"><Input placeholder="Etiket ekle (Enter)" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} className="bg-zinc-800 border-zinc-700 h-11" /><Button type="button" onClick={addTag} variant="outline" className="border-zinc-700 h-11 px-4"><Plus className="w-4 h-4" /></Button></div><div className="flex flex-wrap gap-2 mt-3">{form.tags.map(tag => (<Badge key={tag} variant="secondary" className="bg-zinc-800 gap-1 pr-1">{tag}<button onClick={() => removeTag(tag)} className="ml-1 hover:text-red-400"><X className="w-3 h-3" /></button></Badge>))}</div><p className="text-xs text-zinc-500">{form.tags.length}/10 etiket</p></div>
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                    <Vote className="w-5 h-5 text-emerald-500" />
+                    Votifier Ayarları
+                  </h2>
+                  <p className="text-sm text-zinc-500">Oyunculara oyun içi ödül vermek için yapılandırın (Opsiyonel)</p>
+                </div>
+
+                <div className="p-4 bg-emerald-900/20 border border-emerald-800/50 rounded-lg">
+                  <h4 className="font-medium text-emerald-400 flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    NuVotifier Entegrasyonu
+                  </h4>
+                  <p className="text-sm text-zinc-400 mt-1">
+                    Oyunculara oyun içi ödül vermek için NuVotifier plugin kurulu olmalıdır.
+                    <a href="https://www.spigotmc.org/resources/nuvotifier.13449/" target="_blank" rel="noopener" className="text-emerald-400 hover:underline ml-1">
+                      Plugin'i indir →
+                    </a>
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-white">Votifier Host</Label>
+                    <Input 
+                      placeholder={form.ip || "play.myserver.com"} 
+                      value={form.votifierHost} 
+                      onChange={(e) => setForm({ ...form, votifierHost: e.target.value })} 
+                      className="bg-zinc-800 border-zinc-700 h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Votifier Port</Label>
+                    <Input 
+                      placeholder="8192" 
+                      value={form.votifierPort} 
+                      onChange={(e) => setForm({ ...form, votifierPort: e.target.value })} 
+                      className="bg-zinc-800 border-zinc-700 h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white">Public Key</Label>
+                  <Textarea 
+                    placeholder={"-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"} 
+                    value={form.votifierPublicKey} 
+                    onChange={(e) => setForm({ ...form, votifierPublicKey: e.target.value })} 
+                    className="bg-zinc-800 border-zinc-700 min-h-[120px] font-mono text-xs"
+                  />
+                  <p className="text-xs text-zinc-500">plugins/Votifier/rsa/public.key dosyasından</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white">Token (Opsiyonel - V2 protokolü için)</Label>
+                  <Input 
+                    placeholder="NuVotifier token" 
+                    value={form.votifierToken} 
+                    onChange={(e) => setForm({ ...form, votifierToken: e.target.value })} 
+                    className="bg-zinc-800 border-zinc-700 h-11"
+                  />
+                </div>
               </div>
             )}
-            {step === 4 && (
-              <div className="space-y-6">
-                <div><h2 className="text-xl font-bold text-white mb-1">Votifier Ayarları</h2><p className="text-sm text-zinc-500">Oyunculara oyun içi ödül vermek için yapılandırın</p></div>
-                <div className="p-4 bg-emerald-900/20 border border-emerald-800/50 rounded-lg"><h4 className="font-medium text-emerald-400 flex items-center gap-2"><Shield className="w-4 h-4" />NuVotifier Entegrasyonu</h4><p className="text-sm text-zinc-400 mt-1">Oyunculara oyun içi ödül vermek için NuVotifier plugin kurulu olmalıdır.<a href="https://www.spigotmc.org/resources/nuvotifier.13449/" target="_blank" rel="noopener" className="text-emerald-400 hover:underline ml-1">Plugin'i indir →</a></p></div>
-                <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label className="text-white">Votifier Host</Label><Input placeholder="play.myserver.com" value={form.votifierHost} onChange={(e) => setForm({ ...form, votifierHost: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div><div className="space-y-2"><Label className="text-white">Votifier Port</Label><Input placeholder="8192" value={form.votifierPort} onChange={(e) => setForm({ ...form, votifierPort: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div></div>
-                <div className="space-y-2"><Label className="text-white">Public Key</Label><Textarea placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----" value={form.votifierPublicKey} onChange={(e) => setForm({ ...form, votifierPublicKey: e.target.value })} className="bg-zinc-800 border-zinc-700 min-h-[120px] font-mono text-xs" /><p className="text-xs text-zinc-500">plugins/Votifier/rsa/public.key dosyasından</p></div>
-                <div className="space-y-2"><Label className="text-white">Token (Opsiyonel - V2 protokolü için)</Label><Input placeholder="NuVotifier token" value={form.votifierToken} onChange={(e) => setForm({ ...form, votifierToken: e.target.value })} className="bg-zinc-800 border-zinc-700 h-11" /></div>
-              </div>
-            )}
+
+            {/* Navigation Buttons */}
             <div className="flex items-center justify-between mt-8 pt-6 border-t border-zinc-800">
-              {step > 1 ? (<Button variant="outline" onClick={() => setStep(step - 1)} className="border-zinc-700 hover:bg-zinc-800"><ChevronLeft className="w-4 h-4 mr-1" /> Geri</Button>) : (<div />)}
-              {step < 4 ? (<Button onClick={() => setStep(step + 1)} className="bg-emerald-600 hover:bg-emerald-500" disabled={!canProceed()}>Sonraki <ArrowRight className="w-4 h-4 ml-1" /></Button>) : (<Button onClick={handleSubmit} className="bg-emerald-600 hover:bg-emerald-500" disabled={loading}>{loading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gönderiliyor...</>) : (<><Send className="w-4 h-4 mr-2" /> Sunucu Gönder</>)}</Button>)}
+              {step > 1 ? (
+                <Button variant="outline" onClick={() => setStep(step - 1)} className="border-zinc-700 hover:bg-zinc-800">
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Geri
+                </Button>
+              ) : (
+                <div />
+              )}
+              
+              {step === 1 && (
+                <Button 
+                  onClick={() => setStep(2)} 
+                  className="bg-emerald-600 hover:bg-emerald-500" 
+                  disabled={!canProceedStep1}
+                >
+                  Sonraki <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              )}
+              
+              {step === 2 && (
+                <Button 
+                  onClick={() => setStep(3)} 
+                  className="bg-emerald-600 hover:bg-emerald-500" 
+                  disabled={!canProceedStep2}
+                >
+                  Sonraki <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              )}
+              
+              {step === 3 && (
+                <Button 
+                  onClick={handleSubmit} 
+                  className="bg-emerald-600 hover:bg-emerald-500" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gönderiliyor...</>
+                  ) : (
+                    <><Send className="w-4 h-4 mr-2" /> Sunucu Gönder</>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
-        <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg"><p className="text-sm text-amber-400 flex items-start gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /><span><strong>Not:</strong> Sunucunuz incelendikten sonra kısa süre içinde listelenecektir.</span></p></div>
+
+        <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-sm text-amber-400 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span><strong>Not:</strong> Sunucunuz incelendikten sonra kısa süre içinde listelenecektir.</span>
+          </p>
+        </div>
       </div>
     </div>
   )
