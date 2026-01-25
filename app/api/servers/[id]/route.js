@@ -71,7 +71,8 @@ export async function PUT(request, { params }) {
     const allowedFields = [
       'name', 'ip', 'port', 'platform', 'gameMode', 'version', 'website', 'discord',
       'bannerUrl', 'logoUrl', 'shortDescription', 'longDescription', 'tags',
-      'votifierHost', 'votifierPort', 'votifierPublicKey', 'votifierToken'
+      'votifierHost', 'votifierPort', 'votifierPublicKey', 'votifierToken',
+      'isOnline', 'playerCount', 'maxPlayers'
     ];
 
     const updateData = {};
