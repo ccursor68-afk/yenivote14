@@ -1105,11 +1105,43 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
                           </div>
                         </div>
                         <div>
-                          <p className="font-medium text-white">{server.name}</p>
-                          <p className="text-xs text-zinc-500">{server.ip}{server.port !== 25565 ? `:${server.port}` : ''}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-white">{server.name}</p>
+                            {/* Online Status Badge */}
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
+                              server.isOnline 
+                                ? 'bg-emerald-500/20 text-emerald-400' 
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${server.isOnline ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                              {server.isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-zinc-500">
+                            <span>{server.ip}{server.port !== 25565 ? `:${server.port}` : ''}</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {server.playerCount || 0}/{server.maxPlayers || 0}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {/* Online/Offline Toggle */}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className={`border-zinc-700 ${server.isOnline ? 'hover:bg-red-900/30 hover:border-red-700' : 'hover:bg-emerald-900/30 hover:border-emerald-700'}`}
+                          onClick={() => toggleServerOnline(server)}
+                          title={server.isOnline ? 'Çevrimdışı yap' : 'Çevrimiçi yap'}
+                        >
+                          {server.isOnline ? (
+                            <X className="w-4 h-4 text-red-400" />
+                          ) : (
+                            <Check className="w-4 h-4 text-emerald-400" />
+                          )}
+                        </Button>
                         <Badge className={statusColors[server.approvalStatus]}>
                           {server.approvalStatus === 'PENDING' ? 'Beklemede' : 
                            server.approvalStatus === 'APPROVED' ? 'Onaylı' : 'Reddedildi'}
