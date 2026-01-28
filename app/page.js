@@ -5573,31 +5573,31 @@ export default function App() {
 
   // Render different pages
   if (currentPage === 'server-detail' && selectedServer) {
-    return <ServerDetailPage serverId={selectedServer} onBack={() => { setCurrentPage('home'); setSelectedServer(null) }} onVote={setVoteServer} user={user} />
+    return <ServerDetailPage serverId={selectedServer} onBack={() => { setCurrentPage('home'); setSelectedServer(null) }} onVote={setVoteServer} user={user} lang={lang} t={t} />
   }
 
   if (currentPage === 'add-server') {
-    return <AddServerPage onBack={() => setCurrentPage('home')} onSuccess={() => { setCurrentPage('home'); refreshServers() }} />
+    return <AddServerPage onBack={() => setCurrentPage('home')} onSuccess={() => { setCurrentPage('home'); refreshServers() }} lang={lang} t={t} />
   }
 
   if (currentPage === 'profile' && user) {
-    return <ProfilePage user={user} onBack={() => setCurrentPage('home')} onUpdateUser={setUser} />
+    return <ProfilePage user={user} onBack={() => setCurrentPage('home')} onUpdateUser={setUser} lang={lang} t={t} />
   }
 
   if (currentPage === 'blog') {
-    return <BlogPage onBack={() => setCurrentPage('home')} onViewPost={(slug) => { setSelectedBlogSlug(slug); setCurrentPage('blog-post') }} />
+    return <BlogPage onBack={() => setCurrentPage('home')} onViewPost={(slug) => { setSelectedBlogSlug(slug); setCurrentPage('blog-post') }} lang={lang} t={t} />
   }
 
   if (currentPage === 'blog-post' && selectedBlogSlug) {
-    return <BlogPostPage slug={selectedBlogSlug} onBack={() => { setCurrentPage('blog'); setSelectedBlogSlug(null) }} />
+    return <BlogPostPage slug={selectedBlogSlug} onBack={() => { setCurrentPage('blog'); setSelectedBlogSlug(null) }} lang={lang} t={t} />
   }
 
   if (currentPage === 'hostings') {
-    return <HostingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} onGoToSupport={goToSupport} />
+    return <HostingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} onGoToSupport={goToSupport} lang={lang} t={t} />
   }
 
   if (currentPage === 'pricing') {
-    return <PricingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} onGoToSupport={goToSupport} />
+    return <PricingPage onBack={() => setCurrentPage('home')} user={user} onOpenAuth={() => setAuthOpen(true)} onGoToSupport={goToSupport} lang={lang} t={t} />
   }
 
   if (currentPage === 'support') {
@@ -5607,15 +5607,17 @@ export default function App() {
       onOpenAuth={() => setAuthOpen(true)} 
       initialCategory={supportCategory}
       initialSubject={supportSubject}
+      lang={lang}
+      t={t}
     />
   }
 
   if (currentPage === 'admin' && user?.role === 'ADMIN') {
-    return <AdminPanel user={user} onBack={() => setCurrentPage('home')} />
+    return <AdminPanel user={user} onBack={() => setCurrentPage('home')} lang={lang} t={t} />
   }
 
   if (currentPage === 'privacy') {
-    return <PrivacyPolicyPage onBack={() => setCurrentPage('home')} />
+    return <PrivacyPolicyPage onBack={() => setCurrentPage('home')} lang={lang} t={t} />
   }
 
   if (currentPage === 'terms') {
