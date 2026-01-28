@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
 import { hashPassword, createToken, setAuthCookie } from '@/lib/auth';
+import { verifyRecaptcha } from '@/lib/recaptcha';
 
 export async function POST(request) {
   try {
@@ -10,7 +11,16 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { email, password, username } = body;
+    const { email, password, username, recaptchaToken } = body;
+
+    // reCAPTCHA verification
+    const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+    if (!recaptchaResult.success && !recaptchaResult.skipped) {
+      return NextResponse.json({ 
+        error: recaptchaResult.message || 'Lütfen robot olmadığınızı doğrulayın',
+        errorCode: recaptchaResult.error
+      }, { status: 400 });
+    }
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email ve şifre gerekli' }, { status: 400 });
