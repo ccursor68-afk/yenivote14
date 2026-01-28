@@ -5259,6 +5259,33 @@ export default function App() {
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState(null)
   
+  // Language state
+  const [lang, setLang] = useState('tr')
+  const [langMounted, setLangMounted] = useState(false)
+  
+  // Load language from localStorage
+  useEffect(() => {
+    setLangMounted(true)
+    const saved = localStorage.getItem('serverlistrank_lang')
+    if (saved === 'tr' || saved === 'en') {
+      setLang(saved)
+    }
+  }, [])
+  
+  // Translation function
+  const t = (key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  }
+  
   // Site statistics
   const [siteStats, setSiteStats] = useState({ serverCount: 0, totalPlayers: 0, totalVotes: 0 })
   
