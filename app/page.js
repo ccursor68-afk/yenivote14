@@ -4214,6 +4214,7 @@ function AddServerPage({ onBack, onSuccess }) {
     platform: 'JAVA',
     gameModes: [],
     version: '',
+    countryCode: '',
     website: '',
     discord: '',
     bannerUrl: '',
