@@ -240,6 +240,7 @@ export async function POST(request) {
         gameMode: gameModes[0], // Primary game mode (for backwards compatibility)
         gameModes: gameModes, // All selected game modes
         version,
+        countryCode: countryCode.toUpperCase(),
         website: website || null,
         discord: discord || null,
         bannerUrl: bannerUrl || null,
