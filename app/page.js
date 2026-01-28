@@ -660,7 +660,9 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
       <VoteDialog 
         server={server} 
         open={showVoteDialog} 
-        onOpenChange={(open) => setShowVoteDialog(open)} 
+        onOpenChange={(open) => setShowVoteDialog(open)}
+        lang={lang}
+        t={tr}
       />
     </div>
   )
