@@ -576,7 +576,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <User className="w-5 h-5 text-emerald-500" />
-                    Sunucu Sahibi
+                    {tr('serverOwner')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -588,7 +588,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-white">{server.owner.username || 'Anonim'}</p>
+                      <p className="font-medium text-white">{server.owner.username || (lang === 'en' ? 'Anonymous' : 'Anonim')}</p>
                       {server.owner.minecraftNick && (
                         <p className="text-sm text-zinc-500">MC: {server.owner.minecraftNick}</p>
                       )}
@@ -605,7 +605,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
             <Card className="bg-zinc-900/80 backdrop-blur border-zinc-800 sticky top-4">
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <Label className="text-zinc-400 text-sm">Sunucu IP</Label>
+                  <Label className="text-zinc-400 text-sm">{tr('serverIP')}</Label>
                   <div className="flex items-center gap-2 mt-2">
                     <code className="flex-1 bg-zinc-800 px-4 py-3 rounded-lg text-emerald-400 font-mono">
                       {server.ip}{server.port !== 25565 ? `:${server.port}` : ''}
@@ -620,12 +620,12 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                   className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-lg"
                   onClick={() => setShowVoteDialog(true)}
                 >
-                  <Vote className="w-5 h-5 mr-2" /> Oy Ver
+                  <Vote className="w-5 h-5 mr-2" /> {tr('vote')}
                 </Button>
 
                 {server.hasVotifier && (
                   <p className="text-xs text-center text-emerald-400">
-                    ✓ NuVotifier aktif - Oyun içi ödül alabilirsiniz
+                    ✓ {tr('votifierActive')}
                   </p>
                 )}
 
@@ -637,7 +637,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                     <a href={server.website} target="_blank" rel="noopener noreferrer" 
                       className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                       <Globe className="w-4 h-4" />
-                      Website
+                      {tr('website')}
                       <ExternalLink className="w-3 h-3 ml-auto" />
                     </a>
                   )}
@@ -645,7 +645,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                     <a href={server.discord} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                       <MessageCircle className="w-4 h-4" />
-                      Discord
+                      {tr('discord')}
                       <ExternalLink className="w-3 h-3 ml-auto" />
                     </a>
                   )}
