@@ -107,7 +107,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const { 
-      name, ip, port, platform, gameModes, version, website, discord,
+      name, ip, port, platform, gameModes, version, countryCode, website, discord,
       bannerUrl, shortDescription, longDescription, tags,
       votifierHost, votifierPort, votifierPublicKey, votifierToken,
       serverVerified // Flag to indicate server was pinged and verified
@@ -119,6 +119,13 @@ export async function POST(request) {
     if (!serverVerified) {
       return NextResponse.json({ 
         error: 'Sunucu durumu doğrulanmalıdır. Lütfen IP kontrol butonunu kullanın.' 
+      }, { status: 400 });
+    }
+
+    // Country code validation (required)
+    if (!countryCode || countryCode.length < 2) {
+      return NextResponse.json({ 
+        error: 'Ülke seçimi zorunludur' 
       }, { status: 400 });
     }
 
