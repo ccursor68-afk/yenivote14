@@ -797,6 +797,58 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
   const [mode, setMode] = useState('login')
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ email: '', password: '', username: '' })
+  const [recaptchaToken, setRecaptchaToken] = useState(null)
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false)
+  const recaptchaRef = useRef(null)
+  
+  // reCAPTCHA site key from environment
+  const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  
+  // Load reCAPTCHA script
+  useEffect(() => {
+    if (!RECAPTCHA_SITE_KEY) return
+    
+    // Check if already loaded
+    if (window.grecaptcha) {
+      setRecaptchaLoaded(true)
+      return
+    }
+    
+    const script = document.createElement('script')
+    script.src = 'https://www.google.com/recaptcha/api.js'
+    script.async = true
+    script.defer = true
+    script.onload = () => setRecaptchaLoaded(true)
+    document.head.appendChild(script)
+    
+    return () => {
+      // Cleanup not needed as script stays loaded
+    }
+  }, [RECAPTCHA_SITE_KEY])
+  
+  // Reset reCAPTCHA when mode changes
+  useEffect(() => {
+    setRecaptchaToken(null)
+    if (window.grecaptcha && recaptchaRef.current) {
+      try {
+        window.grecaptcha.reset()
+      } catch (e) {}
+    }
+  }, [mode])
+  
+  // Handle reCAPTCHA callback
+  useEffect(() => {
+    window.onRecaptchaSuccess = (token) => {
+      setRecaptchaToken(token)
+    }
+    window.onRecaptchaExpired = () => {
+      setRecaptchaToken(null)
+    }
+    window.onRecaptchaError = () => {
+      setRecaptchaToken(null)
+      toast.error(lang === 'en' ? 'reCAPTCHA error. Please try again.' : 'reCAPTCHA hatası. Lütfen tekrar deneyin.')
+    }
+  }, [lang])
   
   // Translation helper
   const tr = t || ((key) => {
@@ -814,6 +866,13 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Check reCAPTCHA if configured
+    if (RECAPTCHA_SITE_KEY && !recaptchaToken) {
+      toast.error(lang === 'en' ? 'Please verify that you are not a robot' : 'Lütfen robot olmadığınızı doğrulayın')
+      return
+    }
+    
     setLoading(true)
 
     try {
@@ -822,13 +881,21 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(form)
+        body: JSON.stringify({
+          ...form,
+          recaptchaToken
+        })
       })
 
       const data = await res.json()
 
       if (!res.ok) {
         toast.error(data.error || tr('loginError'))
+        // Reset reCAPTCHA on error
+        if (window.grecaptcha) {
+          try { window.grecaptcha.reset() } catch(e) {}
+        }
+        setRecaptchaToken(null)
         return
       }
 
@@ -836,6 +903,7 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
       onSuccess(data.user)
       onOpenChange(false)
       setForm({ email: '', password: '', username: '' })
+      setRecaptchaToken(null)
     } catch (err) {
       toast.error(tr('error'))
     } finally {
