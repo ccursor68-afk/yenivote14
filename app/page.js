@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -25,8 +25,73 @@ import {
   Send, ArrowRight, CheckCircle2, AlertCircle, Loader2, Eye,
   Zap, Gem, Award, RefreshCw, DiscIcon, Link, Image, Tag,
   HelpCircle, MessageCircle, ChevronDown, Edit, Trash2, BarChart3,
-  UserCog, ServerCog, BookOpen, PenSquare, Calendar, ArrowUpRight
+  UserCog, ServerCog, BookOpen, PenSquare, Calendar, ArrowUpRight,
+  Languages, Flag
 } from 'lucide-react'
+
+// Import countries and translations
+import { countries, getCountryByCode, getFlagByCode, getCountryName } from '@/lib/i18n/countries'
+import { translations } from '@/lib/i18n/translations'
+
+// Language Context
+const LanguageContext = createContext()
+
+// Language Provider Component
+function LanguageProvider({ children }) {
+  const [lang, setLang] = useState('tr')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const savedLang = localStorage.getItem('serverlistrank_lang')
+    if (savedLang && (savedLang === 'tr' || savedLang === 'en')) {
+      setLang(savedLang)
+    }
+  }, [])
+
+  const changeLang = (newLang) => {
+    if (newLang === 'tr' || newLang === 'en') {
+      setLang(newLang)
+      localStorage.setItem('serverlistrank_lang', newLang)
+    }
+  }
+
+  const t = (key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  }
+
+  if (!mounted) {
+    return (
+      <LanguageContext.Provider value={{ lang: 'tr', setLang: () => {}, t: (key) => translations['tr'][key] || key }}>
+        {children}
+      </LanguageContext.Provider>
+    )
+  }
+
+  return (
+    <LanguageContext.Provider value={{ lang, setLang: changeLang, t }}>
+      {children}
+    </LanguageContext.Provider>
+  )
+}
+
+// Hook to use translations
+function useTranslation() {
+  const context = useContext(LanguageContext)
+  if (!context) {
+    return { lang: 'tr', setLang: () => {}, t: (key) => key }
+  }
+  return context
+}
 
 // Logo component
 const Logo = ({ className = "w-10 h-10" }) => (
