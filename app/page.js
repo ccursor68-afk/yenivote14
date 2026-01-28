@@ -5432,6 +5432,19 @@ export default function App() {
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3">
+            {/* Language Switcher */}
+            <Select value={localStorage?.getItem('serverlistrank_lang') || 'tr'} onValueChange={(val) => { localStorage.setItem('serverlistrank_lang', val); window.location.reload() }}>
+              <SelectTrigger className="w-20 h-9 bg-zinc-900 border-zinc-800 text-xs">
+                <SelectValue>
+                  {(typeof window !== 'undefined' && localStorage?.getItem('serverlistrank_lang') === 'en') ? '🇬🇧 EN' : '🇹🇷 TR'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800">
+                <SelectItem value="tr">🇹🇷 Türkçe</SelectItem>
+                <SelectItem value="en">🇬🇧 English</SelectItem>
+              </SelectContent>
+            </Select>
+            
             {user ? (
               <>
                 <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white hidden sm:flex" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Sunucu Ekle</span></Button>
