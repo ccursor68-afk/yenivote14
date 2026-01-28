@@ -5503,6 +5503,19 @@ export default function App() {
                   ))}
                 </SelectContent>
               </Select>
+              <Select value={countryFilter} onValueChange={setCountryFilter}>
+                <SelectTrigger className="w-full sm:w-44 h-12 bg-zinc-900 border-zinc-800">
+                  <SelectValue placeholder="Ülke">
+                    {countryFilter === 'ALL' ? '🌍 Tüm Ülkeler' : `${getFlagByCode(countryFilter)} ${getCountryName(countryFilter, 'tr')}`}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 max-h-80">
+                  <SelectItem value="ALL">🌍 Tüm Ülkeler</SelectItem>
+                  {countries.map(c => (
+                    <SelectItem key={c.code} value={c.code}>{c.flag} {c.name.tr}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex justify-center gap-8 mt-10">
