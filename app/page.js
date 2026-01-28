@@ -273,7 +273,7 @@ function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }
         {/* Online status */}
         <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/50 px-2 py-1 rounded-full">
           <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-          <span className="text-xs text-white">{isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+          <span className="text-xs text-white">{isOnline ? tr('online') : tr('offline')}</span>
         </div>
       </div>
 
@@ -299,7 +299,7 @@ function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-lg text-white truncate">{server.name}</h3>
               {server.countryCode && (
-                <span className="text-lg" title={getCountryName(server.countryCode, 'tr')}>
+                <span className="text-lg" title={getCountryName(server.countryCode, lang)}>
                   {getFlagByCode(server.countryCode)}
                 </span>
               )}
@@ -308,7 +308,7 @@ function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }
               </Badge>
               {server.gameMode && (
                 <Badge variant="outline" className={`${getGameModeStyle(server.gameMode)} text-xs`}>
-                  {getGameModeLabel(server.gameMode)}
+                  {tr(`gameModes.${server.gameMode}`) !== `gameModes.${server.gameMode}` ? tr(`gameModes.${server.gameMode}`) : getGameModeLabel(server.gameMode)}
                 </Badge>
               )}
             </div>
