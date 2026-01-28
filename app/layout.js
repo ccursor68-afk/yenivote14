@@ -138,6 +138,13 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="manifest" href="/manifest.json" />
         
+        {/* Google AdSense */}
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4687387792785536"
+          crossOrigin="anonymous"
+        />
+        
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
