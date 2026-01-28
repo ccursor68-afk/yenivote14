@@ -5682,14 +5682,14 @@ export default function App() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Trophy className="w-6 h-6 text-emerald-500" />
-              <h2 className="text-2xl font-bold text-white">En Çok Oy Alan Sunucular</h2>
+              <h2 className="text-2xl font-bold text-white">{t('topServers')}</h2>
             </div>
             {/* Live status indicator */}
             {statusLastUpdated && (
               <div className="flex items-center gap-2 text-xs text-zinc-500">
                 <div className={`w-2 h-2 rounded-full ${statusRefreshing ? 'bg-yellow-500 animate-pulse' : 'bg-emerald-500'}`} />
                 <span>
-                  {statusRefreshing ? 'Güncelleniyor...' : `Son güncelleme: ${statusLastUpdated.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`}
+                  {statusRefreshing ? (lang === 'en' ? 'Updating...' : 'Güncelleniyor...') : `${t('lastUpdate')}: ${statusLastUpdated.toLocaleTimeString(lang === 'en' ? 'en-US' : 'tr-TR', { hour: '2-digit', minute: '2-digit' })}`}
                 </span>
               </div>
             )}
@@ -5703,18 +5703,18 @@ export default function App() {
             <Card className="bg-zinc-900/50 border-zinc-800">
               <CardContent className="p-12 text-center">
                 <Server className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">Henüz sunucu yok</h3>
-                <p className="text-zinc-400 mb-4">İlk sunucuyu sen ekle!</p>
+                <h3 className="text-lg font-medium text-white mb-2">{lang === 'en' ? 'No servers yet' : 'Henüz sunucu yok'}</h3>
+                <p className="text-zinc-400 mb-4">{lang === 'en' ? 'Be the first to add!' : 'İlk sunucuyu sen ekle!'}</p>
                 {user ? (
-                  <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 mr-1" /> Sunucu Ekle</Button>
+                  <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 mr-1" /> {t('addServer')}</Button>
                 ) : (
-                  <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setAuthOpen(true)}>Giriş Yap</Button>
+                  <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setAuthOpen(true)}>{t('login')}</Button>
                 )}
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topServers.map((server, index) => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} rank={index + 1} liveStatus={serverStatus[server.id]} />))}
+              {topServers.map((server, index) => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} rank={index + 1} liveStatus={serverStatus[server.id]} lang={lang} t={t} />))}
             </div>
           )}
         </div>
