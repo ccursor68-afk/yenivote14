@@ -242,6 +242,11 @@ function ServerCard({ server, onVote, onView, rank, liveStatus }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-lg text-white truncate">{server.name}</h3>
+              {server.countryCode && (
+                <span className="text-lg" title={getCountryName(server.countryCode, 'tr')}>
+                  {getFlagByCode(server.countryCode)}
+                </span>
+              )}
               <Badge variant="outline" className={`${platformColors[server.platform]} text-xs`}>
                 {server.platform}
               </Badge>
