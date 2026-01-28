@@ -1621,11 +1621,25 @@ const blogTypeLabels = {
   TUTORIAL: { label: 'Eğitim', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' }
 }
 
-function BlogPage({ onBack, onViewPost }) {
+function BlogPage({ onBack, onViewPost, lang = 'tr', t }) {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeType, setActiveType] = useState(null)
   const [typeCounts, setTypeCounts] = useState({})
+  
+  // Translation helper
+  const tr = t || ((key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  })
 
   const fetchPosts = (type = null) => {
     setLoading(true)
@@ -1663,14 +1677,14 @@ function BlogPage({ onBack, onViewPost }) {
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <Logo className="w-8 h-8" />
-          <span className="text-lg font-bold text-emerald-500">Blog</span>
+          <span className="text-lg font-bold text-emerald-500">{tr('blog')}</span>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Blog</h1>
-          <p className="text-zinc-400">Minecraft dünyasından haberler ve rehberler</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{tr('blogTitle')}</h1>
+          <p className="text-zinc-400">{tr('blogSubtitle')}</p>
         </div>
 
         {/* Type Filter Tabs */}
@@ -1681,7 +1695,7 @@ function BlogPage({ onBack, onViewPost }) {
             onClick={() => handleTypeFilter(null)}
             className={activeType === null ? "bg-emerald-600" : "border-zinc-700"}
           >
-            Tümü
+            {tr('all')}
           </Button>
           {Object.entries(blogTypeLabels).map(([type, { label, color }]) => (
             <Button
@@ -1691,7 +1705,7 @@ function BlogPage({ onBack, onViewPost }) {
               onClick={() => handleTypeFilter(type)}
               className={`${activeType === type ? color : 'border-zinc-700'}`}
             >
-              {label}
+              {lang === 'en' ? type.charAt(0) + type.slice(1).toLowerCase() : label}
               {typeCounts[type] > 0 && (
                 <span className="ml-1 text-xs opacity-70">({typeCounts[type]})</span>
               )}
@@ -1707,8 +1721,8 @@ function BlogPage({ onBack, onViewPost }) {
           <Card className="bg-zinc-900/50 border-zinc-800">
             <CardContent className="py-16 text-center">
               <BookOpen className="w-16 h-16 mx-auto text-zinc-700 mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">Henüz yazı yok</h3>
-              <p className="text-zinc-400">Yakında yeni içerikler eklenecek</p>
+              <h3 className="text-lg font-medium text-white mb-2">{tr('noPosts')}</h3>
+              <p className="text-zinc-400">{tr('comingSoon')}</p>
             </CardContent>
           </Card>
         ) : (
