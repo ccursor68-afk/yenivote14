@@ -860,7 +860,6 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
   useEffect(() => {
     setRecaptchaToken(null)
   }, [mode])
-  }, [lang])
   
   // Translation helper
   const tr = t || ((key) => {
