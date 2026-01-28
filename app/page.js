@@ -5173,6 +5173,7 @@ export default function App() {
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState('ALL')
   const [gameMode, setGameMode] = useState('ALL')
+  const [countryFilter, setCountryFilter] = useState('ALL')
   const [currentPage, setCurrentPage] = useState('home')
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState(null)
