@@ -44,8 +44,8 @@ async function fetchServerStatus(ip, port = 25565, platform = 'JAVA') {
   }
 }
 
-// GET /api/servers/status - Get live status of all approved servers from mcsrvstat.us API
-// This endpoint fetches REAL-TIME data from mcsrvstat.us
+// GET /api/servers/status - Get live status of all approved servers from mcstatus.io API
+// This endpoint fetches REAL-TIME data from mcstatus.io
 export async function GET(request) {
   try {
     if (!isDatabaseAvailable()) {
@@ -65,9 +65,11 @@ export async function GET(request) {
       }
     });
 
-    // Fetch live status from mcsrvstat.us API for all servers in parallel
-    // Limit concurrent requests to avoid rate limiting
-    const batchSize = 10;
+    console.log(`[Status API] Fetching status for ${servers.length} servers`);
+
+    // Fetch live status from mcstatus.io API for all servers in parallel
+    // Limit concurrent requests to avoid rate limiting (5 req/sec)
+    const batchSize = 5;
     const statusMap = {};
     
     for (let i = 0; i < servers.length; i += batchSize) {
@@ -75,7 +77,12 @@ export async function GET(request) {
       
       const batchResults = await Promise.all(
         batch.map(async (server) => {
-          const status = await fetchServerStatus(server.ip, server.port || 25565);
+          const defaultPort = server.platform === 'BEDROCK' ? 19132 : 25565;
+          const status = await fetchServerStatus(
+            server.ip, 
+            server.port || defaultPort,
+            server.platform
+          );
           return { id: server.id, status };
         })
       );
@@ -88,11 +95,13 @@ export async function GET(request) {
         };
       });
       
-      // Small delay between batches to avoid rate limiting
+      // Delay between batches to respect rate limit (5 req/sec)
       if (i + batchSize < servers.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 250));
       }
     }
+
+    console.log(`[Status API] Status map:`, statusMap);
 
     // Optionally update database with latest status (fire and forget)
     // This keeps the database in sync for other queries
@@ -106,7 +115,9 @@ export async function GET(request) {
             maxPlayers: status.maxPlayers,
             lastPingedAt: new Date()
           }
-        }).catch(() => {}) // Ignore errors, this is just for caching
+        }).catch((err) => {
+          console.error(`[Status API] Failed to update server ${id}:`, err.message);
+        })
       )
     ).catch(() => {});
 
@@ -114,7 +125,7 @@ export async function GET(request) {
       status: statusMap,
       serverCount: servers.length,
       timestamp: new Date().toISOString(),
-      source: 'mcsrvstat.us'
+      source: 'mcstatus.io'
     }, {
       headers: {
         'Cache-Control': 'public, max-age=30, stale-while-revalidate=60'
