@@ -648,13 +648,27 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
 }
 
 // Vote Dialog Component
-function VoteDialog({ server, open, onOpenChange }) {
+function VoteDialog({ server, open, onOpenChange, lang = 'tr', t }) {
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  // Translation helper
+  const tr = t || ((key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  })
 
   const handleVote = async () => {
     if (!username.trim()) {
-      toast.error('Minecraft kullanıcı adı gerekli')
+      toast.error(tr('usernameRequired'))
       return
     }
 
@@ -670,15 +684,15 @@ function VoteDialog({ server, open, onOpenChange }) {
       const data = await res.json()
 
       if (!res.ok) {
-        toast.error(data.error || 'Oy verilemedi')
+        toast.error(data.error || tr('voteError'))
         return
       }
 
-      toast.success('Oyunuz başarıyla kaydedildi! 🎉')
+      toast.success(tr('voteSuccess'))
       onOpenChange(false)
       setUsername('')
     } catch (err) {
-      toast.error('Bir hata oluştu')
+      toast.error(tr('error'))
     } finally {
       setLoading(false)
     }
@@ -692,19 +706,19 @@ function VoteDialog({ server, open, onOpenChange }) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Vote className="w-5 h-5 text-emerald-500" />
-            {server.name} için Oy Ver
+            {tr('voteFor')} {server.name}
           </DialogTitle>
           <DialogDescription className="text-zinc-400">
-            Oyun içi ödülünüzü almak için Minecraft kullanıcı adınızı girin.
+            {tr('voteDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label className="text-white">Minecraft Kullanıcı Adı</Label>
+            <Label className="text-white">{tr('minecraftUsername')}</Label>
             <div className="relative">
               <Input
-                placeholder="Örn: Notch"
+                placeholder={lang === 'en' ? 'e.g. Notch' : 'Örn: Notch'}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="bg-zinc-800 border-zinc-700 pl-10 h-12 text-white"
@@ -723,7 +737,7 @@ function VoteDialog({ server, open, onOpenChange }) {
               />
               <div>
                 <p className="font-bold text-white text-lg">{username}</p>
-                <p className="text-sm text-zinc-400">Minecraft Oyuncu</p>
+                <p className="text-sm text-zinc-400">{tr('minecraftPlayer')}</p>
               </div>
             </div>
           )}
@@ -731,14 +745,14 @@ function VoteDialog({ server, open, onOpenChange }) {
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
             <p className="text-xs text-amber-400 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              Girdiğiniz kullanıcı adı sunucuya gönderilecek ve oyun içi ödülünüz bu hesaba verilecektir.
+              {tr('voteWarning')}
             </p>
           </div>
         </div>
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-zinc-700 hover:bg-zinc-800">
-            İptal
+            {tr('cancel')}
           </Button>
           <Button 
             onClick={handleVote} 
@@ -746,9 +760,9 @@ function VoteDialog({ server, open, onOpenChange }) {
             className="bg-emerald-600 hover:bg-emerald-500"
           >
             {loading ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gönderiliyor...</>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {tr('sending')}</>
             ) : (
-              <><Vote className="w-4 h-4 mr-2" /> Oy Ver</>
+              <><Vote className="w-4 h-4 mr-2" /> {tr('vote')}</>
             )}
           </Button>
         </DialogFooter>
