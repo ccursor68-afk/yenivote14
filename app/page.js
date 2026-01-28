@@ -473,7 +473,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
 
                 <Button 
                   className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-lg"
-                  onClick={() => onVote(server)}
+                  onClick={() => setShowVoteDialog(true)}
                 >
                   <Vote className="w-5 h-5 mr-2" /> Oy Ver
                 </Button>
@@ -510,6 +510,13 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
           </div>
         </div>
       </div>
+      
+      {/* Vote Dialog - rendered inside ServerDetailPage */}
+      <VoteDialog 
+        server={server} 
+        open={showVoteDialog} 
+        onOpenChange={(open) => setShowVoteDialog(open)} 
+      />
     </div>
   )
 }
