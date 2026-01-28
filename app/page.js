@@ -378,12 +378,26 @@ function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }
 }
 
 // Server Detail Page Component
-function ServerDetailPage({ serverId, onBack, onVote, user }) {
+function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
   const [server, setServer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [faviconError, setFaviconError] = useState(false)
   const [showVoteDialog, setShowVoteDialog] = useState(false)
+  
+  // Translation helper
+  const tr = t || ((key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  })
 
   useEffect(() => {
     fetch(`/api/servers/${serverId}`, { credentials: 'include' })
@@ -401,7 +415,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
       const ipText = `${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`
       await navigator.clipboard.writeText(ipText)
       setCopied(true)
-      toast.success('IP kopyalandı!')
+      toast.success(tr('copied'))
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       // Fallback for older browsers
@@ -412,7 +426,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
       document.execCommand('copy')
       document.body.removeChild(textArea)
       setCopied(true)
-      toast.success('IP kopyalandı!')
+      toast.success(tr('copied'))
       setTimeout(() => setCopied(false), 2000)
     }
   }
@@ -432,9 +446,9 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center">
         <Server className="w-16 h-16 text-zinc-700 mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">Sunucu Bulunamadı</h2>
+        <h2 className="text-xl font-bold text-white mb-2">{tr('notFound')}</h2>
         <Button onClick={onBack} variant="outline" className="border-zinc-700">
-          <ChevronLeft className="w-4 h-4 mr-1" /> Geri Dön
+          <ChevronLeft className="w-4 h-4 mr-1" /> {tr('back')}
         </Button>
       </div>
     )
