@@ -2232,19 +2232,21 @@ function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }
       packageType: 'HOSTING_VERIFIED',
       price: 500,
       duration: 0, // Lifetime
-      description: 'Hosting firmanız için onaylı rozet ve üst sıra',
-      features: ['Ömür boyu onaylı rozet', 'Hosting listesinde üst sıra', 'VERIFIED_HOSTING rolü', 'Hosting ekleme yetkisi', 'Öncelikli destek']
+      description: lang === 'en' ? 'Verified badge and top ranking for your hosting company' : 'Hosting firmanız için onaylı rozet ve üst sıra',
+      features: lang === 'en'
+        ? ['Lifetime verified badge', 'Top of hosting list', 'VERIFIED_HOSTING role', 'Hosting add permission', 'Priority support']
+        : ['Ömür boyu onaylı rozet', 'Hosting listesinde üst sıra', 'VERIFIED_HOSTING rolü', 'Hosting ekleme yetkisi', 'Öncelikli destek']
     }
   ]
 
   const handlePackageClick = (pkg) => {
     if (!user) {
       onOpenAuth?.()
-      toast.error('Lütfen önce giriş yapın')
+      toast.error(lang === 'en' ? 'Please login first' : 'Lütfen önce giriş yapın')
       return
     }
     // Go to support with pre-filled subject
-    onGoToSupport?.(pkg.packageType === 'HOSTING_VERIFIED' ? 'VERIFICATION_REQUEST' : 'SPONSORSHIP', `${pkg.name} Satın Alma Talebi`)
+    onGoToSupport?.(pkg.packageType === 'HOSTING_VERIFIED' ? 'VERIFICATION_REQUEST' : 'SPONSORSHIP', `${pkg.name} ${lang === 'en' ? 'Purchase Request' : 'Satın Alma Talebi'}`)
   }
 
   const packageIcons = {
