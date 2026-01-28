@@ -5850,7 +5850,7 @@ export default function App() {
                 </li>
                 <li>
                   <button onClick={() => setCurrentPage('terms')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Kullanım Koşulları
+                    <FileText className="w-4 h-4" /> {t('termsOfService')}
                   </button>
                 </li>
               </ul>
@@ -5861,10 +5861,10 @@ export default function App() {
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-sm text-zinc-500">
-                © {new Date().getFullYear()} ServerListRank. Tüm hakları saklıdır.
+                © {new Date().getFullYear()} ServerListRank. {t('allRightsReserved')}
               </p>
               <div className="flex items-center gap-4">
-                <span className="text-xs text-zinc-600">Minecraft, Mojang Studios'un tescilli markasıdır.</span>
+                <span className="text-xs text-zinc-600">{t('minecraftTrademark')}</span>
               </div>
             </div>
           </div>
@@ -5872,8 +5872,8 @@ export default function App() {
       </footer>
 
       {/* Dialogs */}
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} onSuccess={setUser} />
-      <VoteDialog server={voteServer} open={!!voteServer} onOpenChange={(open) => !open && setVoteServer(null)} />
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} onSuccess={setUser} lang={lang} t={t} />
+      <VoteDialog server={voteServer} open={!!voteServer} onOpenChange={(open) => !open && setVoteServer(null)} lang={lang} t={t} />
     </div>
   )
 }
