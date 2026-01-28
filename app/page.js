@@ -2324,7 +2324,7 @@ function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }
 }
 
 // Support Page Component
-function SupportPage({ onBack, user, onOpenAuth, initialCategory, initialSubject }) {
+function SupportPage({ onBack, user, onOpenAuth, initialCategory, initialSubject, lang = 'tr', t }) {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [showNewTicket, setShowNewTicket] = useState(!!initialCategory)
