@@ -468,14 +468,14 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
         {/* Back button */}
         <div className="absolute top-4 left-4">
           <Button onClick={onBack} variant="outline" size="sm" className="bg-black/50 border-zinc-700 hover:bg-black/70">
-            <ChevronLeft className="w-4 h-4 mr-1" /> Geri
+            <ChevronLeft className="w-4 h-4 mr-1" /> {tr('back')}
           </Button>
         </div>
 
         {/* Sponsor badge */}
         {server.isSponsored && (
           <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-500 to-amber-500 text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2">
-            <Crown className="w-5 h-5" /> SPONSOR SUNUCU
+            <Crown className="w-5 h-5" /> {lang === 'en' ? 'SPONSORED' : 'SPONSOR SUNUCU'}
           </div>
         )}
       </div>
@@ -506,13 +506,18 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
                       <h1 className="text-2xl md:text-3xl font-bold text-white">{server.name}</h1>
+                      {server.countryCode && (
+                        <span className="text-2xl" title={getCountryName(server.countryCode, lang)}>
+                          {getFlagByCode(server.countryCode)}
+                        </span>
+                      )}
                       <Badge variant="outline" className={`${platformColors[server.platform]}`}>
                         {server.platform}
                       </Badge>
                       {server.isOnline ? (
-                        <Badge className="bg-emerald-600">Çevrimiçi</Badge>
+                        <Badge className="bg-emerald-600">{tr('online')}</Badge>
                       ) : (
-                        <Badge variant="destructive">Çevrimdışı</Badge>
+                        <Badge variant="destructive">{tr('offline')}</Badge>
                       )}
                     </div>
                     <p className="text-zinc-400 mt-2">{server.shortDescription}</p>
@@ -521,12 +526,12 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
                       <div className="flex items-center gap-2">
                         <Users className="w-5 h-5 text-emerald-500" />
                         <span className="text-white font-medium">{server.playerCount}/{server.maxPlayers}</span>
-                        <span className="text-zinc-500">Oyuncu</span>
+                        <span className="text-zinc-500">{tr('players')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Trophy className="w-5 h-5 text-yellow-500" />
                         <span className="text-white font-medium">{server.voteCount}</span>
-                        <span className="text-zinc-500">Oy</span>
+                        <span className="text-zinc-500">{tr('votes')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-zinc-500" />
@@ -543,7 +548,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user, lang = 'tr', t }) {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-emerald-500" />
-                  Sunucu Hakkında
+                  {tr('aboutServer')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
