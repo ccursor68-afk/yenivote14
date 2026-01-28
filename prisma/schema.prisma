@@ -176,6 +176,7 @@ model Server {
   @@index([voteCount])
   @@index([platform])
   @@index([gameMode])
+  @@index([countryCode])
   @@index([createdAt])
 }
 
