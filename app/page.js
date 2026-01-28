@@ -2187,26 +2187,44 @@ function HostingPage({ onBack, user, onOpenAuth, onGoToSupport }) {
 }
 
 // Pricing Page Component
-function PricingPage({ onBack, user, onOpenAuth, onGoToSupport }) {
+function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }) {
+  // Translation helper
+  const tr = t || ((key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  })
+
   // Static pricing packages (no DB needed)
   const packages = [
     {
       id: '1',
-      name: 'Standart Header Reklam',
+      name: lang === 'en' ? 'Standard Header Ad' : 'Standart Header Reklam',
       packageType: 'HEADER_AD',
       price: 100,
       duration: 7,
-      description: 'Ana sayfanın üstünde banner reklamı',
-      features: ['Tüm sayfalarda görünür', 'Yüksek tıklama oranı', 'Özelleştirilebilir tasarım']
+      description: lang === 'en' ? 'Banner ad at the top of the homepage' : 'Ana sayfanın üstünde banner reklamı',
+      features: lang === 'en' 
+        ? ['Visible on all pages', 'High click rate', 'Customizable design']
+        : ['Tüm sayfalarda görünür', 'Yüksek tıklama oranı', 'Özelleştirilebilir tasarım']
     },
     {
       id: '2',
-      name: 'Sponsorlu Sunucu',
+      name: lang === 'en' ? 'Sponsored Server' : 'Sponsorlu Sunucu',
       packageType: 'SERVER_SPONSOR',
       price: 250,
       duration: 30,
-      description: 'Sunucu listesinde en üstte sabitlenir',
-      features: ['Liste başında görünüm', 'Özel sponsor rozeti', 'Arama sonuçlarında öncelik', 'İstatistik paneli']
+      description: lang === 'en' ? 'Pinned at the top of the server list' : 'Sunucu listesinde en üstte sabitlenir',
+      features: lang === 'en'
+        ? ['Top of list visibility', 'Special sponsor badge', 'Search results priority', 'Statistics panel']
+        : ['Liste başında görünüm', 'Özel sponsor rozeti', 'Arama sonuçlarında öncelik', 'İstatistik paneli']
     },
     {
       id: '3',
