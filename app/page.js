@@ -5527,12 +5527,12 @@ export default function App() {
           </div>
 
           <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
-            <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> Sunucular</button>
-            <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Server className="w-4 h-4" /> Hostingler</button>
-            <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><BookOpen className="w-4 h-4" /> Blog</button>
-            <button onClick={() => setCurrentPage('pricing')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Gem className="w-4 h-4" /> Fiyatlandırma</button>
+            <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> {t('servers')}</button>
+            <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Server className="w-4 h-4" /> {t('hostings')}</button>
+            <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><BookOpen className="w-4 h-4" /> {t('blog')}</button>
+            <button onClick={() => setCurrentPage('pricing')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Gem className="w-4 h-4" /> {t('pricing')}</button>
             {user && (
-              <button onClick={() => setCurrentPage('support')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Ticket className="w-4 h-4" /> Destek</button>
+              <button onClick={() => setCurrentPage('support')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Ticket className="w-4 h-4" /> {t('support')}</button>
             )}
             {user?.role === 'ADMIN' && (
               <button onClick={() => setCurrentPage('admin')} className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"><Shield className="w-4 h-4" /> Admin</button>
@@ -5545,7 +5545,7 @@ export default function App() {
             
             {user ? (
               <>
-                <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white hidden sm:flex" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Sunucu Ekle</span></Button>
+                <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white hidden sm:flex" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">{t('addServer')}</span></Button>
                 <button onClick={() => setCurrentPage('profile')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <Avatar className="w-8 h-8 ring-2 ring-emerald-600/50">
                     <AvatarImage src={user.avatarUrl} />
@@ -5558,7 +5558,7 @@ export default function App() {
                 <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:bg-zinc-800"><LogOut className="w-4 h-4" /></Button>
               </>
             ) : (
-              <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setAuthOpen(true)}><LogIn className="w-4 h-4 mr-1" /> Giriş Yap</Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setAuthOpen(true)}><LogIn className="w-4 h-4 mr-1" /> {t('login')}</Button>
             )}
           </div>
         </div>
@@ -5573,20 +5573,20 @@ export default function App() {
           <div className="text-center max-w-3xl mx-auto">
             <div className="flex justify-center mb-6"><Logo className="w-20 h-20" /></div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent">En İyi Minecraft</span><br />
-              <span className="text-white">Sunucularını Keşfet</span>
+              <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent">{t('heroTitle1')}</span><br />
+              <span className="text-white">{t('heroTitle2')}</span>
             </h1>
-            <p className="text-lg text-zinc-400 mb-8">Binlerce sunucu arasından favorini bul, oy ver ve kendi sunucunu ekle!</p>
+            <p className="text-lg text-zinc-400 mb-8">{t('heroSubtitle')}</p>
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <Input placeholder="Sunucu ara..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-12 bg-zinc-900 border-zinc-800 focus:border-emerald-600" />
+                <Input placeholder={t('searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-12 bg-zinc-900 border-zinc-800 focus:border-emerald-600" />
               </div>
               <Select value={platform} onValueChange={setPlatform}>
                 <SelectTrigger className="w-full sm:w-36 h-12 bg-zinc-900 border-zinc-800"><SelectValue placeholder="Platform" /></SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
-                  <SelectItem value="ALL">Tümü</SelectItem>
+                  <SelectItem value="ALL">{t('allPlatforms')}</SelectItem>
                   <SelectItem value="JAVA">Java</SelectItem>
                   <SelectItem value="BEDROCK">Bedrock</SelectItem>
                   <SelectItem value="CROSSPLAY">Crossplay</SelectItem>
@@ -5595,9 +5595,9 @@ export default function App() {
               <Select value={gameMode} onValueChange={setGameMode}>
                 <SelectTrigger className="w-full sm:w-40 h-12 bg-zinc-900 border-zinc-800"><SelectValue placeholder="Oyun Modu" /></SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
-                  <SelectItem value="ALL">Tüm Modlar</SelectItem>
+                  <SelectItem value="ALL">{t('allGameModes')}</SelectItem>
                   {gameModes.map(gm => (
-                    <SelectItem key={gm.value} value={gm.value}>{gm.label}</SelectItem>
+                    <SelectItem key={gm.value} value={gm.value}>{t(`gameModes.${gm.value}`) !== `gameModes.${gm.value}` ? t(`gameModes.${gm.value}`) : gm.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
