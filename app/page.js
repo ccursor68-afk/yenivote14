@@ -981,12 +981,8 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
               <div className="flex justify-center py-2">
                 <div 
                   ref={recaptchaRef}
-                  className="g-recaptcha" 
-                  data-sitekey={RECAPTCHA_SITE_KEY}
-                  data-theme="dark"
-                  data-callback="onRecaptchaSuccess"
-                  data-expired-callback="onRecaptchaExpired"
-                  data-error-callback="onRecaptchaError"
+                  id="recaptcha-container"
+                  className="recaptcha-container"
                 />
               </div>
             )}
