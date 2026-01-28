@@ -17,6 +17,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const platform = searchParams.get('platform');
     const gameMode = searchParams.get('gameMode');
+    const country = searchParams.get('country');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -27,6 +28,7 @@ export async function GET(request) {
       approvalStatus: 'APPROVED',
       ...(platform && platform !== 'ALL' && { platform }),
       ...(gameMode && gameMode !== 'ALL' && { gameModes: { has: gameMode } }),
+      ...(country && country !== 'ALL' && { countryCode: country }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -56,6 +58,7 @@ export async function GET(request) {
           gameMode: true,
           gameModes: true,
           version: true,
+          countryCode: true,
           shortDescription: true,
           tags: true,
           bannerUrl: true,
