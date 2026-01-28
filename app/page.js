@@ -329,11 +329,11 @@ function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }
           <div className="flex items-center gap-1.5">
             <Trophy className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium text-white">{server.voteCount}</span>
-            <span className="text-xs text-zinc-500">oy</span>
+            <span className="text-xs text-zinc-500">{tr('votes')}</span>
           </div>
           <div className="flex items-center gap-1.5 ml-auto">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs text-emerald-400">+{server.monthlyVotes || 0} bu ay</span>
+            <span className="text-xs text-emerald-400">+{server.monthlyVotes || 0} {tr('thisMonth')}</span>
           </div>
         </div>
 
@@ -346,14 +346,14 @@ function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }
             onClick={(e) => { e.stopPropagation(); copyIP(); }}
           >
             {copied ? <Check className="w-4 h-4 mr-1 text-emerald-500" /> : <Copy className="w-4 h-4 mr-1" />}
-            {copied ? 'Kopyalandı!' : `${server.ip}`}
+            {copied ? tr('copied') : `${server.ip}`}
           </Button>
           <Button
             size="sm"
             className="bg-emerald-600 hover:bg-emerald-500 text-white"
             onClick={(e) => { e.stopPropagation(); onVote(server); }}
           >
-            <Vote className="w-4 h-4 mr-1" /> Oy Ver
+            <Vote className="w-4 h-4 mr-1" /> {tr('vote')}
           </Button>
         </div>
 
