@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import getPrisma, { isDatabaseAvailable, dbNotAvailableResponse } from '@/lib/db';
 
-// Fetch server status from mcsrvstat.us API
-async function fetchServerStatus(ip, port = 25565) {
+// Fetch server status from mcstatus.io API (more reliable)
+async function fetchServerStatus(ip, port = 25565, platform = 'JAVA') {
   try {
-    // mcsrvstat.us API - supports both Java and Bedrock
-    const serverAddress = port === 25565 ? ip : `${ip}:${port}`;
-    const apiUrl = `https://api.mcsrvstat.us/3/${serverAddress}`;
+    // mcstatus.io API - different endpoints for Java and Bedrock
+    const serverAddress = port === 25565 || port === 19132 ? ip : `${ip}:${port}`;
+    
+    // Use bedrock endpoint for BEDROCK platform, java for others
+    const apiType = platform === 'BEDROCK' ? 'bedrock' : 'java';
+    const apiUrl = `https://api.mcstatus.io/v2/status/${apiType}/${serverAddress}`;
+    
+    console.log(`[mcstatus.io] Fetching ${apiType} status for: ${serverAddress}`);
     
     const response = await fetch(apiUrl, {
       headers: { 'Accept': 'application/json' },
@@ -14,20 +19,27 @@ async function fetchServerStatus(ip, port = 25565) {
     });
     
     if (!response.ok) {
+      console.error(`[mcstatus.io] API returned ${response.status} for ${serverAddress}`);
       return { online: false, playerCount: 0, maxPlayers: 0 };
     }
     
     const data = await response.json();
     
+    console.log(`[mcstatus.io] Response for ${serverAddress}:`, {
+      online: data.online,
+      players: data.players
+    });
+    
     return {
       online: data.online === true,
       playerCount: data.players?.online || 0,
       maxPlayers: data.players?.max || 0,
-      version: data.version || null,
-      motd: data.motd?.clean?.[0] || null
+      version: data.version?.name_clean || data.version?.name || null,
+      motd: data.motd?.clean || null,
+      icon: data.icon || null
     };
   } catch (error) {
-    console.error(`[mcsrvstat] Error fetching ${ip}:${port}:`, error.message);
+    console.error(`[mcstatus.io] Error fetching ${ip}:${port}:`, error.message);
     return { online: false, playerCount: 0, maxPlayers: 0 };
   }
 }
