@@ -194,9 +194,23 @@ function LanguageSwitcher() {
 }
 
 // Server Card Component
-function ServerCard({ server, onVote, onView, rank, liveStatus }) {
+function ServerCard({ server, onVote, onView, rank, liveStatus, lang = 'tr', t }) {
   const [copied, setCopied] = useState(false)
   const [faviconError, setFaviconError] = useState(false)
+  
+  // Translation helper for this component
+  const tr = t || ((key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
+  })
 
   // Use live status if available, otherwise fall back to server data
   const isOnline = liveStatus?.isOnline ?? server.isOnline
@@ -208,7 +222,7 @@ function ServerCard({ server, onVote, onView, rank, liveStatus }) {
       const ipText = `${server.ip}${server.port !== 25565 ? ':' + server.port : ''}`
       await navigator.clipboard.writeText(ipText)
       setCopied(true)
-      toast.success('IP kopyalandı!')
+      toast.success(tr('copied'))
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       // Fallback for older browsers
@@ -219,7 +233,7 @@ function ServerCard({ server, onVote, onView, rank, liveStatus }) {
       document.execCommand('copy')
       document.body.removeChild(textArea)
       setCopied(true)
-      toast.success('IP kopyalandı!')
+      toast.success(tr('copied'))
       setTimeout(() => setCopied(false), 2000)
     }
   }
