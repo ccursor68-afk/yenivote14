@@ -938,14 +938,14 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
 // Profile Page Component
 // Badge display info
 const BADGE_INFO = {
-  CRITIC: { name: 'Eleştirmen', icon: '⭐', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  EXPLORER: { name: 'Kaşif', icon: '🌍', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  VERIFIED_OWNER: { name: 'Onaylı Sahip', icon: '✓', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  EARLY_ADOPTER: { name: 'Öncü', icon: '🚀', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  TOP_VOTER: { name: 'Oy Ustası', icon: '🗳️', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' }
+  CRITIC: { name: { tr: 'Eleştirmen', en: 'Critic' }, icon: '⭐', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  EXPLORER: { name: { tr: 'Kaşif', en: 'Explorer' }, icon: '🌍', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  VERIFIED_OWNER: { name: { tr: 'Onaylı Sahip', en: 'Verified Owner' }, icon: '✓', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  EARLY_ADOPTER: { name: { tr: 'Öncü', en: 'Early Adopter' }, icon: '🚀', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  TOP_VOTER: { name: { tr: 'Oy Ustası', en: 'Top Voter' }, icon: '🗳️', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' }
 }
 
-function ProfilePage({ user, onBack, onUpdateUser }) {
+function ProfilePage({ user, onBack, onUpdateUser, lang = 'tr', t }) {
   const [loading, setLoading] = useState(false)
   const [servers, setServers] = useState([])
   const [tickets, setTickets] = useState([])
@@ -954,6 +954,20 @@ function ProfilePage({ user, onBack, onUpdateUser }) {
   const [form, setForm] = useState({
     username: user?.username || '',
     minecraftNick: user?.minecraftNick || ''
+  })
+  
+  // Translation helper
+  const tr = t || ((key) => {
+    const keys = key.split('.')
+    let value = translations[lang]
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k]
+      } else {
+        return key
+      }
+    }
+    return typeof value === 'string' ? value : key
   })
   
   // Server edit/delete states
