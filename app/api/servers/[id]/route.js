@@ -69,7 +69,7 @@ export async function PUT(request, { params }) {
 
     const body = await request.json();
     const allowedFields = [
-      'name', 'ip', 'port', 'platform', 'gameMode', 'version', 'website', 'discord',
+      'name', 'ip', 'port', 'platform', 'gameMode', 'version', 'countryCode', 'website', 'discord',
       'bannerUrl', 'logoUrl', 'shortDescription', 'longDescription', 'tags',
       'votifierHost', 'votifierPort', 'votifierPublicKey', 'votifierToken',
       'isOnline', 'playerCount', 'maxPlayers'
