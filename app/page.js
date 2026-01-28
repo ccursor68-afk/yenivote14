@@ -4355,6 +4355,11 @@ function AddServerPage({ onBack, onSuccess }) {
       return
     }
 
+    if (!form.countryCode) {
+      toast.error('Ülke seçimi zorunludur')
+      return
+    }
+
     if (!form.name || form.name.trim().length < 3) {
       toast.error('Sunucu adı en az 3 karakter olmalıdır')
       return
@@ -4406,6 +4411,7 @@ function AddServerPage({ onBack, onSuccess }) {
                           form.gameModes.length >= 1 && 
                           form.gameModes.length <= 3 &&
                           form.version &&
+                          form.countryCode &&
                           !contentWarnings.name && 
                           !contentWarnings.shortDescription &&
                           !contentWarnings.longDescription
