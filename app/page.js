@@ -77,12 +77,13 @@ const minecraftVersions = [
   '1.12.2', '1.8.9', '1.7.10'
 ]
 
-// Helper function to get server favicon URL from mc-api.net
+// Helper function to get server favicon URL from mcsrvstat.us (more reliable)
 const getServerFaviconUrl = (ip) => {
   if (!ip) return null
   // Remove port if present for the API call
   const cleanIp = ip.split(':')[0]
-  return `https://eu.mc-api.net/v3/server/favicon/${cleanIp}`
+  // Use mcsrvstat.us icon API - more reliable than mc-api.net
+  return `https://api.mcsrvstat.us/icon/${cleanIp}`
 }
 
 // Server Card Component
