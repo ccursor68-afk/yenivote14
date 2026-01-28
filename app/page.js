@@ -1873,7 +1873,7 @@ function BlogPostPage({ slug, onBack }) {
 }
 
 // Hosting Page Component
-function HostingPage({ onBack, user, onOpenAuth, onGoToSupport }) {
+function HostingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }) {
   const [hostings, setHostings] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewModal, setReviewModal] = useState(null)
