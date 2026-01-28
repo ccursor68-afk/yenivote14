@@ -2269,14 +2269,14 @@ function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }
         <div className="container mx-auto px-4 h-16 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-zinc-800"><ChevronLeft className="w-5 h-5" /></Button>
           <Logo className="w-8 h-8" />
-          <span className="text-lg font-bold text-emerald-500">Fiyatlandırma</span>
+          <span className="text-lg font-bold text-emerald-500">{tr('pricing')}</span>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">Reklam & Sponsorluk Paketleri</h1>
-          <p className="text-zinc-400 text-sm md:text-lg">Sunucunuzu veya hosting firmanızı öne çıkarın</p>
+          <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">{lang === 'en' ? 'Advertising & Sponsorship Packages' : 'Reklam & Sponsorluk Paketleri'}</h1>
+          <p className="text-zinc-400 text-sm md:text-lg">{tr('pricingSubtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
@@ -2284,7 +2284,7 @@ function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }
             <Card key={pkg.id} className={`bg-zinc-900/80 border-zinc-800 overflow-hidden hover:border-emerald-600/50 transition-all hover:scale-[1.02] ${pkg.packageType === 'HOSTING_VERIFIED' ? 'ring-2 ring-emerald-500/30' : ''}`}>
               <div className={`bg-gradient-to-r ${packageColors[pkg.packageType] || 'from-zinc-600 to-zinc-800'} p-4 md:p-6 text-center`}>
                 {pkg.packageType === 'HOSTING_VERIFIED' && (
-                  <Badge className="bg-white/20 text-white mb-2">EN POPÜLER</Badge>
+                  <Badge className="bg-white/20 text-white mb-2">{tr('popular')}</Badge>
                 )}
                 <div className="bg-white/10 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 text-white">
                   {packageIcons[pkg.packageType] || <Gem className="w-8 h-8" />}
@@ -2295,7 +2295,7 @@ function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }
                 <div className="text-center mb-4 md:mb-6">
                   <span className="text-3xl md:text-4xl font-bold text-white">{pkg.price}</span>
                   <span className="text-zinc-400"> ₺</span>
-                  <p className="text-xs md:text-sm text-zinc-500 mt-1">{pkg.duration > 0 ? `${pkg.duration} gün` : 'Ömür boyu'}</p>
+                  <p className="text-xs md:text-sm text-zinc-500 mt-1">{pkg.duration > 0 ? `${pkg.duration} ${lang === 'en' ? 'days' : 'gün'}` : (lang === 'en' ? 'Lifetime' : 'Ömür boyu')}</p>
                 </div>
                 <p className="text-xs md:text-sm text-zinc-400 mb-4 md:mb-6 text-center">{pkg.description}</p>
                 <ul className="space-y-2 mb-4 md:mb-6">
@@ -2307,7 +2307,7 @@ function PricingPage({ onBack, user, onOpenAuth, onGoToSupport, lang = 'tr', t }
                   ))}
                 </ul>
                 <Button className="w-full bg-emerald-600 hover:bg-emerald-500" onClick={() => handlePackageClick(pkg)}>
-                  <Ticket className="w-4 h-4 mr-1" /> Satın Al
+                  <Ticket className="w-4 h-4 mr-1" /> {tr('buyNow')}
                 </Button>
               </CardContent>
             </Card>
