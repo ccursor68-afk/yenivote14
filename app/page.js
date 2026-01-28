@@ -5309,6 +5309,7 @@ export default function App() {
     if (search) params.set('search', search)
     if (platform !== 'ALL') params.set('platform', platform)
     if (gameMode !== 'ALL') params.set('gameMode', gameMode)
+    if (countryFilter !== 'ALL') params.set('country', countryFilter)
 
     fetch(`/api/servers?${params}`, { credentials: 'include' })
       .then(res => res.json())
@@ -5317,7 +5318,7 @@ export default function App() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [search, platform, gameMode])
+  }, [search, platform, gameMode, countryFilter])
 
   // Auto-refresh servers every 5 minutes
   useEffect(() => {
@@ -5326,6 +5327,7 @@ export default function App() {
       if (search) params.set('search', search)
       if (platform !== 'ALL') params.set('platform', platform)
       if (gameMode !== 'ALL') params.set('gameMode', gameMode)
+      if (countryFilter !== 'ALL') params.set('country', countryFilter)
 
       fetch(`/api/servers?${params}`, { credentials: 'include' })
         .then(res => res.json())
@@ -5336,7 +5338,7 @@ export default function App() {
     }, 5 * 60 * 1000) // 5 dakika
 
     return () => clearInterval(refreshInterval)
-  }, [search, platform, gameMode])
+  }, [search, platform, gameMode, countryFilter])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
