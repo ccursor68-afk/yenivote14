@@ -815,7 +815,7 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
     }
     
     const script = document.createElement('script')
-    script.src = 'https://www.google.com/recaptcha/api.js'
+    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit'
     script.async = true
     script.defer = true
     script.onload = () => setRecaptchaLoaded(true)
@@ -826,28 +826,40 @@ function AuthDialog({ open, onOpenChange, onSuccess, lang = 'tr', t }) {
     }
   }, [RECAPTCHA_SITE_KEY])
   
+  // Render reCAPTCHA when dialog opens and script is loaded
+  useEffect(() => {
+    if (!open || !RECAPTCHA_SITE_KEY || !recaptchaLoaded) return
+    
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      if (window.grecaptcha && recaptchaRef.current) {
+        try {
+          // Clear previous widget if exists
+          recaptchaRef.current.innerHTML = ''
+          
+          window.grecaptcha.render(recaptchaRef.current, {
+            sitekey: RECAPTCHA_SITE_KEY,
+            theme: 'dark',
+            callback: (token) => setRecaptchaToken(token),
+            'expired-callback': () => setRecaptchaToken(null),
+            'error-callback': () => {
+              setRecaptchaToken(null)
+              toast.error(lang === 'en' ? 'reCAPTCHA error. Please try again.' : 'reCAPTCHA hatası. Lütfen tekrar deneyin.')
+            }
+          })
+        } catch (e) {
+          console.log('reCAPTCHA already rendered or error:', e.message)
+        }
+      }
+    }, 100)
+    
+    return () => clearTimeout(timer)
+  }, [open, recaptchaLoaded, mode, RECAPTCHA_SITE_KEY, lang])
+  
   // Reset reCAPTCHA when mode changes
   useEffect(() => {
     setRecaptchaToken(null)
-    if (window.grecaptcha && recaptchaRef.current) {
-      try {
-        window.grecaptcha.reset()
-      } catch (e) {}
-    }
   }, [mode])
-  
-  // Handle reCAPTCHA callback
-  useEffect(() => {
-    window.onRecaptchaSuccess = (token) => {
-      setRecaptchaToken(token)
-    }
-    window.onRecaptchaExpired = () => {
-      setRecaptchaToken(null)
-    }
-    window.onRecaptchaError = () => {
-      setRecaptchaToken(null)
-      toast.error(lang === 'en' ? 'reCAPTCHA error. Please try again.' : 'reCAPTCHA hatası. Lütfen tekrar deneyin.')
-    }
   }, [lang])
   
   // Translation helper
