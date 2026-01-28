@@ -4668,6 +4668,33 @@ function AddServerPage({ onBack, onSuccess }) {
                   </div>
                 </div>
 
+                {/* Country Selection */}
+                <div className="space-y-2">
+                  <Label className="text-white flex items-center gap-2">
+                    <Flag className="w-4 h-4 text-emerald-500" />
+                    Ülke *
+                  </Label>
+                  <Select value={form.countryCode} onValueChange={(v) => setForm({ ...form, countryCode: v })}>
+                    <SelectTrigger className={`bg-zinc-800 border-zinc-700 h-11 ${!form.countryCode ? 'text-zinc-500' : ''}`}>
+                      <SelectValue placeholder="Ülke seçin...">
+                        {form.countryCode ? `${getFlagByCode(form.countryCode)} ${getCountryName(form.countryCode, 'tr')}` : 'Ülke seçin...'}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-zinc-700 max-h-72">
+                      <ScrollArea className="h-72">
+                        {countries.map(c => (
+                          <SelectItem key={c.code} value={c.code}>
+                            {c.flag} {c.name.tr}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                  {!form.countryCode && (
+                    <p className="text-xs text-amber-400">Sunucunuzun bulunduğu ülkeyi seçin</p>
+                  )}
+                </div>
+
                 {/* Short Description */}
                 <div className="space-y-2">
                   <Label className="text-white">Kısa Açıklama *</Label>
