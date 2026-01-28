@@ -5621,7 +5621,7 @@ export default function App() {
   }
 
   if (currentPage === 'terms') {
-    return <TermsOfServicePage onBack={() => setCurrentPage('home')} />
+    return <TermsOfServicePage onBack={() => setCurrentPage('home')} lang={lang} t={t} />
   }
 
   // Sort servers - recent ones for sidebar
