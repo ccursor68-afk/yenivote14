@@ -5764,13 +5764,12 @@ export default function App() {
                 <span className="text-xl font-bold text-white">ServerListRank</span>
               </div>
               <p className="text-sm text-zinc-400">
-                Türkiye'nin en kapsamlı Minecraft sunucu listesi. 
-                Sunucunuzu ekleyin, oy toplayın ve binlerce oyuncuya ulaşın.
+                {t('footerDescription')}
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 rounded-full">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-xs text-emerald-400">Çevrimiçi</span>
+                  <span className="text-xs text-emerald-400">{t('online')}</span>
                 </div>
               </div>
             </div>
@@ -5779,32 +5778,32 @@ export default function App() {
             <div>
               <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Link className="w-4 h-4 text-emerald-500" />
-                Hızlı Bağlantılar
+                {t('quickLinks')}
               </h3>
               <ul className="space-y-2">
                 <li>
                   <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <Home className="w-4 h-4" /> Ana Sayfa
+                    <Home className="w-4 h-4" /> {lang === 'en' ? 'Home' : 'Ana Sayfa'}
                   </button>
                 </li>
                 <li>
                   <button onClick={() => user ? setCurrentPage('add-server') : setAuthOpen(true)} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <Plus className="w-4 h-4" /> Sunucu Ekle
+                    <Plus className="w-4 h-4" /> {t('addServer')}
                   </button>
                 </li>
                 <li>
                   <button onClick={() => setCurrentPage('blog')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Blog
+                    <FileText className="w-4 h-4" /> {t('blog')}
                   </button>
                 </li>
                 <li>
                   <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <Globe className="w-4 h-4" /> Hosting Firmaları
+                    <Globe className="w-4 h-4" /> {t('hostings')}
                   </button>
                 </li>
                 <li>
                   <button onClick={() => setCurrentPage('pricing')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <Gem className="w-4 h-4" /> Fiyatlandırma
+                    <Gem className="w-4 h-4" /> {t('pricing')}
                   </button>
                 </li>
               </ul>
@@ -5814,23 +5813,23 @@ export default function App() {
             <div>
               <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-emerald-500" />
-                Destek
+                {t('support')}
               </h3>
               <ul className="space-y-2">
                 <li>
                   <button onClick={() => user ? setCurrentPage('support') : setAuthOpen(true)} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4" /> Destek Talebi
+                    <MessageCircle className="w-4 h-4" /> {t('createTicket')}
                   </button>
                 </li>
                 <li>
                   <button onClick={() => user ? setCurrentPage('profile') : setAuthOpen(true)} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <User className="w-4 h-4" /> Profilim
+                    <User className="w-4 h-4" /> {t('profile')}
                   </button>
                 </li>
                 {user?.role === 'ADMIN' && (
                   <li>
                     <button onClick={() => setCurrentPage('admin')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                      <Settings className="w-4 h-4" /> Admin Paneli
+                      <Settings className="w-4 h-4" /> {t('adminPanel')}
                     </button>
                   </li>
                 )}
@@ -5841,12 +5840,12 @@ export default function App() {
             <div>
               <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-emerald-500" />
-                Yasal
+                {t('legal')}
               </h3>
               <ul className="space-y-2">
                 <li>
                   <button onClick={() => setCurrentPage('privacy')} className="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
-                    <Shield className="w-4 h-4" /> Gizlilik Politikası
+                    <Shield className="w-4 h-4" /> {t('privacyPolicy')}
                   </button>
                 </li>
                 <li>
