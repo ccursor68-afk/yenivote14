@@ -151,6 +151,48 @@ const getServerFaviconUrl = (ip) => {
   return `https://api.mcsrvstat.us/icon/${cleanIp}`
 }
 
+// Language Switcher Component
+function LanguageSwitcher() {
+  const [lang, setLang] = useState('tr')
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+    const saved = localStorage.getItem('serverlistrank_lang')
+    if (saved === 'tr' || saved === 'en') {
+      setLang(saved)
+    }
+  }, [])
+  
+  const handleChange = (newLang) => {
+    localStorage.setItem('serverlistrank_lang', newLang)
+    setLang(newLang)
+    window.location.reload()
+  }
+  
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="sm" className="w-20 h-9 text-xs" disabled>
+        🇹🇷 TR
+      </Button>
+    )
+  }
+  
+  return (
+    <Select value={lang} onValueChange={handleChange}>
+      <SelectTrigger className="w-20 h-9 bg-zinc-900 border-zinc-800 text-xs">
+        <SelectValue>
+          {lang === 'en' ? '🇬🇧 EN' : '🇹🇷 TR'}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent className="bg-zinc-900 border-zinc-800">
+        <SelectItem value="tr">🇹🇷 Türkçe</SelectItem>
+        <SelectItem value="en">🇬🇧 English</SelectItem>
+      </SelectContent>
+    </Select>
+  )
+}
+
 // Server Card Component
 function ServerCard({ server, onVote, onView, rank, liveStatus }) {
   const [copied, setCopied] = useState(false)
