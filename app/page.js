@@ -4353,7 +4353,7 @@ function AdminPanel({ user, onBack }) {
 }
 
 // Add Server Page Component
-function AddServerPage({ onBack, onSuccess }) {
+function AddServerPage({ onBack, onSuccess, lang = 'tr', t }) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [verifying, setVerifying] = useState(false)
