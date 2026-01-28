@@ -257,6 +257,7 @@ function ServerDetailPage({ serverId, onBack, onVote, user }) {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [faviconError, setFaviconError] = useState(false)
+  const [showVoteDialog, setShowVoteDialog] = useState(false)
 
   useEffect(() => {
     fetch(`/api/servers/${serverId}`, { credentials: 'include' })
