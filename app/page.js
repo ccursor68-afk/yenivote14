@@ -5604,13 +5604,13 @@ export default function App() {
               <Select value={countryFilter} onValueChange={setCountryFilter}>
                 <SelectTrigger className="w-full sm:w-44 h-12 bg-zinc-900 border-zinc-800">
                   <SelectValue placeholder="Ülke">
-                    {countryFilter === 'ALL' ? '🌍 Tüm Ülkeler' : `${getFlagByCode(countryFilter)} ${getCountryName(countryFilter, 'tr')}`}
+                    {countryFilter === 'ALL' ? `🌍 ${t('allCountries')}` : `${getFlagByCode(countryFilter)} ${getCountryName(countryFilter, lang)}`}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800 max-h-80">
-                  <SelectItem value="ALL">🌍 Tüm Ülkeler</SelectItem>
+                  <SelectItem value="ALL">🌍 {t('allCountries')}</SelectItem>
                   {countries.map(c => (
-                    <SelectItem key={c.code} value={c.code}>{c.flag} {c.name.tr}</SelectItem>
+                    <SelectItem key={c.code} value={c.code}>{c.flag} {c.name[lang] || c.name.tr}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -5621,7 +5621,7 @@ export default function App() {
                 <div className="text-2xl font-bold text-emerald-500">
                   {siteStats.serverCount > 0 ? siteStats.serverCount : servers.length}
                 </div>
-                <div className="text-sm text-zinc-500">Sunucu</div>
+                <div className="text-sm text-zinc-500">{t('serverCount')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-emerald-500">
@@ -5629,7 +5629,7 @@ export default function App() {
                     ? `${Math.floor(siteStats.totalPlayers / 1000)}K+` 
                     : siteStats.totalPlayers}
                 </div>
-                <div className="text-sm text-zinc-500">Oyuncu</div>
+                <div className="text-sm text-zinc-500">{t('playerCount')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-emerald-500">
@@ -5637,7 +5637,7 @@ export default function App() {
                     ? `${Math.floor(siteStats.totalVotes / 1000)}K+` 
                     : siteStats.totalVotes}
                 </div>
-                <div className="text-sm text-zinc-500">Oy</div>
+                <div className="text-sm text-zinc-500">{t('voteCount')}</div>
               </div>
             </div>
           </div>
@@ -5668,9 +5668,9 @@ export default function App() {
       {sponsoredServers.length > 0 && (
         <section className="py-12 bg-gradient-to-b from-yellow-900/10 to-transparent">
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-2 mb-6"><Crown className="w-6 h-6 text-yellow-500" /><h2 className="text-2xl font-bold text-white">Sponsorlu Sunucular</h2></div>
+            <div className="flex items-center gap-2 mb-6"><Crown className="w-6 h-6 text-yellow-500" /><h2 className="text-2xl font-bold text-white">{t('sponsoredServers')}</h2></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sponsoredServers.map(server => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} liveStatus={serverStatus[server.id]} />))}
+              {sponsoredServers.map(server => (<ServerCard key={server.id} server={server} onVote={setVoteServer} onView={(s) => { setSelectedServer(s.id); setCurrentPage('server-detail') }} liveStatus={serverStatus[server.id]} lang={lang} t={t} />))}
             </div>
           </div>
         </section>
