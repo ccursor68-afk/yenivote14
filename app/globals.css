@@ -74,3 +74,78 @@
 .glass {
   @apply bg-zinc-900/50 backdrop-blur-lg border border-zinc-800;
 }
+
+/* ===== reCAPTCHA z-index fix ===== */
+/* Ensures reCAPTCHA challenge popup appears above modal overlays */
+div[style*="z-index: 2000000000"],
+div[style*="z-index:2000000000"] {
+  z-index: 2147483647 !important;
+}
+
+iframe[src*="google.com/recaptcha"],
+iframe[title*="recaptcha"] {
+  z-index: 2147483647 !important;
+}
+
+.g-recaptcha-bubble-arrow {
+  z-index: 2147483647 !important;
+}
+
+/* reCAPTCHA container styling */
+.recaptcha-container {
+  min-height: 78px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== Mobile responsive utilities ===== */
+@media (max-width: 640px) {
+  /* Mobile scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  /* Mobile dialog adjustments */
+  [role="dialog"] {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Mobile form inputs */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Mobile menu animation */
+.mobile-menu-enter {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.mobile-menu-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.mobile-menu-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.mobile-menu-exit-active {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in, opacity 0.3s ease-in;
+}
