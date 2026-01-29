@@ -5719,16 +5719,33 @@ export default function App() {
   const sponsoredServers = servers.filter(s => s.isSponsored)
   const topServers = servers.filter(s => !s.isSponsored).sort((a, b) => b.voteCount - a.voteCount)
 
+  // Mobile menu state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-zinc-950">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo className="w-10 h-10" />
-            <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent hidden sm:block">ServerListRank</span>
+        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+          {/* Left: Logo + Hamburger */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile Menu Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden h-9 w-9 hover:bg-zinc-800"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+            
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
+              <Logo className="w-8 h-8 sm:w-10 sm:h-10" />
+              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent hidden xs:block sm:block">ServerListRank</span>
+            </div>
           </div>
 
+          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
             <button onClick={() => setCurrentPage('home')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> {t('servers')}</button>
             <button onClick={() => setCurrentPage('hostings')} className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1"><Server className="w-4 h-4" /> {t('hostings')}</button>
@@ -5742,29 +5759,111 @@ export default function App() {
             )}
           </nav>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+            {/* Language Switcher - hidden on very small screens */}
+            <div className="hidden xs:block">
+              <LanguageSwitcher />
+            </div>
             
             {user ? (
               <>
-                <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white hidden sm:flex" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">{t('addServer')}</span></Button>
+                <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-500 hover:bg-emerald-600 hover:text-white hidden md:flex h-9" onClick={() => setCurrentPage('add-server')}><Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">{t('addServer')}</span></Button>
                 <button onClick={() => setCurrentPage('profile')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <Avatar className="w-8 h-8 ring-2 ring-emerald-600/50">
                     <AvatarImage src={user.avatarUrl} />
-                    <AvatarFallback className="bg-emerald-600 text-white">{user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="bg-emerald-600 text-white text-sm">{user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-white hidden lg:block">{user.username || user.email}</span>
+                  <span className="text-sm text-white hidden lg:block max-w-[100px] truncate">{user.username || user.email}</span>
                   {user.role === 'ADMIN' && (<Badge className="bg-red-600 text-white text-xs hidden md:inline-flex">Admin</Badge>)}
                   {user.role === 'VERIFIED_HOSTING' && (<Badge className="bg-emerald-600 text-white text-xs hidden md:inline-flex">Hosting</Badge>)}
                 </button>
-                <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:bg-zinc-800"><LogOut className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:bg-zinc-800 h-9 w-9"><LogOut className="w-4 h-4" /></Button>
               </>
             ) : (
-              <Button className="bg-emerald-600 hover:bg-emerald-500" onClick={() => setAuthOpen(true)}><LogIn className="w-4 h-4 mr-1" /> {t('login')}</Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-500 h-9 px-3 sm:px-4 text-sm" onClick={() => setAuthOpen(true)}><LogIn className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">{t('login')}</span></Button>
             )}
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-lg">
+            <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
+              <button 
+                onClick={() => { setCurrentPage('home'); setMobileMenuOpen(false); }} 
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                <Home className="w-5 h-5 text-emerald-500" />
+                <span className="font-medium">{t('servers')}</span>
+              </button>
+              <button 
+                onClick={() => { setCurrentPage('hostings'); setMobileMenuOpen(false); }} 
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                <Server className="w-5 h-5 text-emerald-500" />
+                <span className="font-medium">{t('hostings')}</span>
+              </button>
+              <button 
+                onClick={() => { setCurrentPage('blog'); setMobileMenuOpen(false); }} 
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                <BookOpen className="w-5 h-5 text-emerald-500" />
+                <span className="font-medium">{t('blog')}</span>
+              </button>
+              <button 
+                onClick={() => { setCurrentPage('pricing'); setMobileMenuOpen(false); }} 
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                <Gem className="w-5 h-5 text-emerald-500" />
+                <span className="font-medium">{t('pricing')}</span>
+              </button>
+              
+              {user && (
+                <>
+                  <Separator className="my-2 bg-zinc-800" />
+                  <button 
+                    onClick={() => { setCurrentPage('support'); setMobileMenuOpen(false); }} 
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+                  >
+                    <Ticket className="w-5 h-5 text-emerald-500" />
+                    <span className="font-medium">{t('support')}</span>
+                  </button>
+                  <button 
+                    onClick={() => { setCurrentPage('add-server'); setMobileMenuOpen(false); }} 
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+                  >
+                    <Plus className="w-5 h-5 text-emerald-500" />
+                    <span className="font-medium">{t('addServer')}</span>
+                  </button>
+                  <button 
+                    onClick={() => { setCurrentPage('profile'); setMobileMenuOpen(false); }} 
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+                  >
+                    <User className="w-5 h-5 text-emerald-500" />
+                    <span className="font-medium">{t('profile')}</span>
+                  </button>
+                  {user?.role === 'ADMIN' && (
+                    <button 
+                      onClick={() => { setCurrentPage('admin'); setMobileMenuOpen(false); }} 
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-zinc-800 hover:text-red-300 transition-colors"
+                    >
+                      <Shield className="w-5 h-5" />
+                      <span className="font-medium">Admin Panel</span>
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* Mobile Language Switcher */}
+              <Separator className="my-2 bg-zinc-800" />
+              <div className="px-4 py-2 flex items-center justify-between">
+                <span className="text-sm text-zinc-400">{lang === 'en' ? 'Language' : 'Dil'}</span>
+                <LanguageSwitcher />
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
