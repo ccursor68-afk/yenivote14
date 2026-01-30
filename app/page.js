@@ -3510,7 +3510,7 @@ function AdminPanel({ user, onBack, lang, t }) {
                           <SelectValue placeholder="Sunucu seçin" />
                         </SelectTrigger>
                         <SelectContent>
-                          {allServers.filter(s => s.approvalStatus === 'APPROVED').map(server => (
+                          {(allServers || []).filter(s => s.approvalStatus === 'APPROVED').map(server => (
                             <SelectItem key={server.id} value={server.id}>{server.name}</SelectItem>
                           ))}
                         </SelectContent>
