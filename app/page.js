@@ -4295,11 +4295,11 @@ function AdminPanel({ user, onBack, lang, t }) {
                   <CardTitle className="text-white">Destek Talepleri ({tickets.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {tickets.length === 0 ? (
+                  {(tickets || []).length === 0 ? (
                     <p className="text-zinc-500 text-center py-8">Ticket yok</p>
                   ) : (
                     <div className="space-y-3">
-                      {tickets.map(ticket => (
+                      {(tickets || []).map(ticket => (
                         <div 
                           key={ticket.id} 
                           className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors"
