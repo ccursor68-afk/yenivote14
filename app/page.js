@@ -2857,7 +2857,7 @@ function getTimeAgo(dateString) {
 }
 
 // Admin Panel Component
-function AdminPanel({ user, onBack }) {
+function AdminPanel({ user, onBack, lang, t }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [stats, setStats] = useState(null)
   const [pendingServers, setPendingServers] = useState([])
