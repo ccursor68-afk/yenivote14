@@ -136,6 +136,16 @@ div:has(> iframe[src*="recaptcha/api2/bframe"]) {
   z-index: 10;
 }
 
+/* CRITICAL: Allow clicks through overlay to reCAPTCHA challenge */
+.recaptcha-overlay-fix {
+  pointer-events: none;
+}
+
+/* But keep dialog content clickable */
+[data-radix-dialog-content] {
+  pointer-events: auto !important;
+}
+
 /* ===== Mobile responsive utilities ===== */
 @media (max-width: 640px) {
   /* Mobile scrollbar */
