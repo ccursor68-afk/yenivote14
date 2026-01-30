@@ -76,19 +76,54 @@
 }
 
 /* ===== reCAPTCHA z-index fix ===== */
-/* Ensures reCAPTCHA challenge popup appears above modal overlays */
-div[style*="z-index: 2000000000"],
-div[style*="z-index:2000000000"] {
+/* CRITICAL: Ensures reCAPTCHA challenge popup appears above ALL overlays and is clickable */
+
+/* Target the reCAPTCHA challenge popup container - Google uses extremely high z-index */
+body > div[style*="z-index: 2000000000"],
+body > div[style*="z-index:2000000000"],
+body > div[style*="z-index: 9999999"] {
   z-index: 2147483647 !important;
+  pointer-events: auto !important;
 }
 
+/* Target ALL iframes related to reCAPTCHA */
 iframe[src*="google.com/recaptcha"],
-iframe[title*="recaptcha"] {
+iframe[src*="recaptcha.net"],
+iframe[title*="recaptcha"],
+iframe[title*="reCAPTCHA"] {
   z-index: 2147483647 !important;
+  pointer-events: auto !important;
+  position: relative !important;
 }
 
+/* The challenge selection popup iframe specifically */
+iframe[src*="recaptcha/api2/bframe"],
+iframe[src*="recaptcha/enterprise/bframe"] {
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+
+/* reCAPTCHA bubble arrow */
 .g-recaptcha-bubble-arrow {
   z-index: 2147483647 !important;
+}
+
+/* Ensure the challenge images are clickable */
+div[style*="visibility: visible"] iframe[title*="recaptcha challenge"] {
+  pointer-events: auto !important;
+  z-index: 2147483647 !important;
+}
+
+/* Global fix for any Google reCAPTCHA overlay */
+body > div:last-of-type:has(iframe[src*="recaptcha"]) {
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+
+/* Fix for challenge popup parent container */
+div:has(> iframe[src*="recaptcha/api2/bframe"]) {
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
 }
 
 /* reCAPTCHA container styling */
@@ -97,6 +132,8 @@ iframe[title*="recaptcha"] {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 10;
 }
 
 /* ===== Mobile responsive utilities ===== */
