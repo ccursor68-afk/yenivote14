@@ -3692,7 +3692,7 @@ function AdminPanel({ user, onBack, lang, t }) {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {allServers.map(server => (
+                        {(allServers || []).map(server => (
                           <TableRow key={server.id} className="border-zinc-800">
                             <TableCell>
                               <div>
