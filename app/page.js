@@ -4387,10 +4387,10 @@ function AdminPanel({ user, onBack, lang, t }) {
                     <CardTitle className="text-white text-lg">Mesajlar</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 max-h-[40vh] overflow-y-auto">
-                    {adminTicketMessages.length === 0 ? (
+                    {(adminTicketMessages || []).length === 0 ? (
                       <p className="text-zinc-500 text-center py-4">Henüz mesaj yok</p>
                     ) : (
-                      adminTicketMessages.map(msg => (
+                      (adminTicketMessages || []).map(msg => (
                         <div key={msg.id} className={`flex ${msg.isAdmin ? 'justify-end' : 'justify-start'}`}>
                           <div className={`max-w-[80%] p-3 rounded-lg ${msg.isAdmin ? 'bg-emerald-600/20 border border-emerald-600/30' : 'bg-zinc-800'}`}>
                             <div className="flex items-center gap-2 mb-1">
