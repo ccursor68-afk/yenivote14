@@ -3462,11 +3462,11 @@ function AdminPanel({ user, onBack, lang, t }) {
                 <CardTitle className="text-white">Onay Bekleyen Sunucular</CardTitle>
               </CardHeader>
               <CardContent>
-                {pendingServers.length === 0 ? (
+                {(pendingServers || []).length === 0 ? (
                   <p className="text-zinc-500 text-center py-8">Bekleyen sunucu yok</p>
                 ) : (
                   <div className="space-y-3">
-                    {pendingServers.map(server => (
+                    {(pendingServers || []).map(server => (
                       <div key={server.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
                         <div className="flex items-center gap-3">
                           <Server className="w-8 h-8 text-zinc-500" />
