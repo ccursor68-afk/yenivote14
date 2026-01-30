@@ -3544,11 +3544,11 @@ function AdminPanel({ user, onBack, lang, t }) {
                   <CardTitle className="text-white">Aktif Boostlar</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {boosts.filter(b => b.isActive && new Date(b.endTime) > new Date()).length === 0 ? (
+                  {(boosts || []).filter(b => b.isActive && new Date(b.endTime) > new Date()).length === 0 ? (
                     <p className="text-zinc-500 text-center py-8">Aktif boost yok</p>
                   ) : (
                     <div className="space-y-3">
-                      {boosts.filter(b => b.isActive && new Date(b.endTime) > new Date()).map(boost => (
+                      {(boosts || []).filter(b => b.isActive && new Date(b.endTime) > new Date()).map(boost => (
                         <div key={boost.id} className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
