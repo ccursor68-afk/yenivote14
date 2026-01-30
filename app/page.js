@@ -4097,11 +4097,11 @@ function AdminPanel({ user, onBack, lang, t }) {
                   <CardTitle className="text-white">Mevcut Yazılar ({blogPosts.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {blogPosts.length === 0 ? (
+                  {(blogPosts || []).length === 0 ? (
                     <p className="text-zinc-500 text-center py-8">Henüz yazı yok</p>
                   ) : (
                     <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                      {blogPosts.map(post => (
+                      {(blogPosts || []).map(post => (
                         <div key={post.id} className="p-4 bg-zinc-800/50 rounded-lg">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
