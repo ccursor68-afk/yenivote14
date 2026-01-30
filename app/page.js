@@ -2887,17 +2887,17 @@ function AdminPanel({ user, onBack, lang, t }) {
     setLoading(true)
     try {
       const [statsRes, pendingRes, usersRes, ticketsRes, blogRes, hostingsRes, boostsRes, allServersRes] = await Promise.all([
-        fetch('/api/admin/stats', { credentials: 'include' }).then(r => r.json()),
-        fetch('/api/admin/servers/pending', { credentials: 'include' }).then(r => r.json()),
-        fetch('/api/admin/users', { credentials: 'include' }).then(r => r.json()),
-        fetch('/api/admin/tickets', { credentials: 'include' }).then(r => r.json()),
-        fetch('/api/admin/blog', { credentials: 'include' }).then(r => r.json()),
-        fetch('/api/admin/hostings', { credentials: 'include' }).then(r => r.json()),
+        fetch('/api/admin/stats', { credentials: 'include' }).then(r => r.json()).catch(() => ({})),
+        fetch('/api/admin/servers/pending', { credentials: 'include' }).then(r => r.json()).catch(() => ({ servers: [] })),
+        fetch('/api/admin/users', { credentials: 'include' }).then(r => r.json()).catch(() => ({ users: [] })),
+        fetch('/api/admin/tickets', { credentials: 'include' }).then(r => r.json()).catch(() => ({ tickets: [] })),
+        fetch('/api/admin/blog', { credentials: 'include' }).then(r => r.json()).catch(() => ({ posts: [] })),
+        fetch('/api/admin/hostings', { credentials: 'include' }).then(r => r.json()).catch(() => ({ hostings: [] })),
         fetch('/api/admin/boosts', { credentials: 'include' }).then(r => r.json()).catch(() => ({ boosts: [] })),
         fetch('/api/admin/all-servers', { credentials: 'include' }).then(r => r.json()).catch(() => ({ servers: [] }))
       ])
 
-      setStats(statsRes.stats)
+      setStats(statsRes.stats || null)
       setPendingServers(pendingRes.servers || [])
       setUsers(usersRes.users || [])
       setTickets(ticketsRes.tickets || [])
@@ -2906,7 +2906,15 @@ function AdminPanel({ user, onBack, lang, t }) {
       setBoosts(boostsRes.boosts || [])
       setAllServers(allServersRes.servers || [])
     } catch (err) {
-      // Silent fail
+      console.error('Admin panel load error:', err)
+      // Set empty arrays on complete failure
+      setPendingServers([])
+      setUsers([])
+      setTickets([])
+      setBlogPosts([])
+      setHostings([])
+      setBoosts([])
+      setAllServers([])
     } finally {
       setLoading(false)
     }
