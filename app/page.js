@@ -3581,11 +3581,11 @@ function AdminPanel({ user, onBack, lang, t }) {
                 <CardDescription className="text-zinc-400">Hosting başvurularını onaylayın veya reddedin</CardDescription>
               </CardHeader>
               <CardContent>
-                {hostings.length === 0 ? (
+                {(hostings || []).length === 0 ? (
                   <p className="text-zinc-500 text-center py-8">Hosting firması yok</p>
                 ) : (
                   <div className="space-y-3">
-                    {hostings.map(hosting => (
+                    {(hostings || []).map(hosting => (
                       <div key={hosting.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-zinc-800/50 rounded-lg gap-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
