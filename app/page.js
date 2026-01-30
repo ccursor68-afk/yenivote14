@@ -3922,7 +3922,7 @@ function AdminPanel({ user, onBack, lang, t }) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map(u => (
+                      {(users || []).map(u => (
                         <TableRow key={u.id} className="border-zinc-800">
                           <TableCell>
                             <div className="flex items-center gap-2">
