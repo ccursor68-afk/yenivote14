@@ -2673,7 +2673,7 @@ function SupportPage({ onBack, user, onOpenAuth, initialCategory, initialSubject
               </Card>
             ) : (
               <div className="space-y-3">
-                {tickets.map(ticket => (
+                {(tickets || []).map(ticket => (
                   <Card key={ticket.id} className="bg-zinc-900/50 border-zinc-800 cursor-pointer hover:border-zinc-700 transition-colors" onClick={() => openTicket(ticket)}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
