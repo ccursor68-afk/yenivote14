@@ -3354,6 +3354,16 @@ function AdminPanel({ user, onBack, lang, t }) {
     )
   }
 
+  // Show loading state while data is being fetched
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mb-4" />
+        <p className="text-zinc-400">Admin paneli yükleniyor...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950">
       {/* Header */}
