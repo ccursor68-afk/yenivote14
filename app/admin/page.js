@@ -279,23 +279,34 @@ export default function AdminPanel() {
 
 // ==================== DASHBOARD SECTION ====================
 function DashboardSection({ stats, servers, pendingServers, tickets, users, onRefresh }) {
-  const openTickets = (tickets || []).filter(t => t.status === 'OPEN').length
+  // SAFE: Ensure all arrays are valid before using
+  const safeServers = Array.isArray(servers) ? servers : []
+  const safePendingServers = Array.isArray(pendingServers) ? pendingServers : []
+  const safeTickets = Array.isArray(tickets) ? tickets : []
+  
+  const openTickets = safeTickets.filter(t => t && t.status === 'OPEN').length
   const totalVotes = stats?.voteCount || 0
   const totalUsers = stats?.userCount || 0
   const totalServers = stats?.serverCount || 0
 
   // Calculate stats
-  const onlineServers = (servers || []).filter(s => s.isOnline).length
-  const totalPlayers = (servers || []).reduce((acc, s) => acc + (s.playerCount || 0), 0)
+  const onlineServers = safeServers.filter(s => s && s.isOnline).length
+  const totalPlayers = safeServers.reduce((acc, s) => acc + (s?.playerCount || 0), 0)
+
+  // Format numbers safely (avoid locale differences between server/client)
+  const formatNumber = (num) => {
+    if (typeof num !== 'number') return '0'
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
 
   const statCards = [
     { title: 'Toplam Sunucu', value: totalServers, icon: Server, color: 'emerald', change: '+12%' },
     { title: 'Online Sunucu', value: onlineServers, icon: Activity, color: 'green', change: `${totalServers > 0 ? Math.round((onlineServers/totalServers)*100) : 0}%` },
-    { title: 'Toplam Oyuncu', value: totalPlayers.toLocaleString(), icon: Users, color: 'blue', change: '+8%' },
-    { title: 'Toplam Oy', value: totalVotes.toLocaleString(), icon: Star, color: 'yellow', change: '+24%' },
+    { title: 'Toplam Oyuncu', value: formatNumber(totalPlayers), icon: Users, color: 'blue', change: '+8%' },
+    { title: 'Toplam Oy', value: formatNumber(totalVotes), icon: Star, color: 'yellow', change: '+24%' },
     { title: 'Toplam Kullanıcı', value: totalUsers, icon: Users, color: 'purple', change: '+15%' },
     { title: 'Açık Ticket', value: openTickets, icon: Ticket, color: 'red', change: null },
-    { title: 'Bekleyen Sunucu', value: (pendingServers || []).length, icon: Clock, color: 'orange', change: null },
+    { title: 'Bekleyen Sunucu', value: safePendingServers.length, icon: Clock, color: 'orange', change: null },
   ]
 
   return (
