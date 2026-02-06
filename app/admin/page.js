@@ -140,12 +140,15 @@ export default function AdminPanel() {
     return null
   }
 
-  // Menu items
+  // Menu items - SAFE: Calculate badges only after data is loaded to prevent hydration issues
+  const pendingCount = Array.isArray(pendingServers) ? pendingServers.length : 0
+  const openTicketCount = Array.isArray(tickets) ? tickets.filter(t => t && t.status === 'OPEN').length : 0
+  
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, badge: null },
-    { id: 'servers', label: 'Sunucular', icon: Server, badge: pendingServers.length > 0 ? pendingServers.length : null },
+    { id: 'servers', label: 'Sunucular', icon: Server, badge: pendingCount > 0 ? pendingCount : null },
     { id: 'users', label: 'Kullanıcılar', icon: Users, badge: null },
-    { id: 'tickets', label: 'Ticketlar', icon: Ticket, badge: (tickets || []).filter(t => t.status === 'OPEN').length || null },
+    { id: 'tickets', label: 'Ticketlar', icon: Ticket, badge: openTicketCount > 0 ? openTicketCount : null },
     { id: 'blog', label: 'Blog', icon: FileText, badge: null },
     { id: 'votes', label: 'Oylar', icon: Star, badge: null },
     { id: 'settings', label: 'Ayarlar', icon: Settings, badge: null },
