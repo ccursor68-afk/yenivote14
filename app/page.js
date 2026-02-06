@@ -1986,9 +1986,7 @@ function BlogPostPage({ slug, onBack }) {
           )}
           <span>•</span>
           <span>
-            {formatDateSafe(post.createdAt) /* was toLocaleDateString  
-              year: 'numeric', month: 'long', day: 'numeric' 
-            })}
+            {formatDateSafe(post.createdAt)}
           </span>
         </div>
 
