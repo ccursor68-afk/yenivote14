@@ -930,7 +930,7 @@ function ServersSection({ servers, pendingServers, onRefresh }) {
               </div>
               <div>
                 <Label className="text-zinc-400 text-xs">Eklenme Tarihi</Label>
-                <p className="text-white">{new Date(selectedServer.createdAt).toLocaleDateString('tr-TR')}</p>
+                <p className="text-white">{formatDate(selectedServer.createdAt)}</p>
               </div>
             </div>
           )}
@@ -1097,7 +1097,7 @@ function UsersSection({ users, onRefresh }) {
                         )}
                       </TableCell>
                       <TableCell className="text-zinc-400">
-                        {new Date(user.createdAt).toLocaleDateString('tr-TR')}
+                        {formatDate(user.createdAt)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
@@ -1167,7 +1167,7 @@ function UsersSection({ users, onRefresh }) {
                 </div>
                 <div>
                   <Label className="text-zinc-400 text-xs">Kayıt Tarihi</Label>
-                  <p className="text-white">{new Date(selectedUser.createdAt).toLocaleString('tr-TR')}</p>
+                  <p className="text-white">{formatDateTime(selectedUser.createdAt)}</p>
                 </div>
               </div>
             </div>
@@ -1315,7 +1315,7 @@ function TicketsSection({ tickets, onRefresh }) {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-white truncate">{ticket.subject}</p>
                           <p className="text-xs text-zinc-500 mt-1">
-                            {ticket.user?.email || 'Bilinmeyen'} • {new Date(ticket.createdAt).toLocaleDateString('tr-TR')}
+                            {ticket.user?.email || 'Bilinmeyen'} • {formatDate(ticket.createdAt)}
                           </p>
                           <Badge className="mt-2 bg-zinc-700 text-xs">{ticket.category}</Badge>
                         </div>
