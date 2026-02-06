@@ -25,7 +25,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { toast, Toaster } from 'sonner'
+import { toast } from 'sonner'
 
 // ==================== ADMIN PANEL COMPONENT ====================
 export default function AdminPanel() {
