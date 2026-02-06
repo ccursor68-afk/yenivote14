@@ -5791,9 +5791,6 @@ export default function App() {
   const sponsoredServers = servers.filter(s => s.isSponsored)
   const topServers = servers.filter(s => !s.isSponsored).sort((a, b) => b.voteCount - a.voteCount)
 
-  // Mobile menu state
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
   return (
     <div className="min-h-screen bg-zinc-950">
       {/* Header */}
