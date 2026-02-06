@@ -5680,6 +5680,19 @@ export default function App() {
       .then(data => setServers(data.servers || []))
   }
 
+  // CRITICAL: Hydration guard - prevent rendering until client is ready
+  // This prevents server/client mismatch for user state and language
+  if (!langMounted || authLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mx-auto mb-4" />
+          <p className="text-zinc-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
   // Render different pages
   if (currentPage === 'server-detail' && selectedServer) {
     return <ServerDetailPage serverId={selectedServer} onBack={() => { setCurrentPage('home'); setSelectedServer(null) }} onVote={setVoteServer} user={user} lang={lang} t={t} />
