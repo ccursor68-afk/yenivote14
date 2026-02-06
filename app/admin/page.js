@@ -156,7 +156,7 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-zinc-950 flex">
-      <Toaster position="top-right" richColors />
+      {/* NOTE: Toaster is already in layout.js - removed duplicate to prevent hydration mismatch */}
       
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-zinc-900 border-r border-zinc-800 flex flex-col transition-all duration-300 fixed h-full z-40 lg:relative`}>
