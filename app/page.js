@@ -1899,7 +1899,7 @@ function BlogPage({ onBack, onViewPost, lang = 'tr', t }) {
                   )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-zinc-500">
-                      {new Date(post.createdAt).toLocaleDateString('tr-TR', { 
+                      {formatDateSafe(post.createdAt) /* was toLocaleDateString  
                         year: 'numeric', month: 'long', day: 'numeric' 
                       })}
                     </span>
@@ -1988,7 +1988,7 @@ function BlogPostPage({ slug, onBack }) {
           )}
           <span>•</span>
           <span>
-            {new Date(post.createdAt).toLocaleDateString('tr-TR', { 
+            {formatDateSafe(post.createdAt) /* was toLocaleDateString  
               year: 'numeric', month: 'long', day: 'numeric' 
             })}
           </span>
