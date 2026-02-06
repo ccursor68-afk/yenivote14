@@ -27,6 +27,40 @@ import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
 
+// SAFE DATE FORMATTING - Prevents hydration mismatch by using consistent format
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  try {
+    const date = new Date(dateString)
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+    return `${day}.${month}.${year}`
+  } catch {
+    return '-'
+  }
+}
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return '-'
+  try {
+    const date = new Date(dateString)
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const hours = date.getHours().toString().padStart(2, '0')
+    const mins = date.getMinutes().toString().padStart(2, '0')
+    return `${day}.${month}.${year} ${hours}:${mins}`
+  } catch {
+    return '-'
+  }
+}
+
+const formatNumber = (num) => {
+  if (typeof num !== 'number') return '0'
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
 // ==================== ADMIN PANEL COMPONENT ====================
 export default function AdminPanel() {
   const router = useRouter()
