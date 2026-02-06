@@ -1899,9 +1899,7 @@ function BlogPage({ onBack, onViewPost, lang = 'tr', t }) {
                   )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-zinc-500">
-                      {formatDateSafe(post.createdAt) /* was toLocaleDateString  
-                        year: 'numeric', month: 'long', day: 'numeric' 
-                      })}
+                      {formatDateSafe(post.createdAt)}
                     </span>
                     <span className="text-emerald-500 flex items-center gap-1">
                       Oku <ArrowUpRight className="w-4 h-4" />
