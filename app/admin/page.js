@@ -30,6 +30,9 @@ import { toast, Toaster } from 'sonner'
 // ==================== ADMIN PANEL COMPONENT ====================
 export default function AdminPanel() {
   const router = useRouter()
+  
+  // CRITICAL: Safe mounting pattern to prevent hydration mismatch
+  const [mounted, setMounted] = useState(false)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -46,10 +49,17 @@ export default function AdminPanel() {
   const [votes, setVotes] = useState([])
   const [recentActivity, setRecentActivity] = useState([])
 
+  // Safe mounting effect - MUST be first
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Check auth on mount
   useEffect(() => {
-    checkAuth()
-  }, [])
+    if (mounted) {
+      checkAuth()
+    }
+  }, [mounted])
 
   const checkAuth = async () => {
     try {
