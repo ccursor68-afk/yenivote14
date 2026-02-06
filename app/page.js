@@ -5516,6 +5516,9 @@ export default function App() {
   const [selectedServer, setSelectedServer] = useState(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState(null)
   
+  // Mobile menu state - MUST be before any return statements
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  
   // Language state
   const [lang, setLang] = useState('tr')
   const [langMounted, setLangMounted] = useState(false)
