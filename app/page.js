@@ -1307,7 +1307,7 @@ function ProfilePage({ user, onBack, onUpdateUser, lang = 'tr', t }) {
                   {badges.map(badge => {
                     const info = BADGE_INFO[badge.badgeType] || {}
                     return (
-                      <Badge key={badge.id} variant="outline" className={info.color} title={`Kazanıldı: ${new Date(badge.earnedAt).toLocaleDateString('tr-TR')}`}>
+                      <Badge key={badge.id} variant="outline" className={info.color} title={`Kazanıldı: ${formatDateSafe(badge.earnedAt)}`}>
                         <span className="mr-1">{info.icon}</span>
                         {info.name}
                       </Badge>
@@ -1334,7 +1334,7 @@ function ProfilePage({ user, onBack, onUpdateUser, lang = 'tr', t }) {
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Üyelik</span>
                   <span className="text-white font-medium">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
+                    {formatDateSafe(user?.createdAt)}
                   </span>
                 </div>
               </div>
