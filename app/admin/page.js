@@ -111,6 +111,18 @@ export default function AdminPanel() {
     }
   }
 
+  // CRITICAL: Return null/skeleton until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mx-auto mb-4" />
+          <p className="text-zinc-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
   // Loading state
   if (loading) {
     return (
