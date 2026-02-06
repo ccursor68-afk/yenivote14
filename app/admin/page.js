@@ -1372,7 +1372,7 @@ function TicketsSection({ tickets, onRefresh }) {
                               {msg.isAdmin ? 'Admin' : msg.user?.email || 'Kullanıcı'}
                             </span>
                             <span className="text-xs text-zinc-500">
-                              {new Date(msg.createdAt).toLocaleString('tr-TR')}
+                              {formatDateTime(msg.createdAt)}
                             </span>
                           </div>
                           <p className="text-sm text-white whitespace-pre-wrap">{msg.content}</p>
@@ -1664,7 +1664,7 @@ function BlogSection({ posts, onRefresh, user }) {
                           {post.published ? 'Yayında' : 'Taslak'}
                         </Badge>
                         <span className="text-xs text-zinc-500">
-                          {new Date(post.createdAt).toLocaleDateString('tr-TR')}
+                          {formatDate(post.createdAt)}
                         </span>
                       </div>
                     </div>
@@ -1743,7 +1743,7 @@ function VotesSection({ servers }) {
               </div>
               <div>
                 <p className="text-sm text-zinc-400">Toplam Oy</p>
-                <p className="text-2xl font-bold text-white">{totalVotes.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-white">{formatNumber(totalVotes)}</p>
               </div>
             </div>
           </CardContent>
@@ -1756,7 +1756,7 @@ function VotesSection({ servers }) {
               </div>
               <div>
                 <p className="text-sm text-zinc-400">Bu Ay</p>
-                <p className="text-2xl font-bold text-white">{totalMonthlyVotes.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-white">{formatNumber(totalMonthlyVotes)}</p>
               </div>
             </div>
           </CardContent>
